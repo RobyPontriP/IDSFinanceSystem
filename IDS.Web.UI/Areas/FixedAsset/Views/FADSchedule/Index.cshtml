@@ -1,0 +1,508 @@
+﻿
+@{
+    ViewBag.Title = "Depreciation Schedule";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-1">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 12px;"><b>Filter</b></h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- body -- start-->
+            <div class="row mb-5">
+                <div class="col-sm-12">
+                    <div class="float-left">
+                        <button onclick="btn_Depr_CLICK()" type="button" class="btn btn-default btn-sm">FA Depr Schedule</button>
+                        <button onclick="btn_Tax_CLICK()" type="button" class="btn btn-default btn-sm">FA Tax Depr Schedule</button>
+                        <!-- <button onclick="btn_Test_Hidee()" type="button" class="btn btn-default btn-sm">Test Hide</button>-->
+                    </div>
+                </div>
+            </div>
+
+            <div id="depr" class="row mb-1">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-1">
+                            <div class="form-group row col-sm-5">
+                                <label for="cboBranchCode" class="col-form-label col-form-label-sm col-sm-3">Branch</label>
+                                <div class="col-sm-9">
+                                    @Html.DropDownList("Branch", (SelectList)ViewData["SelectListBranch"],"", new { @id = "cboBranchCode", @class = "form-control form-control-sm select2DDList" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row col-sm-5">
+                                <label for="cboassetno" class="col-form-label col-form-label-sm col-sm-4 text-right">Asset No.</label>
+                                <div class="col-sm-8">
+                                    <select id="cboassetno" class="form-control form-control-sm select2DDList" aria-label="Default select example"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-12">
+                                <div class="float-right">
+                                    <button id="btn_Amortice" onclick="btn_AmorDeprClick()" type="button" class="btn btn-default btn-sm">Amortize</button>
+                                    <button onclick="btn_dprClearClick()" type="button" class="btn btn-default btn-sm">Set Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="table-responsive table-responsive-sm p-2 bg-white border">
+                                <table id="tabledepr" class="table table-bordered table-hover w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Period</th>
+                                            <th>Begining Value</th>
+                                            <th>Increment</th>
+                                            <th>Decrement</th>
+                                            <th>Depreciation</th>
+                                            <th>Accumulation</th>
+                                            <th>Ending Value</th>
+                                            <th>Journal</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="tax" class="row mb-1">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-1">
+                            <div class="form-group row col-sm-5">
+                                <label for="cboBrancTax" class="col-form-label col-form-label-sm col-sm-3">Branch</label>
+                                <div class="col-sm-9">
+                                    @Html.DropDownList("Branch", (SelectList)ViewData["SelectListBranch"], new { @id = "cboBrancTax", @class = "form-control form-control-sm select2DDList" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row col-sm-5">
+                                <label for="cboassetnoTax" class="col-form-label col-form-label-sm col-sm-4 text-right">Asset No.</label>
+                                <div class="col-sm-8">
+                                    <select id="cboassetnoTax" class="form-control form-control-sm select2DDList" aria-label="Default select example"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-12">
+                                <div class="float-right">
+                                    <button id="btnTaxAmortizeTax" onclick="btnTaxAmortizeCLICK()" type="button" class="btn btn-default btn-sm">Amortize</button>
+                                    <button id="btnTaxClear" onclick="btnTaxClearCLICK()" type="button" class="btn btn-default btn-sm">Set Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="table-responsive table-responsive-sm p-2 bg-white border">
+                                <table id="tabletax" class="table table-bordered table-hover w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset Tax Period</th>
+                                            <th>Begining Value</th>
+                                            <th>Asset Tax Increment</th>
+                                            <th>Asset Tax Decrement</th>
+                                            <th>Asset Tax Depreciation</th>
+                                            <th>Accumulation</th>
+                                            <th>Ending Value</th>
+                                            <th>Asset Tax Journal</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- body -- end-->
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>.
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".select2DDList").select2();
+            var table_depr = null;
+            var table_tax = null;
+
+            taxShow("0");
+
+            //$(".select2DDList").select2();
+
+            //$(".select2DDList").select2({
+            //    width:"100%",
+            //    theme:"classic"
+            //});
+
+            $("#cboBranchCode").change(function () {
+                GetAssetNo($("#cboBranchCode").val());
+            });
+
+            $("#cboBrancTax").change(function () {
+                GetAssetNoTax($("#cboBrancTax").val());
+            });
+
+            $("#cboassetno").change(function () {
+                IsAlreadyJournal_Depr($('#cboBranchCode').val(), $('#cboassetno').val());
+            });
+
+            //=========================================== option change new page ==================================
+            $("#cboassetnoTax").change(function () {
+                IsAlreadyJournal_Task($('#cboBrancTax').val(), $('#cboassetnoTax').val());
+            });
+        })
+
+        function IsAlreadyJournal_Depr(branchDepr, cboassetnoDepr) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Get_IsAlreadyJournal", "FADSchedule", new { Area = "FixedAsset" })',
+                dataType: 'json',
+                data: { branch: branchDepr, assetno: cboassetnoDepr },
+                success: function (respond) {
+                    if (respond == true) {
+                        $("#btn_Amortice").prop("disabled", true);
+                    } else {
+                        $("#btn_Amortice").prop("disabled", false);
+                    }
+                }
+            });
+        }
+
+        function IsAlreadyJournal_Task(branchTax, cboassetnoTax) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Get_IsAlreadyJournal", "FADSchedule", new { Area = "FixedAsset" })',
+                dataType: 'json',
+                data: { branch: branchDepr, assetno: cboassetnoDepr },
+                success: function (respond) {
+                    if (respond == true) {
+                        $("#btnTaxAmortizeTax").prop("disabled", true);
+                    } else {
+                        $("#btnTaxAmortizeTax").prop("disabled", false);
+                    }
+                }
+            });
+        }
+
+
+        function btn_Depr_CLICK() {
+            if ($('#depr').css('display') == 'none') {
+
+                var $optionss = $("#cboBrancTax > option").clone();
+                $('#cboBranchCode').empty();
+                $('#cboBranchCode').append($optionss);
+                $('#cboBranchCode').val($('#cboBrancTax').val());
+
+                var $options = $("#cboassetnoTax > option").clone();
+                $('#cboassetno').empty();
+                $('#cboassetno').append($options);
+                $('#cboassetno').val($('#cboassetnoTax').val());
+
+                taxShow("0");
+                Get_table_depr($("#cboBrancTax").val(), $("#cboassetnoTax").val(), "0");
+                IsAlreadyJournal_Depr($('#cboBrancTax').val(), $('#cboassetnoTax').val());
+            } else {
+                Get_table_depr($('#cboBranchCode').val(), $('#cboassetno').val(), "0");
+                IsAlreadyJournal_Depr($('#cboBranchCode').val(), $('#cboassetno').val());
+            }
+        }
+
+        function btn_Tax_CLICK() {
+            if ($('#tax').css('display') == 'none') {
+
+                var $optionss = $("#cboBranchCode > option").clone();
+                $('#cboBrancTax').empty();
+                $('#cboBrancTax').append($optionss);
+                $('#cboBrancTax').val($('#cboBranchCode').val());
+
+                var $options = $("#cboassetno > option").clone();
+                $('#cboassetnoTax').empty();
+                $('#cboassetnoTax').append($options);
+                $('#cboassetnoTax').val($('#cboassetno').val());
+
+
+                taxShow("1");
+                Get_table_TAX($('#cboBranchCode').val(), $('#cboassetno').val(), "0");
+                IsAlreadyJournal_Task($('#cboBranchCode').val(), $('#cboassetno').val());
+            } else {
+                taxShow("1");
+                Get_table_TAX($("#cboBrancTax").val(), $("#cboassetnoTax").val(), "0");
+                IsAlreadyJournal_Task($('#cboBrancTax').val(), $('#cboassetnoTax').val());
+            }
+        }
+
+        function taxShow(optional_) {
+            if (optional_==="1") {
+                $("#tax").show();
+                $("#depr").hide();
+            } else {
+                $("#tax").hide();
+                $("#depr").show();
+            }
+        }
+
+        function GetAssetNo(branch){
+                 $.ajax({
+                      type: "POST",
+                      url: '@Url.Action("GetAssetNoJsonResult", "FADSchedule", new { Area = "FixedAsset" })',
+                     data: JSON.stringify({ "branch": branch }),
+                      dataType: 'JSON',
+                      success: function (respond) {
+                           $("#cboassetno").empty();
+                           $.each(respond, function (i, item) {
+                               $("#cboassetno").append('<option value = "' + item["Value"] + '">' + item["Value"] + ' - ' + item["Text"] + '</option>');
+                          });
+                      },error: function (respond, xhr, msg) {
+                          console.log(msg);
+                      }
+                  })
+        }
+
+        function GetAssetNoTax(branch) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetAssetNoJsonResult", "FADSchedule", new { Area = "FixedAsset" })',
+                data: JSON.stringify({ "branch": branch }),
+                dataType: 'JSON',
+                success: function (respond) {
+                    $("#cboassetnoTax").empty();
+                    $.each(respond, function (i, item) {
+                        $("#cboassetnoTax").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                    });
+                }, error: function (respond, xhr, msg) {
+                    console.log(msg);
+                }
+            })
+        }
+
+        function btn_AmorDeprClick(){
+            Get_table_depr($("#cboBranchCode").val(), $("#cboassetno").val(), "1");
+        }
+
+        function btn_dprClearClick() {
+            $("#btn_Amortice").prop("disabled", false);
+            $("#cboassetno").append('<option selected="selected" value=""></option>');
+            Get_table_depr("", "", "0");
+        }
+
+        function Get_table_depr(branch, assetno,indexctrl) {
+            var url="";
+            if(indexctrl==="0"){
+                url = '@Url.Action("GetDepScedule", "FADSchedule", new { Area = "FixedAsset" })';
+            }else{
+                url = '@Url.Action("GoAmprDepr", "FADSchedule", new { Area = "FixedAsset" })';
+            }
+            return $('#tabledepr').DataTable
+            ({
+                destroy: true,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "orderMulti": false,
+                "pageLength": 5,
+                "ajax":
+                {
+                    "url": url,
+                    "type": "POST",
+                    "dataType": "JSON",
+                    "data": {
+                        'branch': branch,
+                        'assetno': assetno
+                    }
+                },
+                "columns": [
+                    { "data": "Period", "name": "Period" },
+                    { "data": "BegVal", "name": "BegVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "Increment", "name": "Increment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "Decrement", "name": "Decrement" },
+                    { "data": "Depreciation", "name": "Depreciation", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "AccumDepre", "name": "AccumDepre", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "EndVal", "name": "EndVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "IsJournal", "name": "IsJournal",
+                         render: function (data, type, row) {
+                             if (data == true) {
+                                 return '<input type="checkbox" checked>';
+                             } else {
+                                 return '<input type="checkbox">';
+                             }
+                             return data;
+                         }
+                     },
+
+                ],
+                "columnDefs": [
+                         {
+                             "searchable": true,
+                             "targets": [1],
+                             "visible": true
+                         },
+                         {
+                             "className": "text-center",
+                             "width": '15',
+                             "targets": [7]
+                         }
+                ],
+                "select": {
+                    "style": 'single'
+                },
+                "language":
+                {
+                    "search": "",
+                    "searchPlaceholder": "Search...",
+                    "emptyTable": "No record found.",
+                    "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                },
+                "processing": "true",
+                "order": [[1, "asc"]],
+                "serverSide": "true",
+                "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                "pageLength": 10
+            });
+        }
+
+        function GetDepSchedule(branch,assetno) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetDepScedule", "FADSchedule", new { Area = "FixedAsset" })',
+                data: JSON.stringify({ "branch": branch }),
+                dataType: 'JSON',
+                success: function (respond) {
+                    $("#cboassetnoTax").empty();
+                    $.each(respond, function (i, item) {
+                        $("#cboassetnoTax").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                    });
+                }, error: function (respond, xhr, msg) {
+                    console.log(msg);
+                }
+            })
+        }
+
+        //=========================================================== option new page ===================================================
+        function Get_table_TAX(branch, assetno, indexctrl) {
+            var url = "";
+            if (indexctrl === "0") {
+                url = '@Url.Action("GetDepSceduleTax", "FADSchedule", new { Area = "FixedAsset" })';
+            } else {
+                //url = '@Url.Action("GetDepSceduleTaxAmort", "FADSchedule", new { Area = "FixedAsset" })';
+            }
+            return $('#tabletax').DataTable
+            ({
+                destroy: true,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "orderMulti": false,
+                "pageLength": 5,
+                "ajax":
+                {
+                    "url": url,
+                    "type": "POST",
+                    "dataType": "JSON",
+                    "data": {
+                        'branch': branch,
+                        'assetno': assetno
+                    }
+                },
+                "columns": [
+                    { "data": "Period", "name": "Period" },
+                    { "data": "BegVal", "name": "BegVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "Increment", "name": "Increment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "Decrement", "name": "Decrement" },
+                    { "data": "Depreciation", "name": "Depreciation", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "AccumDepre", "name": "AccumDepre", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    { "data": "EndVal", "name": "EndVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                    {
+                        "data": "IsJournal", "name": "IsJournal",
+                        render: function (data, type, row) {
+                            if (data == true) {
+                                return '<input type="checkbox" checked>';
+                            } else {
+                                return '<input type="checkbox">';
+                            }
+                            return data;
+                        }
+                    },
+
+                ],
+                "columnDefs": [
+                         {
+                             "searchable": true,
+                             "targets": [1],
+                             "visible": true
+                         },
+                         {
+                             "className": "text-center",
+                             "width": '30px',
+                             "targets": [7]
+                         }
+                ],
+                "select": {
+                    "style": 'single'
+                },
+                "language":
+                {
+                    "search": "",
+                    "searchPlaceholder": "Search...",
+                    "emptyTable": "No record found.",
+                    "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                },
+                "processing": "true",
+                "order": [[1, "asc"]],
+                "serverSide": "true",
+                "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                "pageLength": 10
+            });
+        }
+
+        function btnTaxAmortizeCLICK() {
+            Get_table_TAX($("#cboBrancTax").val(), $("#cboassetnoTax").val(), "1");
+        }
+
+        function btnTaxClearCLICK() {
+            $("#btnTaxAmortizeTax").prop("disabled", false);
+            $("#cboassetnoTax").append('<option selected="selected" value=""></option>');
+            Get_table_TAX("", "", "0");
+        }
+
+    </script>
+}

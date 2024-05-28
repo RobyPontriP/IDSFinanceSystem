@@ -1,0 +1,339 @@
+﻿@model IDS.GLTable.ExchangeRate
+
+@section Styles {
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+}
+
+<style type="text/css">
+    .select2-container {
+    width: 100% !important;
+}
+</style>
+
+
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.ExchangeDate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.ExchangeDate, new { htmlAttributes = new { @class = "form-control form-control-sm datepicker bg-white" } })
+                            @Html.ValidationMessageFor(model => model.ExchangeDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Currency1.CurrencyCode, "Foreign Ccy", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.Currency1.CurrencyCode, (SelectList)ViewData["SelectListCurrency1"], "", new { @id = "cboCurrency1", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.Currency1.CurrencyCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Currency2.CurrencyCode, "Based Ccy", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.Currency2.CurrencyCode, (SelectList)ViewData["SelectListCurrency2"], "", new { @id = "cboCurrency2", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.Currency2.CurrencyCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.BidRate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.BidRate, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "MidRate", placeholder = "Bid Rate" } })
+                            @Html.ValidationMessageFor(model => model.BidRate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.OfferRate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.OfferRate, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "OfferRate", placeholder = "Offer Rate" } })
+                            @Html.ValidationMessageFor(model => model.OfferRate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.MidRate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.MidRate, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "MidRate", placeholder = "Mid Rate",@disabled=true } })
+                            @Html.ValidationMessageFor(model => model.MidRate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                    {
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralScript.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var dateNow = new Date().getDate() + '-' + months[new Date().getMonth()] + '-' + new Date().getFullYear();
+
+        flatpickr("#ExchangeDate", {
+            dateFormat: "d/M/Y",
+            disableMobile: "true",
+            static: true,
+        });
+
+        if ($("#FormAction").val() == 2) {
+            $("#BidRate").val(AddCommaDecimal($("#BidRate").val()));
+            $("#MidRate").val(AddCommaDecimal($("#MidRate").val()));
+            $("#OfferRate").val(AddCommaDecimal($("#OfferRate").val()));
+        }
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+            $("#BidRate").val(parseFloat(RemoveAllComma($("#BidRate").val())));
+            $("#MidRate").val(parseFloat(RemoveAllComma($("#MidRate").val())));
+            $("#OfferRate").val(parseFloat(RemoveAllComma($("#OfferRate").val())));
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Exchange Date : " + $("#ExchangeDate").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $("#MidRate").prop('disabled', false);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "ExchangeRate", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#BidRate").val(AddCommaDecimal($("#BidRate").val()));
+                            $("#MidRate").val(AddCommaDecimal($("#MidRate").val()));
+                            $("#OfferRate").val(AddCommaDecimal($("#OfferRate").val()));
+                            $("#MidRate").prop('disabled', true);
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $("#ExchangeDate").removeAttr('disabled');
+                    $("#cboCurrency1").prop('disabled', false);
+                    $("#cboCurrency2").prop('disabled', false);
+                    $("#MidRate").prop('disabled', false);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "ExchangeRate", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            $("#BidRate").val(AddCommaDecimal($("#BidRate").val()));
+                            $("#MidRate").val(AddCommaDecimal($("#MidRate").val()));
+                            $("#OfferRate").val(AddCommaDecimal($("#OfferRate").val()));
+                            alert(respond);
+                            $("#ExchangeDate").attr('disabled', 'disabled');
+                            $("#cboCurrency1").prop('disabled', true);
+                            $("#cboCurrency2").prop('disabled', true);
+                            $("#MidRate").prop('disabled', true);
+                        }
+                    });
+                }
+            } else {
+                return false;
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            $("#ExchangeDate").removeAttr('disabled');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "ExchangeRate", new { Area = "GLTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#cboCurrency1, #cboCurrency2, #BidRate, #OfferRate, #MidRate').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    //$('#CurrencyCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    $("#BidRate").val(0);
+                    $("#MidRate").val(0);
+                    $("#OfferRate").val(0);
+                    $("#ExchangeDate").val(dateNow);
+                    $("#ExchangeDate").removeAttr('disabled');
+                    $("#cboCurrency1").prop('disabled', false);
+                    $("#cboCurrency2").prop('disabled', false);
+                    $("#cboCurrency1").val('').change();
+                    $("#cboCurrency2").val('').change();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+
+        //$('#BidRate').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        //$('#MidRate').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        //$('#OfferRate').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+        $(".select2DDList").select2();
+
+        $('#BidRate,#MidRate,#OfferRate').keyup(function (event) {
+            InputNumber(this);
+        });
+
+        $('#BidRate,#OfferRate,#cboCurrency2').change(function (event) {
+            CalcMidRate();
+        });
+    });
+
+    //function RemoveAllComma(x) {
+    //    if (x != null && x !== 'undefined') {
+    //        return x.replaceAll(",", "");
+    //    }
+    //}
+
+    function CalcMidRate() {
+        var result = (parseFloat(RemoveAllComma($('#BidRate').val())) + parseFloat(RemoveAllComma($('#OfferRate').val()))) / 2;
+        //$('#MidRate').val(AddCommaDecimal(result));
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("SetFormatMidRate", "Currency", new { Area = "GeneralTable" })',
+            dataType: 'json',
+            data: {
+                midRate: result,
+                ccy: $("#cboCurrency2").val()
+                    },
+            success: function (respond) {
+                $('#MidRate').val(AddCommaDecimal(respond));
+            }
+        });
+    }
+
+    function InputNumber(e) {
+        $("#" + e.id).keyup(function (event) {
+            if (event.which >= 37 && event.which <= 40) return;
+            $(this).val(function (index, value) {
+                return value
+                // Keep only digits and decimal points:
+                .replace(/[^\d.-]/g, "")
+                // Remove duplicated decimal point, if one exists:
+                .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                // Keep only two digits past the decimal point:
+                .replace(/\.(\d{2})\d+/, '.$1')
+                // Add thousands separators:
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            });
+        });
+    }
+
+    function getyyyyMMdd(ticks) {
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var date = new Date(ticks);
+        date.toLocaleString()
+        var mm = months[(date.getMonth())];
+        var dd = date.getDate();
+        var yyyy = date.getFullYear();
+        if (mm < 10) mm = "0" + mm;
+        if (dd < 10) dd = "0" + dd;
+        //return "" + yyyy.toString() + "-" + mm + "-" + dd;
+        return "" + dd + "/" + mm + "/" + yyyy.toString();
+        //return "" + dd + "-" + mm + "-" + yyyy.toString();
+    }
+
+    function AddCommaDecimal(numb) {
+        return numb.toString().replace(/[^\d.-]/g, "")
+                     // Remove duplicated decimal point, if one exists:
+                     .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                     // Keep only two digits past the decimal point:
+                     .replace(/\.(\d{2})\d+/, '.$1')
+                     // Add thousands separators:
+                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+</script>

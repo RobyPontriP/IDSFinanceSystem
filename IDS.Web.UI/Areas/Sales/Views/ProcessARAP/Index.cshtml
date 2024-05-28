@@ -1,0 +1,942 @@
+﻿
+@{
+    ViewBag.Title = "AR / AP Transaction";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/Responsive-2.2.9/css/responsive.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+}
+<style type="text/css">
+    td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_open.png")") no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_close.png")") no-repeat center center;
+    }
+
+    .fontSizeCustom {
+        width: 20px;
+    }
+</style>
+
+@Html.Hidden("MessageError", ViewData["MessageError"])
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm">AR / AP Code</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("AR / AP Code", (SelectList)ViewData["SelectListARAP"], new { @id = "cboARAP", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+
+    <div class="row mb-2 col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-2 col-form-label col-form-label-sm">CCY</label>
+        <div class="col-sm-4">
+            @Html.DropDownList("CCY", (SelectList)ViewData["SelectListCCY"], new { @id = "cboCCY", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+
+        <div class="col-sm-3 ml-5">
+            @Html.CheckBox("chkProcess", false, new { @id = "chkProcess", @class = "form-check-input" })
+            @Html.Label("chkProcess", "Process", new { @class = "form-check-label mt-1" })
+        </div>
+    </div>
+    @*<div class="form-check form-check-inline">
+        @Html.CheckBox("chkTransDate", true, new { @id = "chkTransDate", @class = "form-check-input" })
+        @Html.Label("chkTransDate", "Trans Date", new { @class = "form-check-label" })
+    </div>*@
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboCustCode" class="col-sm-4 col-form-label col-form-label-sm">Customer Code</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("Customer Code", (SelectList)ViewData["SelectListCustCode"], "", new { @id = "cboCustCode", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+
+    <div class="row mb-2 col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-2 col-form-label col-form-label-sm">Account</label>
+        <div class="col-sm-10">
+            @Html.DropDownList("Account", (SelectList)ViewData["SelectListAcc"], "", new { @id = "cboAcc", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+</div>
+
+<div class="row mb-1 col-sm-12">
+    <div class="col-sm-11">
+        <button type="button" onclick="LoadRptInvoice()" data-toggle="tooltip" data-placement="top" title="For Save Sub Acc" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnSubAcc">Set Sub Acc</button>
+        <button type="button" onclick="SelectAll()" data-toggle="tooltip" data-placement="top" title="To Check All Data On the Grid" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnSelAll">Select All</button>
+        <button type="button" onclick="UnselectAll()" data-toggle="tooltip" data-placement="top" title="To Uncheck All Data On the Grid" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnUnSelAll">Unselect All</button>
+        <button type="button" onclick="LoadAccPayable()" data-toggle="tooltip" data-placement="top" title="To Create New Account Payable" class="btn btn-outline-info col-sm-3 form-control-sm" disabled id="btnNewAccPayable">New Account Payable</button>
+        <button type="button" onclick="Delete()" data-toggle="tooltip" data-placement="top" title="To Delete Account Payable" class="btn btn-outline-info col-sm-1 form-control-sm" disabled id="btnDelete">Delete</button>
+        <button type="button" onclick="Process()" data-toggle="tooltip" data-placement="top" title="To Process AR/AP Transaction" class="btn btn-outline-info col-sm-1 form-control-sm" id="btnProcess">Process</button>
+    </div>
+
+    <div class="text-right col-sm-1">
+        <p>
+            @{
+                if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                {
+                    <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Process AR/AP Transaction" onclick="LoadEditForm()">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-info" onclick="NoAccess()" disabled="disabled">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+
+                <a onclick="Refresh()" data-toggle="tooltip" data-placement="top" title="Refresh Data On Grid" class="btn btn-sm btn-success" href="#">
+                    <i class="fas fa-sync"></i>
+                </a>
+            }
+        </p>
+    </div>
+</div>
+
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center" role="document">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="row">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="row">
+                <strong>Process...</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="errorMessageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content" style="height:300px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorMessageModal">Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="modalClose()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="divErrorMessage">
+                <textarea class="form-control" style="height:100%; resize:none" id="txtErrorMessage"></textarea>
+            </div>
+            @*<div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>RP</th>
+                <th>Doc No</th>
+                <th>Type</th>
+                <th>Doc Date</th>
+                <th>Customer Code</th>
+                <th>Branch Code</th>
+                <th>CCY</th>
+                <th>Acc No.</th>
+                <th>Acc Name</th>
+                <th>Voucher No</th>
+                <th>Processed</th>
+                <th>Pay Term</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Outstanding</th>
+                <th>Operator ID</th>
+                <th>Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+
+
+    <script type="text/javascript">
+        var table = null;
+        var rowIndex = null;
+
+        function format(d, rowindex) {
+
+            return '<strong>Document Number : </strong> ' + d.DocNo + '<label style="width:50px;"></label>' + '<strong>Document date : </strong> ' + moment(d.DocDate).format('DD/MMM/YYYY') + '<br>' +
+                '<strong>Customer Name : </strong> ' + d.CustomerACFARAP.CUSTName +
+                '<table id="' + rowindex.toString() + '" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+            '<tr>' +
+                '<th>Seq. No.</th>' +
+                '<th>Doc No</th>' +
+                '<th>Description</th>' +
+                '<th>Sub Amount</th>' +
+                '<th>Acc No.</th>' +
+                '<th>Acc Name</th>' +
+            '</tr>' +
+            '</table>';
+        }
+
+        $(document).ready(function () {
+            $(".select2DDList").select2();
+            $("#txtErrorMessage").prop("readonly", true);
+
+            table = LoadData($('#cboARAP').val(), $('#cboCustCode').val(), $('#cboCCY').val(), $('#cboAcc').val());
+
+            modalErrorMessage();
+
+            $('#tableData tbody').on('click', 'td.details-control', function () {
+                var selRow = table.rows(this).data();
+                dataDocNo = selRow[0]["DocNo"];
+                dataCustPrin = selRow[0]["CustPrin"];
+                dataCcy = selRow[0]["CCy"]["CurrencyCode"];
+                dataBranch = selRow[0]["Branch"]["BranchCode"];
+
+                rowIndex = $(this).closest("tr").index();
+
+                GetRowChild(dataDocNo, dataCustPrin, dataCcy, dataBranch, rowIndex);
+
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+
+                $("#tableDataDetail").attr("hidden", true);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(format(row.data(), rowIndex)).show();
+                    tr.addClass('shown');
+                    if (selRow.length > 0) {
+                        dataDocNo = selRow[0]["DocNo"];
+                        dataCustPrin = selRow[0]["CustPrin"];
+                        dataCcy = selRow[0]["CCy"]["CurrencyCode"];
+                        dataBranch = selRow[0]["Branch"]["BranchCode"];
+                    }
+                    else {
+                        alert("Please select data to be edit");
+                    }
+                }
+            });
+        });
+
+        function GetRowChild(docno, custprin, ccy, branchcode, rowindex) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetDataDetail", "ProcessARAP", new { Area = "Sales" })',
+                dataType: 'json',
+                data: {
+                    docNo: docno,
+                    custPrin: custprin,
+                    ccy: ccy,
+                    branchCode: branchcode,
+                },
+                success: function (respond) {
+                    $.each(respond, function () {
+                        $.each(this, function (k, v) {
+                            $("#" + rowindex.toString() + "").append('<tr>' +
+                                '<td style="width:10px;">' + v.SeqNo + '</td>' +
+                                '<td style="width:50px;">' + v.DocNo + '</td>' +
+                                '<td style="width:600px;">' + v.Description + '</td>' +
+                                '<td style="width:120px;">' + parseFloat(v.SubAmount).toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") + '</td>' +
+                                '<td style="width:80px;">' + v.Acc.Account + '</td>' +
+                                '<td style="width:150px;">' + v.Acc.AccountName + '</td>' +
+                                '</tr>');
+                        });
+                    });
+                },
+                error: function (respond) {
+                    alert('error');
+                }
+            });
+        }
+
+        $('#cboARAP').change(function () {
+            var arapPar = $('#cboARAP').val();
+
+            if (arapPar == 'AP') {
+                $("#btnNewAccPayable").attr("disabled", false);
+                $("#btnDelete").attr("disabled", false);
+            } else {
+                $("#btnNewAccPayable").attr("disabled", true);
+                $("#btnDelete").attr("disabled", true);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCustomerCode", "ProcessARAP", new { Area = "Sales" })',
+                dataType: 'json',
+                data: { arap: arapPar },
+                success: function (respond) {
+                    $('#cboCustCode').empty();
+                    $('#cboCustCode').append('<option value = "">  </option>');
+                    $.each(respond, function (i, item) {
+                        $('#cboCustCode').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+
+            var ccyPar = $('#cboCCY').val();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetAccForDataSource", "ProcessARAP", new { Area = "Sales" })',
+                dataType: 'json',
+                data: {
+                    arap: arapPar,
+                    ccy: ccyPar
+                },
+                success: function (respond) {
+                    $('#cboAcc').empty();
+                    $('#cboAcc').append('<option value = "">  </option>');
+                    $.each(respond, function (i, item) {
+                        $('#cboAcc').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+
+            //table = LoadData($('#cboARAP').val(), $('#cboCustCode').val(), $('#cboCCY').val(), $('#cboAcc').val());
+        });
+
+        $('#cboCustCode').change(function () {
+            var ccyPar = $('#cboCCY').val();
+            var arapPar = $('#cboARAP').val();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetAccForDataSource", "ProcessARAP", new { Area = "Sales" })',
+                dataType: 'json',
+                data: {
+                    arap: arapPar,
+                    ccy: ccyPar
+                },
+                success: function (respond) {
+                    $('#cboAcc').empty();
+                    $('#cboAcc').append('<option value = "">  </option>');
+                    $.each(respond, function (i, item) {
+                        $('#cboAcc').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+
+            //table = LoadData($('#cboARAP').val(), $('#cboCustCode').val(), $('#cboCCY').val(), $('#cboAcc').val());
+        });
+
+        $('#cboCCY').change(function () {
+            var ccyPar = $('#cboCCY').val();
+            var arapPar = $('#cboARAP').val();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetAccForDataSource", "ProcessARAP", new { Area = "Sales" })',
+                dataType: 'json',
+                data: {
+                    arap: arapPar,
+                    ccy: ccyPar
+                },
+                success: function (respond) {
+                    $('#cboAcc').empty();
+                    $('#cboAcc').append('<option value = "">  </option>');
+                    $.each(respond, function (i, item) {
+                        $('#cboAcc').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+
+            //table = LoadData($('#cboARAP').val(), $('#cboCustCode').val(), $('#cboCCY').val(), $('#cboAcc').val());
+        });
+
+        $('#cboAcc').change(function () {
+            //table = LoadData($('#cboARAP').val(), $('#cboCustCode').val(), $('#cboCCY').val(), $('#cboAcc').val());
+        });
+
+        $('#EquivAmount').keypress(function (event) {
+            return isNumber(event, this)
+        });
+
+        function modalProcess() {
+            $('#loadingModal').modal({ backdrop: 'static', keyboard: false })
+            $('#loadingModal').modal('show');
+            setTimeout(function () {
+                $('#loadingModal').modal('hide');
+            });
+        }
+
+        function modalErrorMessage() {
+            $('#txtErrorMessage').val($('#MessageError').val());
+
+            if ($('#MessageError').val() != "") {
+                $('#errorMessageModal').modal('show');
+            }
+        }
+
+        function modalClose() {
+            $('#errorMessageModal').modal('hide');
+        }
+
+        function LoadAccPayable() {
+            document.location = '@Url.Action("CreateAP","ProcessARAP", new { Area = "Sales" })';
+        }
+
+        function Process() {
+            var data = table.rows(function (idx, data, node) {
+                // Get all the checkboxes in the row
+                var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                // Keep the rows with checked checkboxes
+                return checkedTargets(cells).length;
+            }).data();
+
+            var dataAR = "";
+            var dataAcc = "";
+            var dataCcy = "";
+            var dataCustPrin = "";
+            var docNo = "";
+            var branchCode = "";
+            $.each(data, function (index, rowId) {
+                dataAR += rowId["RP"] + ',';
+                dataAcc += rowId["Acc"]["Account"] + ',';
+                dataCcy += rowId["CCy"]["CurrencyCode"] + ',';
+                dataCustPrin += rowId["CustPrin"] + ',';
+                docNo += rowId["DocNo"] + ',';
+                branchCode += rowId["Branch"]["BranchCode"] + ',';
+            })
+
+            function checkedTargets(checkboxes) {
+                return checkboxes.filter(function (index) {
+                    return $(checkboxes[index]).prop('checked');
+                });
+            }
+            modalProcess();
+
+            var url = '@Url.Action("Index", "ProcessARAP", new { Area = "Sales" })';
+            var form = $('<form action="' + url + '" method="POST">');
+            form.append('<input type="hidden" name="rpList" value="' + dataAR + '" />');
+            form.append('<input type="hidden" name="accList" value="' + dataAcc + '" />');
+            form.append('<input type="hidden" name="ccyList" value="' + dataCcy + '" />');
+            form.append('<input type="hidden" name="custPrinList" value="' + dataCustPrin + '" />');
+            form.append('<input type="hidden" name="docNoList" value="' + docNo + '" />');
+            form.append('<input type="hidden" name="branchCodeList" value="' + branchCode + '" />');
+            form.append('</form>');
+            $('body').append(form);
+            form.submit();
+        }
+
+        function SelectAll() {
+            table.rows().select();
+            $("input[type='checkbox'][id='chkProcess']", table.cells().nodes()).prop('checked', true);
+        }
+
+        function UnselectAll() {
+            table.rows().deselect();
+            $("input[type='checkbox'][id='chkProcess']", table.cells().nodes()).prop('checked', false);
+        }
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow.length > 0) {
+                var rpP = selRow[0]["RP"];
+                var accP = selRow[0]["Acc"]["Account"];
+                var ccyP = selRow[0]["CCy"]["CurrencyCode"];
+                var custP = selRow[0]["CustomerACFARAP"]["CUSTCode"];
+                var docNoP = selRow[0]["DocNo"];
+                var branchP = selRow[0]["Branch"]["BranchCode"];
+
+                window.location = '@Url.Action("EditAP", "ProcessARAP", new { Area = "Sales" })' + "?rp=" + rpP + "&acc=" + accP + "&ccy=" + ccyP + "&cust=" + custP + "&docno=" + docNoP + "&branch=" + branchP;
+                @*window.location = '@Url.Action("EditAP", "ProcessARAP", new { Area = "Sales" })' + "?rpP=" + invNo;*@
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var errCount = 0;
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var dataARAP = '';
+
+            //var includePosted = false;
+
+            $.each(selRow, function (index, row) {
+                //if (Boolean(row["PostedStatus"]) == true) {
+                //    includePosted = true;
+                //}InvoiceTotal
+                if (row["ProcessInv"]) {
+                    alert('some data has been processed, delete Failed');
+                    errCount++;
+                    return false;
+                }
+                dataARAP += row["RP"] + ';' + row["Acc"]["Account"] + ';' + row["CCy"]["CurrencyCode"] + ';' + row["CustomerACFARAP"]["CUSTCode"] + ';' + row["DocNo"] + ';' + row["Branch"]["BranchCode"] + '|';
+                dataCollection += '[' + row["DocNo"] + '][' + row["Branch"]["BranchCode"] + '][' + row["CustomerACFARAP"]["CUSTCode"] + ']' + "\n";
+            })
+
+            //if (includePosted) {
+            //    alert("One or more selected voucher are posted and can not be delete. Delete process canceled by system.");
+            //    return false;
+            //}
+
+            if (errCount == 0) {
+                var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+                if (answer) {
+                    if (dataCollection.length > 0) {
+                        @*$.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Delete", "ProcessARAP", new { Area = "Sales" })',
+                            data: { "arapCollection": dataARAP },
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                switch (respond) {
+                                    case "NoAccess":
+                                        window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                        break;
+                                    case "Success":
+                                        alert(respond);
+                                        window.location.href = '@Url.Action("index", "ProcessARAP", new { Area = "Sales" })'
+                                        break;
+                                    default:
+                                        alert(respond);
+                                        window.location.href = '@Url.Action("index", "ProcessARAP", new { Area = "Sales" })'
+                                        break;
+                                }
+
+                            },
+                            error: function (respond, xhr, msg) {
+                                alert(msg);
+                            }
+                        })*@
+                        }
+                }
+                else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            
+
+        }
+
+        function LoadData(arapPar, custCodePar, ccyPar, specialAccPar) {
+            return $('#tableData').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [10]
+                },
+                {
+                    "width": "150px",
+                    "orderable": true,
+                    "targets": [11]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [12]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [13]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [14]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [15]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [16]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [17]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[2, "asc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetData", "ProcessARAP", new { Area = "Sales" })',
+                 "data": {
+                     'arap': arapPar,
+                     'custCode': custCodePar,
+                     'ccy': ccyPar,
+                     'specialAcc': specialAccPar,
+                     'process': $("#chkProcess").is(":checked"),
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 {
+                     "data": null, "name": "chkProcess",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" class="editor-chkprocess" id="chkProcess" name="chkProcess">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "RP", "name": "RP", "visible": false },
+                 { "data": "DocNo", "name": "DocNo" },
+                 { "data": "SalesType", "name": "SalesType" },
+                 {
+                     "data": "DocDate", "name": "DocDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.DocDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.DocDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 { "data": "CustomerACFARAP.CUSTCode", "name": "CustomerACFARAP.CUSTCode" },
+                 { "data": "Branch.BranchCode", "name": "Branch.BranchCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 { "data": "Acc.Account", "name": "Acc.Account" },
+                 { "data": "Acc.AccountName", "name": "Acc.AccountName" },
+                 { "data": "VoucherNo", "name": "VoucherNo" },
+                 {
+                     "data": "ProcessInv", "name": "ProcessInv",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" disabled class="editor-processinv">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "PaymentTerm", "name": "PaymentTerm" },
+                 { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Payment", "name": "Payment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Outstanding", "name": "Outstanding", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ],
+             "rowCallback": function (row, data) {
+                 // Set the checked state of the checkbox in the table
+                 $('input.editor-processinv', row).prop('checked', data.ProcessInv == 1);
+             }
+         });
+        }
+
+        function LoadFilterData(arapPar) {
+            return $('#tableData').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [10]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [11]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [12]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [13]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [14]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [15]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [16]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[2, "asc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetFilterData", "ProcessARAP", new { Area = "Sales" })',
+                 "data": {
+                     'ProcArap': arapPar,
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 {
+                     "data": null, "name": "chkProcess",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" class="editor-chkprocess" id="chkProcess" name="chkProcess">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "RP", "name": "RP", "visible": false },
+                 { "data": "DocNo", "name": "DocNo" },
+                 { "data": "SalesType", "name": "SalesType" },
+                 {
+                     "data": "DocDate", "name": "DocDate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.DocDate).format('DD/MMM/YYYY');
+                     }
+                 },
+                 { "data": "CustomerACFARAP.CUSTCode", "name": "CustomerACFARAP.CUSTCode" },
+                 { "data": "Branch.BranchCode", "name": "Branch.BranchCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 { "data": "Acc.Account", "name": "Acc.Account" },
+                 { "data": "VoucherNo", "name": "VoucherNo" },
+                 {
+                     "data": "ProcessInv", "name": "ProcessInv",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" disabled class="editor-processinv">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "PaymentTerm", "name": "PaymentTerm" },
+                 { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Payment", "name": "Payment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Outstanding", "name": "Outstanding", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ],
+             "rowCallback": function (row, data) {
+                 // Set the checked state of the checkbox in the table
+                 $('input.editor-processinv', row).prop('checked', data.ProcessInv == 1);
+             }
+         });
+        }
+
+        function Refresh() {
+            table = LoadData($('#cboARAP').val(), $('#cboCustCode').val(), $('#cboCCY').val(), $('#cboAcc').val());
+        }
+
+    </script>
+}
+

@@ -1,0 +1,277 @@
+﻿@model IDS.GLTransaction.BankStatement
+
+@section Styles {
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/flatpickr/flatpickr.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+}
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+                    @Html.Hidden("ctr", Convert.ToString(ViewData["ctr"]));
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.BranchCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.BranchCode, ViewData["BranchList"] as SelectList, new { @class = "form-control form-control-sm select2DDList", @id = "cboBranch", @style = "width: 100%;", name = "BranchCode", placeholder = "Branch" })
+                            @Html.ValidationMessageFor(model => model.BranchCode, "", new { @id = "valBranchCode", @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Counter, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.TextBox("No", "A U T O", htmlAttributes: new { @class = "form-control form-control-sm", @id = "txtCounter", name = "Counter", @readonly = "readonly", @Value = ((ViewData["ctr"] == null) ? "A U T O" : Convert.ToString(ViewData["ctr"])) })
+                            @*@Html.ValidationMessageFor(model => model.Counter, "", new { @id = "vaCounter", @class = "text-danger" })*@
+                        </div>
+                        @Html.HiddenFor(model => model.Counter);
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.TransDate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(model => model.TransDate, new { @class = "form-control form-control-sm ", @id = "txtTransDate", name = "TransDate", placeholder = "Transaction Date" })
+                            @Html.ValidationMessageFor(model => model.TransDate, "", new { @id = "valTransDate", @class = "text-danger" })
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Currency, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.Currency, ViewData["CCyList"] as SelectList, new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;", @id = "cboCurrency", name = "Currency", placeholder = "Currency" })
+                            @Html.ValidationMessageFor(model => model.Currency, "", new { @id = "valCurrency", @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.AccountNo, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.AccountNo, ViewData["AccList"] as SelectList, new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;", @id = "cboAccNo", name = "AccNo", placeholder = "Account No" })
+                            @Html.ValidationMessageFor(model => model.AccountNo, "", new { @id = "valAccNo", @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.AmountBank, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(model => model.AmountBank, "{0:#,##0}", new { @class = "form-control form-control-sm text-right inputnumber", name = "AmountBank", @id = "txtAmountBank", placeholder = "Bank Amount", @onClick = "this.setSelectionRange(0, this.value.length)" })
+                            @Html.ValidationMessageFor(model => model.AmountBank, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.DocBank, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(model => model.DocBank, new { @class = "form-control form-control-sm", name = "DocBank", @id = "txtDocBank", placeholder = "Bank Document" })
+                            @Html.ValidationMessageFor(model => model.DocBank, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Remark, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Remark, new { htmlAttributes = new { @class = "form-control form-control-sm", @id = "txtRemark", name = "Remark", placeholder = "Remark" } })
+                            @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if ($('#HO') != 1) {
+            if (!$('#cboBranch').attr('readonly')) {
+                $('#cboBranch').attr('readonly', true);
+            }
+        }
+        else {
+            if (!$('#cboBranch').attr('readonly')) {
+                $('#cboBranch').attr('readonly', false);
+            }
+        }
+
+        $("#CreateEditForm .select2DDList").select2({
+            tags: true,
+            dropdownParent: $("#CreateEditForm"),
+            width: 'style'
+        });
+
+        $("#cboCurrency").change(function () {
+            $('#cboAccNo').empty();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: $(this).val() },
+                success: function (respond) {
+                    $('#cboAccNo').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboAccNo').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                },
+                error: function (xhr, msg, status) {
+                    alert(xhr.responseMessage);
+                }
+            });
+        });
+
+        flatpickr('#txtTransDate', {
+            dateFormat: "d/M/Y",
+            disableMobile: "true"
+        });
+
+        $('input.inputnumber').keyup(function (event) {
+            if (event.which >= 37 && event.which <= 40) return;
+            $(this).val(function (index, value) {
+                return value
+                  // Keep only digits, decimal points, and dashes at the start of the string:
+                  .replace(/[^\d.-]|(?!^)-/g, "")
+                  // Remove duplicated decimal points, if they exist:
+                  .replace(/^([^.]*\.)(.*$)/, (_, g1, g2) => g1 + g2.replace(/\./g, ''))
+                  // Keep only two digits past the decimal point:
+                  .replace(/\.(\d{2})\d+/, '.$1')
+                  // Add thousands separators:
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            });
+        }).click(function () {
+
+        });
+
+
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to update data bank statement : " + $("#txtCounter").val() + " ?");
+            }
+
+            var answer = confirm(confirmText);
+            debugger;
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "GLReconcile", new { Area = "GLTransaction" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            if (respond.status.StatusCode == 200) {
+                                $('#cboBranch').prop('disabled', true);
+                                $('#txtCounter').val(respond.counter);
+                                $('#Counter').val(respond.counter);
+                                $("#FormAction").val("2");
+                                alert(respond.status.StatusDescription);
+                            }
+                            else
+                            {
+                                alert(respond.status.StatusDescription);
+                            }
+                        }
+                    });
+                }
+                else {
+                    $('#cboBranch').prop('disabled', false);
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "GLReconcile", new { Area = "GLTransaction" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormAction").val("2");
+                            alert(respond);
+                        },
+                        error: function(err)
+                        {
+                            alert(err);
+                        }
+                    });
+
+                    $('#cboBranch').prop('disabled', true);
+                }
+            }
+        });
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+
+            GetGLMD($('#Branch').val(), $('#Period').val(), $('#Account').val(), $('#Currency').val(), $('#cboStatus').val());
+            GetBankStatement($('#Branch').val(), $('#Period').val(), $('#Account').val(), $('#Currency').val(), $('#cboStatus').val());
+
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "GLReconcile", new { Area = "GLTransaction" })';
+            }
+        });
+
+        $("#btnAddNew").click(function () {
+            if (!$('#txtDocBank, #txtRemark, #txtAmountBank').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    //$("form#formCreateEdit").trigger("reset");
+                    //$(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#txtDocBank, #txtRemark').val('');
+                    $('#txtAmountBank').val('0');
+                    $('#Counter').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    //$('#cboCity').empty();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        });
+    });
+
+
+
+</script>

@@ -1,0 +1,221 @@
+﻿@model IDS.Sales.CustProject
+
+@{
+    ViewBag.Title = "Delete Invoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/Responsive-2.2.9/css/responsive.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+}
+<!--
+Januari 2011
+-->
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm">Period</label>
+        <div class="col-sm-8">
+            @Html.TextBox("Period", "", new { @id = "PeriodIndex", @class = "form-control form-control-sm bg-white" })
+            @*<input class="form-control form-control-sm bg-white datepicker text-box single-line flatpickr-input valid active" data-val="true" id="PeriodIndex" name="PeriodIndex" type="text" aria-describedby="Mont-error" aria-invalid="false">*@
+        </div>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm">Branch</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("Branch Name", (System.Web.Mvc.SelectList)ViewData["SelectListBranch"], new { @id = "cboBranchIndex", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm">Customer</label><!-- cboCust-->
+        <div class="col-sm-8">
+            @Html.DropDownListFor(model => model.CustCode, (SelectList)ViewData["SelectListCust"], new { @id = "cboCust", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm">Invoice</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("Invoice No", new SelectList(new List<SelectListItem>()), new { @id = "cboInvoice", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm"> </label>
+        <div class="col-sm-8">
+            <button id="btnDelete" type="button" class="btn btn-outline-info btn-block" onclick="goDeleteInvoice()">Delete</button>
+
+        </div>
+    </div>
+</div>
+
+<div id="PartialSectionSecond">
+
+</div>
+
+@section Scripts{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+
+    <script type="text/javascript">
+        var xperiod = null;
+        var xcust = null;
+
+        $(document).ready(function () {
+            $(".select2DDList").select2();
+            flatpickr("#PeriodIndex", {
+                shorthand: true,
+                dateFormat: "M-Y",
+                altFormat: "F Y",
+                defaultDate: ["today"],
+                static: true,
+                plugins: [new monthSelectPlugin({
+                    shorthand: true, //defaults to false
+                    dateFormat: "M Y", //defaults to "F Y"
+                    altFormat: "F Y"
+                })],
+            });
+
+
+            $("#PeriodIndex").change(function () {
+                xperiod = $(this).val();
+                $('#cboInvoice').css("border", "solid white");
+                GetInvoiceNumber('@Url.Action("GetInvoiceNumber", "DeleteInvoice", new { Area = "Sales" })', xperiod, $('#cboCust').val(), '2')
+            });
+
+            $("#cboCust").change(function () {
+                $('#cboInvoice').css("border", "solid white");
+                GetInvoiceNumber('@Url.Action("GetInvoiceNumber", "DeleteInvoice", new { Area = "Sales" })', xperiod, $('#cboCust').val(), '2')
+            });
+
+
+        });//$(document).ready(function ()
+
+        function GetInvoiceNumber(myurl, periodx, custx, typerx) {
+            var data1 = {
+                period: periodx,
+                cust: custx,
+                typx: typerx
+            };
+            $.ajax({
+                url: myurl,
+                data: data1,
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    $('#cboInvoice').empty();
+                    $.each(data, function (key, val) {
+                        $('#cboInvoice').append('<option value = "' + val.InvoiceNumber + '">' + val.InvoiceNumber + '</option>');
+                    });
+                }
+            });
+        }//GetInvoiceNumber
+
+        function goDeleteInvoice() {
+            if (!$('#cboInvoice').val()) {
+                $('#cboInvoice').css("border", "solid red");
+            } else {
+                $('#cboInvoice').css("border", "solid white");
+                ConfirDeleteDialog();
+            }
+        }
+
+        function ConfirDeleteDialog() {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("FormConfirmDelete", "DeleteInvoice", new { Area = "Sales" })',
+                data: {
+                    tPeriod: $("#PeriodIndex").val(),
+                    tBranch: $("#cboBranchIndex").val(),
+                    tCust: $("#cboCust").val(),
+                    tInvoice: $("#cboInvoice").val()
+                },
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (respond) {
+                    $('#PartialSectionSecond').empty();
+                    $("#PartialSectionSecond").html(respond);
+                    $("#ConfirmForm").modal('show');
+                }
+            });
+        }
+
+
+        function goClose() {
+            $("#ConfirmForm").modal('hide');
+        }
+
+
+        function getDataForms() {
+            var InvoiceNumber_ = $("#tbldelete").find("td:eq(1)").text().replace(':', '');
+            var Ccy_ = $("#tbldelete").find("td:eq(3)").text().replace(':', '');
+            var InvoiceRole_ = $("#tbldelete").find("td:eq(5)").text().replace(':', '');
+            var Ppnno_ = $("#tbldelete").find("td:eq(7)").text().replace(':', '');
+            var InvoiceDate_ = $("#tbldelete").find("td:eq(9)").text().replace(':', '');
+            var InvoiceAmount_ = $("#tbldelete").find("td:eq(11)").text().replace(':', '');
+            var PpnAmount_ = $("#tbldelete").find("td:eq(13)").text().replace(':', '');
+            var PphAmount_ = $("#tbldelete").find("td:eq(15)").text().replace(':', '');
+            var EquivAmt_ = $("#tbldelete").find("td:eq(17)").text().replace(':', '');
+            var Rp_ = $("#tbldelete").find("td:eq(19)").text().replace(':', '');
+            var VoucherNo_ = $("#tbldelete").find("td:eq(21)").text().replace(':', '');
+            var Cust_ = $.trim($("#cboCust").val().split('-')[0]);
+            var Branch_ = $("#cboBranchIndex").val();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("ProcessDeleteInv", "DeleteInvoice", new { Area = "Sales" })',
+                data: {
+                    cust: Cust_,
+                    inv: InvoiceNumber_,
+                    sCode: Rp_,
+                    voucher: VoucherNo_,
+                    branch: Branch_,
+                    ccy: Ccy_,
+                    invoiceDate: InvoiceDate_,
+                    pphamount: PphAmount_,
+                    invoiceamount: InvoiceAmount_
+                },
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (respond) {
+                    if (respond.indexOf('Invoice has been deleted') != -1) {
+                        $("#ConfirmForm").modal('hide');
+                        $("#PartialSectionSecond").remove();
+                        $("#cboInvoice option:selected").remove();
+                    }
+                }
+            });
+        }//getDataForms
+
+
+    </script>
+
+
+}

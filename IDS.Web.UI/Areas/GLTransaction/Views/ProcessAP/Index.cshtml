@@ -1,0 +1,658 @@
+﻿@model IEnumerable<IDS.GLTable.ACFARAP>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Process AP";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/Responsive-2.2.9/css/responsive.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+
+    <style type="text/css">
+    td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_open.png")") no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_close.png")") no-repeat center center;
+    }
+
+    .fontSizeCustom {
+        width: 20px;
+    }
+    </style>
+}
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-4 col-form-label col-form-label-sm">AR / AP Code</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("AR / AP Code", (SelectList)ViewData["SelectListARAP"], new { @id = "cboARAP", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+
+    <div class="row mb-2 col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-2 col-form-label col-form-label-sm">CCY</label>
+        <div class="col-sm-4">
+            @Html.DropDownList("CCY", (SelectList)ViewData["SelectListCCY"], new { @id = "cboCCY", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+
+        <div class="col-sm-3 ml-5">
+            @Html.CheckBox("chkProcess", false, new { @id = "chkProcess", @class = "form-check-input" })
+            @Html.Label("chkProcess", "Process", new { @class = "form-check-label mt-1" })
+        </div>
+    </div>
+    @*<div class="form-check form-check-inline">
+            @Html.CheckBox("chkTransDate", true, new { @id = "chkTransDate", @class = "form-check-input" })
+            @Html.Label("chkTransDate", "Trans Date", new { @class = "form-check-label" })
+        </div>*@
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-4">
+        <label for="cboCustCode" class="col-sm-4 col-form-label col-form-label-sm">Customer Code</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("Supplier Code", (SelectList)ViewData["SelectListSupCode"], "", new { @id = "cboSupCode", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+
+    <div class="row mb-2 col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-2 col-form-label col-form-label-sm">Account</label>
+        <div class="col-sm-10">
+            @Html.DropDownList("Account", (SelectList)ViewData["SelectListAcc"], "", new { @id = "cboAcc", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>
+</div>
+
+<div class="row mb-1 col-sm-12">
+    <div class="col-sm-10">
+        <button type="button" onclick="SelectAll()" data-toggle="tooltip" data-placement="top" title="To Check All Data On the Grid" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnSelAll">Select All</button>
+        <button type="button" onclick="UnselectAll()" data-toggle="tooltip" data-placement="top" title="To Uncheck All Data On the Grid" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnUnSelAll">Unselect All</button>
+        <button type="button" onclick="Process()" data-toggle="tooltip" data-placement="top" title="To Process AR/AP Transaction" class="btn btn-outline-info col-sm-1 form-control-sm" id="btnProcess">Process</button>
+    </div>
+
+    <div class="text-right col-sm-2">
+        <p>
+            @{
+                if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                {
+                    <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Process AR/AP Transaction" onclick="LoadEditForm()">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-info" onclick="NoAccess()" disabled="disabled">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+
+                @*if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                {
+                    <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Receive" class="btn btn-sm btn-danger" href="#">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                }
+                else
+                {
+                    <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Receive" class="btn btn-sm btn-danger" href="#">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                }*@
+
+                <a onclick="Refresh()" data-toggle="tooltip" data-placement="top" title="Refresh Data On Grid" class="btn btn-sm btn-success" href="#">
+                    <i class="fas fa-sync"></i>
+                </a>
+            }
+        </p>
+    </div>
+</div>
+
+
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>RP</th>
+                <th>Doc No</th>
+                <th>Type</th>
+                <th>Doc Date</th>
+                <th>Supplier Code</th>
+                <th>Branch Code</th>
+                <th>CCY</th>
+                <th>Acc No.</th>
+                <th>Acc Name</th>
+                <th>Voucher No</th>
+                <th>Processed</th>
+                <th>Pay Term</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Outstanding</th>
+                <th>Operator ID</th>
+                <th>Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralScript.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+
+    <script type="text/javascript">
+        var rowIndex = null;
+        var table = null;
+
+        function format(d, rowindex) {
+
+            return '<strong>Document Number : </strong> ' + d.DocNo + '<label style="width:50px;"></label>' + '<strong>Document date : </strong> ' + moment(d.DocDate).format('DD/MMM/YYYY') + '<br>' +
+                '<strong>Supplier Name : </strong> ' + d.Supplier.SupName +
+                '<div class="table-responsive table-responsive-sm p-2 bg-white border" style="width:80%">' +
+                        '<table id="' + rowindex.toString() + '" class="table table-bordered" name="tableDetail" style="width:100%">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Seq. No.</th>' +
+                                    '<th>Doc No</th>' +
+                                    '<th>Description</th>' +
+                                    '<th>Sub Amount</th>' +
+                                    '<th>Acc No.</th>' +
+                                    '<th>Acc Name</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                        '</table>' +
+                    '</div>';
+        }
+
+
+
+        $(document).ready(function () {
+            Refresh();
+            $(".select2DDList").select2();
+
+            $('#tableData tbody').on('click', 'td.details-control', function () {
+                var selRow = table.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(format(row.data(), rowIndex)).show();
+                    LoadDTD(httpGet('POST', '@Url.Action("GetDataDetail", "ProcessAP", new { Area = "GLTransaction" })', JSON.stringify({ 'docNo': selRow[0]["DocNo"], 'ccy': selRow[0]["CCy"]["CurrencyCode"], 'rp': selRow[0]["RP"], 'branchCode': selRow[0]["Branch"]["BranchCode"] })), rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+        });
+
+        function Refresh() {
+            table = LoadDTH(httpGet('POST', '@Url.Action("GetData", "ProcessAP", new { Area = "GLTransaction" })', JSON.stringify({ 'arap': $('#cboARAP').val(), 'supCode': $('#cboSupCode').val(), 'ccy': $('#cboCCY').val(), 'specialAcc': $('#cboAcc').val(), 'process': $("#chkProcess").is(":checked") })));
+        }
+
+        function LoadDTH(dataJS) {
+            return $('#tableData').DataTable({
+                "bDestroy": true,
+                "language":
+                {
+                    "search": "",
+                    "searchPlaceholder": "Search...",
+                    "emptyTable": "No record found.",
+                    "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                },
+                data: JSON.parse(dataJS),
+                "columns": [
+                     {
+                         "className": 'details-control',
+                         "data": null
+                     },
+                 {
+                     "data": null, "name": "chkProcess",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" class="editor-chkprocess" id="chkProcess" name="chkProcess">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "RP", "name": "RP", "visible": false },
+                 { "data": "DocNo", "name": "DocNo" },
+                 { "data": "CBType", "name": "CBType" },
+                 {
+                     "data": "DocDate", "name": "DocDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.DocDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.DocDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 { "data": "Supplier.SupCode", "name": "Supplier.SupCode" },
+                 { "data": "Branch.BranchCode", "name": "Branch.BranchCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 { "data": "Acc.Account", "name": "Acc.Account" },
+                 { "data": "Acc.AccountName", "name": "Acc.AccountName" },
+                 {
+                     "data": "VoucherNo", "name": "VoucherNo",
+                     fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
+                         if (oData.VoucherNo) {
+                             $(nTd).html("<a href=\"#\" prop-data=\"" + '@Url.Action("ViewTransByAccount", "ChartOfAccount", new {Area = "GLTable" })?' + "voucher=" + oData.VoucherNo + "&sCode=" + $('#cboARAP').val() + "&branchCode=" + oData.Branch.BranchCode + "&ccy=" + oData.CCy.CurrencyCode + "\" title=\"View Voucher\" onclick=\"viewVoucher(this)\">" + oData.VoucherNo + "</a>");
+                         }
+                     }
+                 },
+                 {
+                     "data": "ProcessInv", "name": "ProcessInv",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" disabled class="editor-processinv">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "PaymentTerm", "name": "PaymentTerm" },
+                 { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Payment", "name": "Payment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Outstanding", "name": "Outstanding", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+                ],
+                "rowCallback": function (row, data) {
+                    // Set the checked state of the checkbox in the table
+                    $('input.editor-processinv', row).prop('checked', data.ProcessInv == 1);
+                },
+                "order": [[1, "asc"]],
+                "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [10]
+                },
+                {
+                    "width": "150px",
+                    "orderable": true,
+                    "targets": [11]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [12]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [13]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [14]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [15]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [16]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [17]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+            });
+        }
+
+        function LoadDTD(dataJS,rowIndexPar) {
+            return $("#" + rowIndexPar.toString() + "").DataTable({
+                "bDestroy": true,
+                "processing": true,
+                "language":
+                {
+                    "search": "",
+                    "searchPlaceholder": "Search...",
+                    "emptyTable": "No record found.",
+                    "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                },
+                data: JSON.parse(dataJS),
+                "columns": [
+                     { "data": "SeqNo", "name": "SeqNo" },
+                     { "data": "DocNo", "name": "DocNo" },
+                     { "data": "Description", "name": "Description" },
+                     { "data": "SubAmount", "name": "SubAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                     { "data": "Acc.Account", "name": "Acc.Account" },
+                     { "data": "Acc.AccountName", "name": "Acc.AccountName" }
+                ],
+                "order": [[1, "asc"]],
+                "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [0]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    //"width": "120px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "className": "text-right",
+                    "targets": [3]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "320px",
+                    "orderable": true,
+                    "targets": [5]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+            });
+        }
+
+        function LoadCreateNewForm() {
+            document.location = '@Url.Action("Create","CashBank", new { Area = "GLTransaction" })';
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow.length > 0) {
+                var rpP = selRow[0]["RP"];
+                var accP = selRow[0]["Acc"]["Account"];
+                var ccyP = selRow[0]["CCy"]["CurrencyCode"];
+                var supP = selRow[0]["Supplier"]["SupCode"];
+                var docNoP = selRow[0]["DocNo"];
+                var branchP = selRow[0]["Branch"]["BranchCode"];
+
+                window.location = '@Url.Action("EditAP", "ProcessAP", new { Area = "GLTransaction" })' + "?rp=" + rpP + "&acc=" + accP + "&ccy=" + ccyP + "&sup=" + supP + "&docno=" + docNoP + "&branch=" + branchP;
+                @*window.location = '@Url.Action("EditAP", "ProcessARAP", new { Area = "Sales" })' + "?rpP=" + invNo;*@
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var dataCB = '';
+
+            //var includePosted = false;
+
+            $.each(selRow, function (index, row) {
+                //if (Boolean(row["PostedStatus"]) == true) {
+                //    includePosted = true;
+                //}InvoiceTotal
+                dataCB += row["CashBankNumber"] + ',';
+                dataCollection += '[' + row["CashBankNumber"] + '][' + row["Supplier"]["SupCode"] + ']' + "\n";
+            })
+
+            //if (includePosted) {
+            //    alert("One or more selected voucher are posted and can not be delete. Delete process canceled by system.");
+            //    return false;
+            //}
+
+            var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+            if (answer) {
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "CashBank", new { Area = "GLTransaction" })',
+                        data: { "cbList": dataCB },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    alert(respond);
+                                    Refresh();
+                                    break;
+                                default:
+                                    alert(respond);
+                                    Refresh();
+                                    break;
+                            }
+
+                        },
+                        error: function (respond, xhr, msg) {
+                            alert(msg);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+        }
+
+        function Process() {
+            var data = table.rows(function (idx, data, node) {
+                // Get all the checkboxes in the row
+                var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                // Keep the rows with checked checkboxes
+                return checkedTargets(cells).length;
+            }).data();
+
+            var dataAP = "";
+            var dataAcc = "";
+            var dataCcy = "";
+            var dataSup = "";
+            var docNo = "";
+            var branchCode = "";
+            var dataCollection = "";
+
+            if (data.length > 0) {
+                $.each(data, function (index, rowId) {
+                    dataAP += rowId["RP"] + ',';
+                    dataAcc += rowId["Acc"]["Account"] + ',';
+                    dataCcy += rowId["CCy"]["CurrencyCode"] + ',';
+                    dataSup += rowId["Supplier"]["SupCode"] + ',';
+                    docNo += rowId["DocNo"] + ',';
+                    branchCode += rowId["Branch"]["BranchCode"] + ',';
+                    dataCollection += '[' + rowId["DocNo"] + '] - ' + '[' + rowId["Supplier"]["SupCode"] + '] ' + "\n";
+                })
+
+                var answer = confirm("You are about to process data:\n" + dataCollection + "\nAre you sure want to process the data ?");
+
+                if (answer) {
+                    if (dataCollection.length > 0) {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Process", "ProcessAP", new { Area = "GLTransaction" })',
+                            data: {
+                                "rpList": dataAP,
+                                "accList": dataAcc,
+                                "ccyList": dataCcy,
+                                "supList": dataSup,
+                                "docNoList": docNo,
+                                "branchCodeList": branchCode,
+                            },
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                alert(respond);
+                                Refresh();
+                            },
+                            error: function (respond) {
+                                alert(respond);
+                            }
+                        })
+                    }
+                }
+                else {
+                    return false;
+                }
+            } else {
+                alert("Please choose Data");
+            }
+
+            function checkedTargets(checkboxes) {
+                return checkboxes.filter(function (index) {
+                    return $(checkboxes[index]).prop('checked');
+                });
+            }
+        }
+
+        function SelectAll() {
+            table.rows().select();
+            $("input[type='checkbox'][id='chkProcess']", table.cells().nodes()).prop('checked', true);
+        }
+
+        function UnselectAll() {
+            table.rows().deselect();
+            $("input[type='checkbox'][id='chkProcess']", table.cells().nodes()).prop('checked', false);
+        }
+
+        function viewVoucher(e) {
+            //console.log(e.attr("prop-data"));
+            console.log(e.getAttribute("prop-data"));
+            $.ajax({
+                type: "GET",
+                url: e.getAttribute("prop-data"),
+                dataType: 'html',
+                cache: false,
+                success: function (result) {
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    $("#modalTitle").html("View Voucher");
+                    $("#CreateEditForm").modal('show');
+                },
+                error: function (status) {
+                    alert('');
+                }
+            });
+        }
+    </script>
+}
+
+
+
+

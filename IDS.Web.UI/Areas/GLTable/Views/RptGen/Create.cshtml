@@ -1,0 +1,263 @@
+﻿@model IDS.GLTable.ReportGenerator
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-selection__arrow b{
+    display:none !important;
+}
+</style>
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+                    @Html.Hidden("C1ViewData", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Code, "Code", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-1">
+                            @Html.DropDownListFor(model => model.Code, (SelectList)ViewData["SelectListCode"], " ", new { @id = "cboCode", @class = "form-control form-control-sm col-sm-10" })
+                            @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.Line, "Line", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-2">
+                            @Html.EditorFor(model => model.Line, new { htmlAttributes = new { @class = "form-control form-control-sm col-sm-10", placeholder = "Line" } })
+                            @Html.ValidationMessageFor(model => model.Line, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.DebitCredit, "DC", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-2">
+                            @Html.DropDownListFor(model => model.DebitCredit, (SelectList)ViewData["SelectListDC"], " ", new { @id = "cboDC", @class = "form-control select2DDList col-sm-10" })
+                            @Html.ValidationMessageFor(model => model.DebitCredit, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.PrintStatus, "Print", new { @class = "col-sm-1" })
+                        <label class="col-sm-1">@Html.CheckBoxFor(model => model.PrintStatus)</label>
+
+                        @Html.LabelFor(model => model.IsRight, "Right", new { @class = "col-sm-1" })
+                        <label class="col-sm-1">@Html.CheckBoxFor(model => model.IsRight)</label>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CurrencyACFGEN, "Ccy", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-1">
+                            @Html.DropDownListFor(model => model.CurrencyACFGEN, (SelectList)ViewData["SelectListCurrency"], " ", new { @id = "cboCcy", @class = "form-control form-control-sm col-sm-10" })
+                            @Html.ValidationMessageFor(model => model.CurrencyACFGEN, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.DepartmentACFGEN, "Department", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-2">
+                            @Html.DropDownListFor(model => model.DepartmentACFGEN, (SelectList)ViewData["SelectListDept"], " ", new { @id = "cboDept", @class = "form-control select2DDList col-sm-10" })
+                            @Html.ValidationMessageFor(model => model.DepartmentACFGEN, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.AccACFGEN, "Acc No", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-3">
+                            @Html.DropDownListFor(model => model.AccACFGEN, (SelectList)ViewData["SelectListAcc"], " ", new { @id = "cboAcc", @class = "form-control select2DDList col-sm-12" })
+                            @Html.ValidationMessageFor(model => model.AccACFGEN, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.FromACC, "From", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-2">
+                            @Html.DropDownListFor(model => model.FromACC, (SelectList)ViewData["SelectListFromAcc"], " ", new { @id = "cboFromAcc", @class = "form-control select2DDList col-sm-12" })
+                            @Html.ValidationMessageFor(model => model.FromACC, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C1">1</span>
+                            @Html.DropDownListFor(model => model.C1, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC1", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C1" })
+                            @Html.ValidationMessageFor(model => model.C1, "", new { @class = "text-danger" })    
+                        </div>
+
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C2">2</span>
+                            @Html.DropDownListFor(model => model.C2, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC2", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C2" })
+                            @Html.ValidationMessageFor(model => model.C2, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C3">3</span>
+                            @Html.DropDownListFor(model => model.C3, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC3", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C3" })
+                            @Html.ValidationMessageFor(model => model.C3, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C4">4</span>
+                            @Html.DropDownListFor(model => model.C4, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC4", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C4" })
+                            @Html.ValidationMessageFor(model => model.C4, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C5">5</span>
+                            @Html.DropDownListFor(model => model.C5, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC5", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C5" })
+                            @Html.ValidationMessageFor(model => model.C5, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C6">6</span>
+                            @Html.DropDownListFor(model => model.C6, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC6", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C6" })
+                            @Html.ValidationMessageFor(model => model.C6, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="input-group col-sm-1">
+                            <span class="input-group-text text-sm form-control-sm col-sm-1" id="C7">7</span>
+                            @Html.DropDownListFor(model => model.C7, (SelectList)ViewData["SelectListCol"], " ", new { @id = "cboC7", @class = "form-control form-control-sm inputnumber col-sm-12", aria_describeby = "C7" })
+                            @Html.ValidationMessageFor(model => model.C7, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.Description, "Description", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="col-sm-4">
+                            @Html.TextAreaFor(model => model.Description, new { @class = "form-control form-control-sm", @maxlength = 100, @rows = "3", @style = "resize:none" })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+        if ($("#FormAction").val() == 2) {
+            $('#C1').val($('#C1ViewData').val());
+        }
+
+        $("#btnSave").click(function () {
+            if(!$("form#formCreateEdit").valid())
+            {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Report Generator Code : " + $("#cboCode").val() + " ?");
+            }
+
+            var answer = confirm(confirmText);
+            if (answer) {
+                //$('#cboCode').removeAttr('disabled');
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "RptGen", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "RptGen", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                //$("#cboCode").attr('disabled', 'disabled');
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "RptGen", new { Area = "GLTable" })';
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#Code, #Line').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#Code').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $('#cboCcy').change(function () {
+            var CCY = $('#cboCcy').val();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: CCY },
+                success: function (respond) {
+                    $('#cboAcc').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboAcc').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+
+        $('#cboAcc').change(function () {
+            var valDesc = $("#cboAcc option:selected").text();
+            valDesc = valDesc.substr(valDesc.indexOf("-") + 1)
+
+            $('#Description').val(valDesc);
+        });
+    });
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

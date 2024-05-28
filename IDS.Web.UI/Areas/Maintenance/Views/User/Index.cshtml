@@ -1,0 +1,1224 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "User";
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+}
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <section class="col-lg-12 connectedSortable">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="btnjf1" class="card-title">
+                            <i class="fas fa-user mr-1" style="color:#4cff00 !important;"></i>
+                            List Users
+                        </h3>
+                        <div class="card-tools">
+
+                            <ul class="nav nav-pills ml-auto" id="sortablex">
+                                <li class="nav-item mr-1">
+                                    @{
+                                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                                        {
+                                            <a class="btn btn-sm btn-primary" href="#" data-toggle="tab" onclick="LoadCreateNewForm()">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="#" class="btn btn-sm btn-primary" data-toggle="tab" onclick="NoAccessModal('You dont have access to create new country. Please contact your administrator.')">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                        }
+                                    }
+                                </li>
+                                <li class="nav-item mr-1">
+                                    @{
+                                        if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                                        {
+                                            <a class="btn btn-sm btn-info" data-toggle="tab" href="#" onclick="LoadEditForm()">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-sm btn-info" data-toggle="tab" href="#" onclick="NoAccessModal('You dont have access to create new country. Please contact your administrator.')" disabled="disabled">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                        }
+                                    }
+                                    <!--<a class="nav-link" href="#sales-chart" data-toggle="tab">Donut</a>-->
+                                </li>
+                                <li class="nav-item mr-1">
+                                    @{
+                                        if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                                        {
+                                            <a onclick="Delete()" class="btn btn-sm btn-danger" data-toggle="tab" href="#">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a onclick="Delete()" class="btn btn-sm btn-danger" data-toggle="tab" href="#">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                    }
+                                </li>
+                                <li class="nav-item mr-1">
+                                    <a onclick="RefreshMaintenanceUser()" class="btn btn-sm btn-info" href="#">
+                                        <i class="fas fa-sync"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                        <div class="tab-content p-0">
+                            <div class="row mb-1">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row pb-0 col-sm-5 mb-0">
+                                            <label for="cboBranch" class="col-sm-2 col-form-label col-form-label-sm">Branch</label>
+                                            <div class="col-sm-6">
+                                                @Html.DropDownList("cboBranch", (SelectList)ViewData["Branch"], "", new { @id = "cboBranch", @class = "form-control form-control-sm select2DDList" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="classgrid1" class="row mb-1">
+                                <div class="table-responsive table-responsive-sm p-2 bg-white border">
+                                    <table id="tblUserStep1" class="table table-bordered table-hover w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>User Id</th>
+                                                <th>User Name</th>
+                                                <th>Email</th>
+                                                <th>Group</th>
+                                                <th>Date Created</th>
+                                                <th>Expired</th>
+                                                <th>Accum</th>
+                                                <th>Active</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.card-body -->
+                </div>
+            </section>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div id="partial">
+
+</div>
+
+@section Scripts{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript">
+         $(document).ready(function () {
+            GetListUser('@ViewData["ListUser"]'.replace(/&quot;/g, '"'));
+
+            GetStatusBranch();
+
+            $("#cboBranch").change(function () {
+                GetBranchFromCode($("#cboBranch").val());
+            });
+
+            $("#sortablex").sortable();
+
+
+            //ScrollNavTo("User");
+
+        })// document Ready
+
+        function GetStatusBranch() {
+            $.ajax({
+                url: '@Url.Action("GetBranchStatus", "User", new { Area = "Maintenance" })',
+                type: 'POST',
+                data: JSON.stringify({ 'optional': 10 }),
+                dataType: 'json',
+                success: function (data) {
+                    var ho = data.ho;
+                    var branch = data.branch;
+                    if (ho.toLowerCase().indexOf("true") >= 0) {
+                        $('#cboBranch').val(branch);
+                        $("#cboBranch").removeAttr("disabled");
+                        $(".select2DDList").select2({
+                        theme: "classic",
+                        width: '100%'
+                        });
+                    } else {
+                        $('#cboBranch').val(branch);
+                        $("#cboBranch").attr('disabled', 'disabled');
+                        $(".select2DDList").select2({
+                            theme: "classic",
+                            width: '100%'
+                        });
+                    }
+                },
+                error: function (request, error) {
+                    console.log(request);
+                }
+            });
+        }
+
+        function GetBranchFromCode(branch) {
+            var pieChartContent = document.getElementById('classgrid1');
+            pieChartContent.innerHTML = '&nbsp;';
+            $('#classgrid1').append("<div class='table-responsive table-responsive-sm p-2 bg-white border'> <table id='tblUserStep1' class='table table-bordered table-hover w-100'> <thead>  <tr>  <th>#</th> <th>User Id</th> <th>User Name</th>            <th>Email</th>            <th>Group</th>            <th>Date Created</th>            <th>Expired</th>            <th>Accum</th>            <th>Active</th>        </tr>        </thead>    </table></div>");
+            var data = JSON.stringify({ "Branch": branch })
+            var uri = '@Url.Action("RefreshUser2", "User", new { Area = "Maintenance" })'
+            var wb_methode = 'POST';
+            var return_ = httpGet(wb_methode, uri, data);
+            GetListUser(return_);
+        }
+
+        function GetListUser(lsData) {
+               $('#tblUserStep1').DataTable({
+                   data: JSON.parse(lsData),
+                    "columns": [
+                         {
+                             "orderable": false,
+                             "data": null,
+                             "defaultContent": ""
+                         },
+                        { "data": "userid" },
+                        { "data": "username" },
+                        { "data": "email" },
+                        { "data": "group" },
+                        { "data": "datecreated" },
+                        { "data": "expired" },
+                        { "data": "accum" },
+                        { "data": "active" }
+                    ],
+                    "select": {
+                        "style": 'single'
+                    }
+              });
+        }
+
+        function LoadCreateNewForm() {
+                $('#partial').html("");
+                $("#partial").html(CreateNewForm);
+                $("#boxinsert").modal('show');
+            // create security code & desc
+                $.ajax({
+                    url: '@Url.Action("GetSecurityCode", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({'optional': 10}),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cboSecCode").empty();
+                        $.each(data, function (i, item) {
+                            $("#cboSecCode").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                    },
+                    error: function (request, error) {
+                       console.log(request);
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("Getgroupcode", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'optional': 10 }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cbogroup").empty();
+                        $.each(data, function (i, item) {
+                            $("#cbogroup").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                    },
+                    error: function (request, error) {
+                        console.log(request);
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("GetBranch", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'optional': 10 }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cbobranch").empty();
+                        $.each(data, function (i, item) {
+                            $("#cbobranch").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                    },
+                    error: function (request, error) {
+                        console.log(request);
+                    }
+                });
+
+            $.ajax({
+                url: '@Url.Action("GetExp", "User", new { Area = "Maintenance" })',
+                type: 'POST',
+                data: JSON.stringify({ 'optional': 10 }),
+                dataType: 'json',
+                success: function (data) {
+                    $("#cboexp").empty();
+                    $.each(data, function (i, item) {
+                        $("#cboexp").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                    });
+                },
+                error: function (request, error) {
+                    console.log(request);
+                }
+            });
+
+
+            $(".ncelek").select2({
+                theme: "classic",
+                width: '100%'
+            });
+
+        }
+
+        function enableAM(value) {
+            //if(value=="AM"){
+            //    $('#cboAMgroupdiv').show();
+            //    $.ajax({
+            //        url: '@@Url.Action("GetAMgroup", "User", new { Area = "Maintenance" })',
+            //        type: 'POST',
+            //        data: JSON.stringify({ 'uGroupCode': value }),
+            //        dataType: 'json',
+            //        success: function (data) {
+            //            $("#cboAMgroup").empty();
+            //            $.each(JSON.parse(data), function (i, item) {
+            //                $("#cboAMgroup").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+            //            });
+            //        },
+            //        error: function (request, error) {
+            //            console.log(request);
+            //        }
+            //    });
+            //} else {
+            //    $('#cboAMgroupdiv').hide();
+            //}
+        }
+
+
+        function btnSaveUser_Click() {
+            var txtuserid = $('#txtuserid');
+            if (!txtuserid.val()) {
+                CreateErrorMessage(txtuserid);
+                return;
+            }
+
+            var txtusername = $('#txtusername');
+            if (!txtusername.val()) {
+                CreateErrorMessage(txtusername);
+                return;
+            }
+
+            var txtEmail = $('#txtEmail');
+            if (!txtEmail.val()) {
+                CreateErrorMessage(txtEmail);
+                return;
+            }
+
+            var cbogroup = $('#cbogroup');
+            if (!cbogroup.val()) {
+                CreateErrorMessage(cbogroup);
+                return;
+            }
+
+            var cbobranch = $('#cbobranch');
+            if (!cbobranch.val()) {
+                CreateErrorMessage(cbobranch);
+                return;
+            }
+
+            var txtPassword = $('#txtPassword');
+            if (!txtPassword.val()) {
+                CreateErrorMessage(txtPassword);
+                return;
+            }
+
+            var txtConfPass = $('#txtConfPass');
+            if (!txtConfPass.val()) {
+                CreateErrorMessage(txtConfPass);
+                return;
+            }
+
+            var cboSecCode = $('#cboSecCode');
+            if (!cboSecCode.val()) {
+                CreateErrorMessage(cboSecCode);
+                return;
+            }
+
+            var txtSecAnswer = $('#txtSecAnswer');
+            if (!txtSecAnswer.val()) {
+                CreateErrorMessage(txtSecAnswer);
+                return;
+            }
+
+            var cboexp = $('#cboexp');
+            if (!cboexp.val()) {
+                CreateErrorMessage(cboexp);
+                return;
+            }
+
+            var pass = $('#txtPassword').val();
+            var pass2 = $('#txtConfPass').val();
+            if (pass != pass2) {
+                CreateErrorMessage($('#txtConfPass'));
+                return;
+            }
+
+            if (!ValidateEmail($('#txtEmail').val())) {
+                CreateErrorMessage($('#txtEmail'));
+                return;
+            }
+
+            if (!stringlength($('#txtPassword').val(), 6, 30)) {
+                CreateErrorMessage($('#txtPassword'));
+                return;
+            }
+
+            var d = new Date();
+            var strDate = d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate();
+
+            var cboAMgroupVal = 0;
+            if ($('#cboAMgroupdiv').css('display') == 'none') {
+                cboAMgroupVal = 0;
+            } else {
+                cboAMgroupVal = $('#cboAMgroup').val();
+            }
+
+            BtnLoading($('#btnsave'));
+
+            var data_ = {
+                'userid': txtuserid.val(),
+                'username': txtusername.val(),
+                'password': txtPassword.val(),
+                'email': txtEmail.val(),
+                'group': cbogroup.val(),
+                'date': strDate,
+                'exp': cboexp.val(),
+                'scode': cboSecCode.val(),
+                'sansw': txtSecAnswer.val(),
+                'akumulasi': 0,
+                'status': $('#cekstatus').is(":checked"),
+                'branch': cbobranch.val(),
+                'amgroupcode': cboAMgroupVal
+            }
+            $.ajax({
+                url: '@Url.Action("SaveUser", "User", new { Area = "Maintenance" })',
+                type: 'POST',
+                data: JSON.stringify(data_),
+                dataType: 'json',
+                success: function (data) {
+                    var msg_ = data.msg_;
+                    var respons_ = data.response_;
+                    if (respons_ == "ok") {
+                        $('#txtresult').text("");
+                        $("#boxinsert").modal('hide');
+
+                        var pieChartContent = document.getElementById('classgrid1');
+                        pieChartContent.innerHTML = '&nbsp;';
+                        $('#classgrid1').append("<div class='table-responsive table-responsive-sm p-2 bg-white border'> <table id='tblUserStep1' class='table table-bordered table-hover w-100'> <thead>  <tr>  <th>#</th> <th>User Id</th> <th>User Name</th>            <th>Email</th>            <th>Group</th>            <th>Date Created</th>            <th>Expired</th>            <th>Accum</th>            <th>Active</th>        </tr>        </thead>    </table></div>");
+                        var data = JSON.stringify({ "Branch": $('#cboBranch').val() })
+                        var uri = '@Url.Action("RefreshUser", "User", new { Area = "Maintenance" })'
+                        var wb_methode = 'POST';
+                        var return_ = httpGet(wb_methode, uri, data);
+                        GetListUser(return_);
+                        BtnReset($('#btnsave'));
+                    } else {
+                        BtnReset($('#btnsave'));
+                        $('#txtresult').text(msg_);
+                    }
+                },
+                error: function (request, error) {
+                    BtnReset($('#btnsave'));
+                    console.log("Request: " + request);
+                }
+            });
+        }
+
+
+        function CreateErrorMessage(elements) {
+            elements.addClass("is-invalid");
+            elements.focus();
+            elements.click(function () {
+                elements.removeClass('is-invalid');
+            });
+        }
+
+        function CreateNewForm() {
+            var b = '';
+            b += "<div class='modal fade' id='boxinsert' tabindex='-1' role='dialog' aria-labelledby='boxinsert' aria-hidden='true'>";
+            b += "   <div class='modal-dialog modal-dialog-centered' role='document'>";
+            b += "           <div class='modal-content card'>";
+            b += "              <div class='card-header'>";
+            b += "                  <div id='btnjf1' class='card-title modal-title'>";
+            b += "                      <table>";
+            b += "                          <tr>";
+            b += "                             <td><img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='AdminLTE Logo' class='brand-image img-circle elevation-3' style='width: 23%;height: 23%;'></td>";
+            b += "                             <td>";
+            b += "                                 <div id='txtcaption' style='font-weight: bold;'>New User</div>";
+            b += "                             </td>";
+            b += "                         </tr>";
+            b += "                     </table>";
+            b += "                 </div>";
+            b += "                <div class='card-tools'>";
+            b += "                     <ul class='nav nav-pills ml-auto'>";
+            b += "                         <li class='nav-item'>";
+            b += "                             <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' onclick='boxinsertClose()'>";
+            b += "                                <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+            b += "                            </a>";
+            b += "                         </li>";
+            b += "                     </ul>";
+            b += "                </div>";
+            b += "            </div>";
+            b += "           <div class='card-body modal-body'>";
+            b += "                <!-- Mulai-->";
+            b += "                <div class='row mb-2'>";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtuserid' class='col-sm-4 col-form-label col-form-label-sm'>User Id</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtuserid' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtusername' class='col-sm-4 col-form-label col-form-label-sm'>User Name</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtusername' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+
+            b += "   <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "        <label for='cbogroup' class='col-sm-4 col-form-label col-form-label-sm'>Group User</label>";
+            b += "        <div class='col-sm-4'>";
+            b += "            <select name='cbogroup' id='cbogroup' class='form-control form-control-sm ncelek' onchange='enableAM(this.value)'></select>";
+            b += "        </div>";
+            b += "        <div style='display:none' id='cboAMgroupdiv' class='col-sm-4'>";
+            b += "            <select name='cboAMgroup' id='cboAMgroup' class='form-control form-control-sm ncelek'></select>";
+            b += "        </div>";
+            b += "    </div>";
+            b += "";
+
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='cbobranch' class='col-sm-4 col-form-label col-form-label-sm'>Branch Code</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "            <select name='cbobranch' id='cbobranch' class='form-control form-control-sm ncelek'></select>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                   <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtPassword' class='col-sm-4 col-form-label col-form-label-sm'>Password</label>";
+            b += "                         <div class='col-sm-8'>";
+            b += "                            <input type='password' class='form-control form-control-sm' id='txtPassword' placeholder='Password' minlength='6' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtConfPass' class='col-sm-4 col-form-label col-form-label-sm'>Confirm Password</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='password' class='form-control form-control-sm' id='txtConfPass' placeholder='Password' minlength='6' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtEmail' class='col-sm-4 col-form-label col-form-label-sm'>Email</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtEmail' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='cboSecCode' class='col-sm-4 col-form-label col-form-label-sm'>Security Code</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                              <select name='cboSecCode' id='cboSecCode' class='form-control form-control-sm ncelek'></select>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtSecAnswer' class='col-sm-4 col-form-label col-form-label-sm'>Security Answer</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtSecAnswer' required>";
+            b += "                         </div>";
+            b += "                      </div>";
+            b += "";
+            b += "                      <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                          <label for='cboexp' class='col-sm-4 col-form-label col-form-label-sm'>Expired Code</label>";
+            b += "                          <div class='col-sm-8'>";
+            b += "                              <select id='cboexp' class='form-control form-control-sm ncelek'></select>";
+            b += "                          </div>";
+            b += "                      </div>";
+            b += "";
+            b += "                     <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                          <label for='cekstatus' class='col-sm-4 col-form-label col-form-label-sm'>Active User</label>";
+            b += "                         <div class='col-sm-1'>";
+            b += "                              <input type='checkbox' class='form-control-sm' id='cekstatus'>";
+            b += "                          </div>";
+            b += "                     </div>";
+            b += "<div class='row'><div id='txtresult' class='text-center text-danger'></div></div>";
+            b += "                  </div>";
+            b += "                   <!-- selesai -->";
+            b += "               </div>";
+            b += "               <div class='modal-footer'>";
+            b += "                   <button type='button' class='btn btn-danger btn-sm' data-dismiss='modal' onclick='boxinsertClose()'>Close</button>";
+            b += "                   <button id='btnsave' type='button' class='btn btn-primary btn-sm' onclick='btnSaveUser_Click()'>Save</button>";
+            b += "              </div>";
+            b += "         </div>";
+            b += "   </div>";
+            b += "</div>";
+            return b;
+        }
+        function boxinsertClose() {
+            $("#boxinsert").modal('hide');
+        }
+
+        function NoAccessModal() {
+            var stringbuilder = "";
+            stringbuilder += "<div class='modal fade' id='noaccess' tabindex='-1' role='dialog' aria-labelledby='noaccess' aria-hidden='true'>";
+            stringbuilder += "       <div class='modal-dialog modal-dialog-centered' role='document'>";
+            stringbuilder += "                   <div class='modal-content card'>";
+            stringbuilder += "                          <div class='card-header'>";
+            stringbuilder += "                                 <div id='btncardtitle' class='card-title modal-title'>";
+            stringbuilder += "                                        <table>";
+            stringbuilder += "                                                <tr>";
+            stringbuilder += "                                                        <td style='width:40%'>";
+            stringbuilder += "<img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='Logo' class='brand-image img-circle elevation-2' style='width: 20%;height: 20%;'>";
+            stringbuilder += "                                                       <td>";
+            stringbuilder += "                                                               <div id='txtcap' style='font-weight: bold;'>Information Message</div>";
+            stringbuilder += "                                                           </td>";
+            stringbuilder += "                                                   </tr>";
+            stringbuilder += "                                          </table>";
+            stringbuilder += "                                  </div>";
+            stringbuilder += "                              <div class='card-tools'>";
+            stringbuilder += "                                      <ul class='nav nav-pills ml-auto'>";
+            stringbuilder += "                                              <li class='nav-item'>";
+            stringbuilder += "                                                      <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' onclick='publicAlertClose()'>";
+            stringbuilder += "                                                            <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+            stringbuilder += "                                                        </a>";
+            stringbuilder += "                                                 </li>";
+            stringbuilder += "                                         </ul>";
+            stringbuilder += "                                </div>";
+            stringbuilder += "                         </div>";
+            stringbuilder += "                         <div class='card-body modal-body'>";
+            stringbuilder += "You dont have access to create new country. Please contact your administrator.";
+            stringbuilder += "                         </div>";
+            stringbuilder += "                       <div class='modal-footer'>";
+            stringbuilder += "                                <button type='button' class='btn btn-danger btn-sm' data-dismiss='modal' onclick='publicAlertClose()'>Close</button>";
+            stringbuilder += "                        </div>";
+            stringbuilder += "                  </div>";
+            stringbuilder += "        </div>";
+            stringbuilder += " </div>";
+
+            // return stringbuilder;
+            var myElement = document.getElementById("publicAlert");
+            if (!myElement) {
+                let div = document.createElement('div');
+                div.id = 'publicAlert';
+                document.body.appendChild(div);
+            }
+            $('#publicAlert').empty();
+            $("#publicAlert").html(stringbuilder);
+            $("#noaccess").modal('show');
+        }
+
+        function publicAlertClose() {
+            $("#noaccess").modal('hide');
+        }
+
+        function CreateEditForm() {
+            var b = '';
+            b += "<div class='modal fade' id='boxedit' tabindex='-1' role='dialog' aria-labelledby='boxedit' aria-hidden='true'>";
+            b += "   <div class='modal-dialog modal-dialog-centered' role='document'>";
+            b += "           <div class='modal-content card'>";
+            b += "              <div class='card-header'>";
+            b += "                  <div id='btnjf1' class='card-title modal-title'>";
+            b += "                      <table>";
+            b += "                          <tr>";
+            b += "                             <td><img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='AdminLTE Logo' class='brand-image img-circle elevation-3' style='width: 23%;height: 23%;'></td>";
+            b += "                             <td>";
+            b += "                                 <div id='txtcaption' style='font-weight: bold;'>Edit User</div>";
+            b += "                             </td>";
+            b += "                         </tr>";
+            b += "                     </table>";
+            b += "                 </div>";
+            b += "                <div class='card-tools'>";
+            b += "                     <ul class='nav nav-pills ml-auto'>";
+            b += "                         <li class='nav-item'>";
+            b += "                             <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' onclick='boxeditClose()'>";
+            b += "                                <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+            b += "                            </a>";
+            b += "                         </li>";
+            b += "                     </ul>";
+            b += "                </div>";
+            b += "            </div>";
+            b += "           <div class='card-body modal-body'>";
+            b += "                <!-- Mulai-->";
+            b += "                <div class='row mb-2'>";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtuserid' class='col-sm-4 col-form-label col-form-label-sm'>User Id</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtuserid' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtusername' class='col-sm-4 col-form-label col-form-label-sm'>User Name</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtusername' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+
+            b += "   <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "        <label for='cbogroup' class='col-sm-4 col-form-label col-form-label-sm'>Group User</label>";
+            b += "        <div class='col-sm-4'>";
+            b += "            <select name='cbogroup' id='cbogroup' class='form-control form-control-sm ncelek' onchange='enableAM(this.value)'></select>";
+            b += "        </div>";
+            b += "        <div style='display:none' id='cboAMgroupdiv' class='col-sm-4'>";
+            b += "            <select name='cboAMgroup' id='cboAMgroup' class='form-control form-control-sm ncelek'></select>";
+            b += "        </div>";
+            b += "    </div>";
+            b += "";
+
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='cbobranch' class='col-sm-4 col-form-label col-form-label-sm'>Branch Code</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                              <select name='cbobranch' id='cbobranch' class='form-control form-control-sm ncelek'></select>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                   <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtPassword' class='col-sm-4 col-form-label col-form-label-sm'>Password</label>";
+            b += "                         <div class='col-sm-8'>";
+            b += "                            <input type='password' class='form-control form-control-sm' id='txtPassword' placeholder='Password' minlength='6' readonly>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtConfPass' class='col-sm-4 col-form-label col-form-label-sm'>Confirm Password</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='password' class='form-control form-control-sm' id='txtConfPass' placeholder='Password' minlength='6' readonly>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtEmail' class='col-sm-4 col-form-label col-form-label-sm'>Email</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='text' class='form-control form-control-sm' id='txtEmail' required>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='cboSecCode' class='col-sm-4 col-form-label col-form-label-sm'>Security Code</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                              <select name='cboSecCode' id='cboSecCode' class='form-control form-control-sm ncelek'></select>";
+            b += "                        </div>";
+            b += "                    </div>";
+            b += "";
+            b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                        <label for='txtSecAnswer' class='col-sm-4 col-form-label col-form-label-sm'>Security Answer</label>";
+            b += "                        <div class='col-sm-8'>";
+            b += "                            <input type='password' class='form-control form-control-sm' id='txtSecAnswer'>";
+            b += "                         </div>";
+            b += "                      </div>";
+            b += "";
+            b += "                      <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                          <label for='cboexp' class='col-sm-4 col-form-label col-form-label-sm'>Expired Code</label>";
+            b += "                          <div class='col-sm-8'>";
+            b += "                              <select id='cboexp' class='form-control form-control-sm ncelek'></select>";
+            b += "                          </div>";
+            b += "                      </div>";
+            b += "";
+            b += "                     <div class='row pb-0 col-sm-12 mb-1'>";
+            b += "                          <label for='cekstatus' class='col-sm-4 col-form-label col-form-label-sm'>Active User</label>";
+            b += "                         <div class='col-sm-1'>";
+            b += "                              <input type='checkbox' class='form-control-sm' id='cekstatus'>";
+            b += "                          </div>";
+            b += "                     </div>";
+            b += "<div class='row'><div id='txtresult' class='text-center text-danger'></div></div>";
+            b += "                  </div>";
+            b += "                   <!-- selesai -->";
+            b += "               </div>";
+            b += "               <div class='modal-footer'>";
+            b += "                   <button type='button' class='btn btn-danger btn-sm' data-dismiss='modal' onclick='boxeditClose()'>Close</button>";
+            b += "                   <button id='btnupdate' type='button' class='btn btn-primary btn-sm' onclick='btnEditUser_Click()'>Update</button>";
+            b += "              </div>";
+            b += "         </div>";
+            b += "   </div>";
+            b += "</div>";
+            return b;
+        }
+
+        function LoadEditForm() {
+            var tbl_ = $('#tblUserStep1').DataTable();
+            var tblData_ = tbl_.rows('.selected').data();
+            var tblDatalength_ = tblData_.length;
+            if (tblDatalength_ > 0) {
+               // alert(tblDatalength_ + ' row(s) selected');
+                $('#partial').empty();
+                $("#partial").html(CreateEditForm);
+                $("#boxedit").modal('show');
+                var data = JSON.stringify({ "Branch": $('#cboBranch').val(), "userid": tblData_[0].userid })
+                var uri = '@Url.Action("GetUserByUserId", "User", new { Area = "Maintenance" })'
+                var wb_methode = 'POST';
+                var return_ = getResponse(wb_methode, uri, data);
+                var userId_ = return_[0].userid;
+                var username_ = return_[0].username;
+                var email_ = return_[0].email;
+                var group_ = return_[0].group;
+                var dateCreated_ = return_[0].datecreated;
+                var exp_ = return_[0].expired;
+                var accum_ = return_[0].accum;
+                var active_ = return_[0].active;
+                var scode_ = return_[0].scode;
+                var branch_ = return_[0].branch;
+                var sansw_ = return_[0].sansw;
+
+                $.ajax({
+                    url: '@Url.Action("Getgroupcode", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'optional': 10 }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cbogroup").empty();
+                        $.each(data, function (i, item) {
+                            $("#cbogroup").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                        $('#cbogroup').val(group_);
+                    },
+                    error: function (request, error) {
+                        console.log(request);
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("GetBranch", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'optional': 10 }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cbobranch").empty();
+                        $.each(data, function (i, item) {
+                            $("#cbobranch").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                        $('#cbobranch').val(branch_);
+                    },
+                    error: function (request, error) {
+                        console.log(request);
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("GetExp", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'optional': 10 }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cboexp").empty();
+                        $.each(data, function (i, item) {
+                            $("#cboexp").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                    },
+                    error: function (request, error) {
+                        console.log(request);
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("GetSecurityCode", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'optional': 10 }),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#cboSecCode").empty();
+                        $.each(data, function (i, item) {
+                            $("#cboSecCode").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                        });
+                        $('#cboSecCode').val(scode_);
+                        $("#cboSecCode").attr('disabled', 'disabled');
+                    },
+                    error: function (request, error) {
+                        console.log(request);
+                    }
+                });
+
+                $('#txtuserid').val(userId_);
+                $('#txtuserid').attr('readonly', true);
+                $('#txtusername').val(username_);
+                $('#txtEmail').val(email_);
+                $('#txtSecAnswer').attr('readonly', true);
+                $('#txtSecAnswer').val(sansw_);
+
+                if (active_.toLowerCase().indexOf("true") >= 0) {
+                    $('#cekstatus').attr('checked', 'checked');
+                } else {
+                    $('#cekstatus').removeAttr('checked');
+                }
+                $(".ncelek").select2({
+                    theme: "classic",
+                    width: '100%'
+                });
+
+            } else {
+                NoAccessModal("Please Select Data in Table Before Edit");
+                return;
+            }
+
+        }//LoadEditForm
+
+        function boxeditClose() {
+            $("#boxedit").modal('hide');
+        }
+
+        function Delete() {
+           var tbl_ = $('#tblUserStep1').DataTable();
+            var tblData_ = tbl_.rows('.selected').data();
+            var tblDatalength_ = tblData_.length;
+            if (tblDatalength_ > 0) {
+                var userid = tblData_[0].userid;
+                var username = tblData_[0].username;
+                CreateDeleteModal(userid,username);
+            } else {
+                CreateErrorMessageModal("Please Select Data in Table Before Edit");
+            }
+        }
+
+
+        function btnEditUser_Click() {
+            var txtuserid = $('#txtuserid');
+            if (!txtuserid.val()) {
+                CreateErrorMessage(txtuserid);
+                return;
+            }
+
+            var txtusername = $('#txtusername');
+            if (!txtusername.val()) {
+                CreateErrorMessage(txtusername);
+                return;
+            }
+
+            var txtEmail = $('#txtEmail');
+            if (!txtEmail.val()) {
+                CreateErrorMessage(txtEmail);
+                return;
+            }
+
+            var cbogroup = $('#cbogroup');
+            if (!cbogroup.val()) {
+                CreateErrorMessage(cbogroup);
+                return;
+            }
+
+            var cbobranch = $('#cbobranch');
+            if (!cbobranch.val()) {
+                CreateErrorMessage(cbobranch);
+                return;
+            }
+
+            var txtPassword = $('#txtPassword');
+
+            var cboSecCode = $('#cboSecCode');
+            if (!cboSecCode.val()) {
+                CreateErrorMessage(cboSecCode);
+                return;
+            }
+
+            var txtSecAnswer = $('#txtSecAnswer');
+            if (!txtSecAnswer.val()) {
+                CreateErrorMessage(txtSecAnswer);
+                return;
+            }
+
+            var cboexp = $('#cboexp');
+            if (!cboexp.val()) {
+                CreateErrorMessage(cboexp);
+                return;
+            }
+
+            var d = new Date();
+            var strDate = d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate();
+
+            var cboAMgroupVal = 0;
+            if ($('#cboAMgroupdiv').css('display') == 'none') {
+                cboAMgroupVal = 0;
+            } else {
+                cboAMgroupVal = $('#cboAMgroup').val();
+            }
+
+            BtnLoading($('#btnupdate'));
+
+            var data_ = {
+                'userid': txtuserid.val(),
+                'username': txtusername.val(),
+                'password': txtPassword.val(),
+                'email': txtEmail.val(),
+                'group': cbogroup.val(),
+                'date': strDate,
+                'exp': cboexp.val(),
+                'scode': cboSecCode.val(),
+                'sansw': txtSecAnswer.val(),
+                'akumulasi': 0,
+                'status': $('#cekstatus').is(":checked"),
+                'branch': cbobranch.val(),
+                'amgroupcode': cboAMgroupVal
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdateUser", "User", new { Area = "Maintenance" })',
+                type: 'POST',
+                data: JSON.stringify(data_),
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    var msg_ = data.msg_;
+                    var respons_ = data.response_;
+                    if (respons_ == "ok") {
+                        $('#txtresult').text("");
+                        $("#boxedit").modal('hide');
+
+                        var pieChartContent = document.getElementById('classgrid1');
+                        pieChartContent.innerHTML = '&nbsp;';
+                        $('#classgrid1').append("<div class='table-responsive table-responsive-sm p-2 bg-white border'> <table id='tblUserStep1' class='table table-bordered table-hover w-100'> <thead>  <tr>  <th>#</th> <th>User Id</th> <th>User Name</th>            <th>Email</th>            <th>Group</th>            <th>Date Created</th>            <th>Expired</th>            <th>Accum</th>            <th>Active</th>        </tr>        </thead>    </table></div>");
+                        var data = JSON.stringify({ "Branch": $('#cboBranch').val() })
+                        var uri = '@Url.Action("RefreshUser", "User", new { Area = "Maintenance" })'
+                        var wb_methode = 'POST';
+                        var return_ = httpGet(wb_methode, uri, data);
+                        GetListUser(return_);
+                        BtnReset($('#btnupdate'));
+                    } else {
+                        BtnReset($('#btnupdate'));
+                        $('#txtresult').text(msg_);
+                    }
+                },
+                error: function (request, error) {
+                    BtnReset($('#btnupdate'));
+                    console.log("Request: " + request);
+                }
+            });
+
+        }
+
+        function BtnLoading(elem) {
+            $(elem).attr("data-original-text", $(elem).html());
+            $(elem).prop("disabled", true);
+            $(elem).html('<i class="spinner-border spinner-border-sm"></i>');
+            // $(elem).html('<i class="spinner-border spinner-border-sm"></i> Loading...');
+        }
+
+        function BtnReset(elem) {
+            $(elem).prop("disabled", false);
+            $(elem).html($(elem).attr("data-original-text"));
+        }
+
+        function httpGet(getOrpost, theUrl, param) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open(getOrpost, theUrl, false); // false for synchronous request
+            xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlHttp.send(param);
+            return xmlHttp.responseText;
+        }
+
+        function getResponse(getOrpost, theUrl, param) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open(getOrpost, theUrl, false); // false for synchronous request
+            xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlHttp.send(param);
+            return JSON.parse(xmlHttp.responseText);
+        }
+
+        function ValidateEmail(inputText) {
+            var mailformat = /^([\w-\.]+)@@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+            if (inputText.match(mailformat)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        function stringlength(inputtxt, minlength, maxlength) {
+            var field = inputtxt;
+            var mnlen = minlength;
+            var mxlen = maxlength;
+            if (field.length < mnlen || field.length > mxlen) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+
+        function CreateErrorMessageModal(msg) {
+            var stringbuilder = "";
+            stringbuilder += "<div class='modal fade' id='noaccess' tabindex='-1' role='dialog' aria-labelledby='noaccess' aria-hidden='true'>";
+            stringbuilder += "       <div class='modal-dialog modal-dialog-centered' role='document'>";
+            stringbuilder += "                   <div class='modal-content card'>";
+            stringbuilder += "                          <div class='card-header'>";
+            stringbuilder += "                                 <div id='btncardtitle' class='card-title modal-title'>";
+            stringbuilder += "                                        <table>";
+            stringbuilder += "                                                <tr>";
+            stringbuilder += "                                                        <td style='width:40%'>";
+            stringbuilder += "<img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='Logo' class='brand-image img-circle elevation-2' style='width: 20%;height: 20%;'>";
+            stringbuilder += "                                                       <td>";
+            stringbuilder += "                                                               <div id='txtcap' style='font-weight: bold;'>Information Message</div>";
+            stringbuilder += "                                                           </td>";
+            stringbuilder += "                                                   </tr>";
+            stringbuilder += "                                          </table>";
+            stringbuilder += "                                  </div>";
+            stringbuilder += "                              <div class='card-tools'>";
+            stringbuilder += "                                      <ul class='nav nav-pills ml-auto'>";
+            stringbuilder += "                                              <li class='nav-item'>";
+            stringbuilder += "                                                      <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' onclick='publicAlertClose()'>";
+            stringbuilder += "                                                            <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+            stringbuilder += "                                                        </a>";
+            stringbuilder += "                                                 </li>";
+            stringbuilder += "                                         </ul>";
+            stringbuilder += "                                </div>";
+            stringbuilder += "                         </div>";
+            stringbuilder += "                         <div class='card-body modal-body'>";
+            stringbuilder += msg;
+            stringbuilder += "                         </div>";
+            stringbuilder += "                       <div class='modal-footer'>";
+            stringbuilder += "                                <button type='button' class='btn btn-danger btn-sm' data-dismiss='modal' onclick='publicAlertClose()'>Close</button>";
+            stringbuilder += "                        </div>";
+            stringbuilder += "                  </div>";
+            stringbuilder += "        </div>";
+            stringbuilder += " </div>";
+
+            // return stringbuilder;
+            var myElement = document.getElementById("publicAlert");
+            if (!myElement) {
+                let div = document.createElement('div');
+                div.id = 'publicAlert';
+                document.body.appendChild(div);
+            }
+            $('#publicAlert').empty();
+            $("#publicAlert").html(stringbuilder);
+            $("#noaccess").modal('show');
+        }
+
+    function RefreshMaintenanceUser() {
+        var pieChartContent = document.getElementById('classgrid1');
+        pieChartContent.innerHTML = '&nbsp;';
+        $('#classgrid1').append("<div class='table-responsive table-responsive-sm p-2 bg-white border'> <table id='tblUserStep1' class='table table-bordered table-hover w-100'> <thead>  <tr>  <th>#</th> <th>User Id</th> <th>User Name</th>            <th>Email</th>            <th>Group</th>            <th>Date Created</th>            <th>Expired</th>            <th>Accum</th>            <th>Active</th>        </tr>        </thead>    </table></div>");
+        var data = JSON.stringify({ "Branch": $('#cboBranch').val() })
+        var uri = '@Url.Action("RefreshUser", "User", new { Area = "Maintenance" })'
+        var wb_methode = 'POST';
+        var return_ = httpGet(wb_methode, uri, data);
+        GetListUser(return_);
+    }
+
+        function CreateDeleteModal(userid,username) {
+            var stringbuilder = "";
+            stringbuilder += "<div class='modal fade' id='noaccess' tabindex='-1' role='dialog' aria-labelledby='noaccess' aria-hidden='true'>";
+            stringbuilder += "       <div class='modal-dialog modal-dialog-centered' role='document'>";
+            stringbuilder += "                   <div class='modal-content card'>";
+            stringbuilder += "                          <div class='card-header'>";
+            stringbuilder += "                                 <div id='btncardtitle' class='card-title modal-title'>";
+            stringbuilder += "                                        <table>";
+            stringbuilder += "                                                <tr>";
+            stringbuilder += "                                                        <td style='width:40%'>";
+            stringbuilder += "<img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='Logo' class='brand-image img-circle elevation-2' style='width: 25%;height: 25%;'>";
+            stringbuilder += "                                                       <td>";
+            stringbuilder += "                                                               <div id='txtcap' style='font-weight: bold;'>Konfirmasi Delete</div>";
+            stringbuilder += "                                                           </td>";
+            stringbuilder += "                                                   </tr>";
+            stringbuilder += "                                          </table>";
+            stringbuilder += "                                  </div>";
+            stringbuilder += "                              <div class='card-tools'>";
+            stringbuilder += "                                      <ul class='nav nav-pills ml-auto'>";
+            stringbuilder += "                                              <li class='nav-item'>";
+            stringbuilder += "                                                      <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' onclick='publicAlertClose()'>";
+            stringbuilder += "                                                            <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+            stringbuilder += "                                                        </a>";
+            stringbuilder += "                                                 </li>";
+            stringbuilder += "                                         </ul>";
+            stringbuilder += "                                </div>";
+            stringbuilder += "                         </div>";
+            stringbuilder += "                         <div class='card-body modal-body'>";
+            stringbuilder += "<table clas='table table-striped'>";
+            stringbuilder += " <tr>";
+            stringbuilder += "  <td><b>User Id</b></td>";
+            stringbuilder += "  <td>"+userid+"</td>";
+            stringbuilder += "</tr>";
+            stringbuilder += "<tr>";
+            stringbuilder += "  <td><b>User Name</b></td>";
+            stringbuilder += " <td>" + username + "</td>";
+            stringbuilder += "</tr>";
+            stringbuilder += "</table>";
+            stringbuilder += "                         </div>";
+            stringbuilder += "                       <div class='modal-footer'>";
+            stringbuilder += "                                <button type='button' class='btn btn-danger btn-sm' data-dismiss='modal' id='btnDeleteCancel'>Cancel</button>";
+            stringbuilder += "                                <button type='button' class='btn btn-primary btn-sm' id='btnDeleteUser'>Delete</button>";
+            stringbuilder += "                        </div>";
+            stringbuilder += "                  </div>";
+            stringbuilder += "        </div>";
+            stringbuilder += " </div>";
+
+            // return stringbuilder;
+            var myElement = document.getElementById("publicAlert");
+            if (!myElement) {
+                let div = document.createElement('div');
+                div.id = 'publicAlert';
+                document.body.appendChild(div);
+            }
+            $('#publicAlert').empty();
+            $("#publicAlert").html(stringbuilder);
+            $("#noaccess").modal('show');
+
+            document.getElementById("btnDeleteCancel").addEventListener("click", function () {
+                $("#noaccess").modal('hide');
+            });
+
+            document.getElementById("btnDeleteUser").addEventListener("click", function () {
+                $.ajax({
+                    url: '@Url.Action("DeleteUserId", "User", new { Area = "Maintenance" })',
+                    type: 'POST',
+                    data: JSON.stringify({ 'userid': userid }),
+                    dataType: 'json',
+                    success: function (data) {
+                        var pieChartContent = document.getElementById('classgrid1');
+                        pieChartContent.innerHTML = '&nbsp;';
+                        $('#classgrid1').append("<div class='table-responsive table-responsive-sm p-2 bg-white border'> <table id='tblUserStep1' class='table table-bordered table-hover w-100'> <thead>  <tr>  <th>#</th> <th>User Id</th> <th>User Name</th>            <th>Email</th>            <th>Group</th>            <th>Date Created</th>            <th>Expired</th>            <th>Accum</th>            <th>Active</th>        </tr>        </thead>    </table></div>");
+                        var data = JSON.stringify({ "Branch": $('#cboBranch').val() })
+                        var uri = '@Url.Action("RefreshUser", "User", new { Area = "Maintenance" })'
+                        var wb_methode = 'POST';
+                        var return_ = httpGet(wb_methode, uri, data);
+                        GetListUser(return_);
+                        $("#noaccess").modal('hide');
+                    },
+                    error: function (request, error) {
+                        $("#noaccess").modal('hide');
+                        console.log("Request: " + request);
+                    }
+                });
+            });
+        }
+
+    </script>
+
+}
+

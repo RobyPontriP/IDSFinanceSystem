@@ -1,0 +1,247 @@
+﻿@model IDS.FixedAsset.FAGroup
+
+@section Styles {
+    <link href="~/Content/Select2/css/Bootstrap5/select2-bootstrap-5-theme.min.css" rel="stylesheet" type="text/css" />
+}
+
+<div class="modal fade bd-example-modal-lg" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Code, htmlAttributes: new { @class = "col-form-label-sm" })
+                                @Html.EditorFor(model => model.Code, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 20 } })
+                                @Html.ValidationMessageFor(model => model.Code, "", new { @id = "valGroupCode", @class = "text-danger" })
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 200 } })
+                                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                            </div>
+
+
+
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.DepreMethod, htmlAttributes: new { @class = "col-form-label-sm" })
+                                @Html.DropDownListFor(x => x.DepreMethod, (ViewData["DepreMethodList"] as SelectList), new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                                @Html.ValidationMessageFor(model => model.DepreMethod, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.DepreYear, htmlAttributes: new { @class = "col-form-label-sm" })
+                                        @Html.TextBoxFor(model => model.DepreYear, new { @class = "form-control form-control-sm", @maxlength = 2 })
+                                        @Html.ValidationMessageFor(model => model.DepreYear, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        @*@Html.LabelFor(model => model.DepreRate, htmlAttributes: new { @class = "col-form-label-sm" })
+                                        @Html.TextBoxFor(model => model.DepreRate, new { @class = "form-control form-control-sm", @maxlength = 20, @disabled="disabled" })
+                                        @Html.ValidationMessageFor(model => model.DepreRate, "", new { @class = "text-danger" })*@
+                                        @Html.LabelFor(model => model.DepreRate, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                                        <div class="input-group">
+                                            @Html.EditorFor(model => model.DepreRate, new { htmlAttributes = new { @class = "form-control form-control-sm text-right mt-2", @maxlength = 20, @disabled = "disabled" } })
+                                            <span class="input-group-text pb-0 pt-0 mt-2" id="basic-addon2">%</span>
+                                        </div>
+                                        @Html.ValidationMessageFor(model => model.DepreRate, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.GLAccItemGroup, htmlAttributes: new { @class = "col-form-label-sm" })
+                                @Html.DropDownListFor(model => model.GLAccItemGroup, ViewData["COAList"] as List<SelectListItem>, "-- Select Char of Account ", new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                                @Html.ValidationMessageFor(model => model.GLAccItemGroup, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.GLAccDepreExpense, htmlAttributes: new { @class = "col-form-label-sm" })
+                                @Html.DropDownListFor(model => model.GLAccDepreExpense, (ViewData["COAList"] as List<SelectListItem>), "-- Select Char of Account", new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                                @Html.ValidationMessageFor(model => model.GLAccDepreExpense, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.GLAccumDepre, htmlAttributes: new { @class = "col-form-label-sm" })
+                                @Html.DropDownListFor(model => model.GLAccumDepre, (ViewData["COAList"] as List<SelectListItem>), "-- Select Char of Account", new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                                @Html.ValidationMessageFor(model => model.GLAccumDepre, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="form-group  ">
+                                @Html.LabelFor(model => model.GLAccGainLoss, htmlAttributes: new { @class = "col-form-label-sm" })
+                                @Html.DropDownListFor(model => model.GLAccGainLoss, (ViewData["COAList"] as List<SelectListItem>), "-- Select Char of Account", new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                                @Html.ValidationMessageFor(model => model.GLAccGainLoss, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <div class="form-group mr-4">
+                    <div class="input-group">
+                        <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Operator ID</span>
+                        @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })
+                    </div>
+                </div>
+
+                <div class="form-group mr-auto col-sm-4 mr-4">
+                    <div class="input-group">
+                        <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Last Update</span>
+                        @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary" title="Input New Fixed Asset Group" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" title="Save Fixed Asset Group" id="btnSave">Save</button>
+                <button type="button" class="btn btn-danger" title="Close This Form" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {    
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#CreateEditForm .select2DDList").select2({
+            tags: true,
+            dropdownParent: $("#CreateEditForm"),
+            width: 'style'
+        });
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit group code: " + $("#Code").val() + " ?");
+            }
+
+            var answer = confirm(confirmText);
+            if (answer) {
+                $('#DepreRate').prop('disabled', false);
+
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "FAGroup", new { Area = "FixedAsset" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        },
+                        error: function (status) {
+                            $('#DepreRate').prop('disabled', true);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "FAGroup", new { Area = "FixedAsset" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        },
+                        error: function (status) {
+                            $('#DepreRate').prop('disabled', true);
+                        }
+                    });
+                }
+
+                $('#DepreRate').prop('disabled', true);
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "FAGroup", new { Area = "FixedAsset" })';
+            }
+        }),
+        
+        $("#btnAddNew").click(function () {
+            if (!$('#Code, #Description').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#Code').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $('#DepreMethod, #DepreYear').change(function () {
+            
+            switch ($('#DepreMethod').val()) {
+                case "Not_Depreciate":
+                    $('#DepreRate').val(0);
+                    $('#DepreYear').val(0);
+                    $('#DepreYear').attr('disabled', true);
+                    break;
+                default:
+                    $('#DepreYear').attr('disabled', false);
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("CalculateRate", "FAGroup", new { Area = "FixedAsset" })',
+                        data: { "DepreMethod": $('#DepreMethod').val(), "year": $('#DepreYear').val() },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            $('#DepreRate').val(respond);
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+            }
+        })
+    });
+
+</script>

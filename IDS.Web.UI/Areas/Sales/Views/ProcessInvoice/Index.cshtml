@@ -1,0 +1,247 @@
+﻿
+@{
+    ViewBag.Title = "Process Invoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+@Html.Hidden("result", ViewData["result"])
+@Html.Hidden("MessageError", ViewData["MessageError"])
+@Html.Hidden("dtpValue", ViewData["dtpValue"])
+@Html.Hidden("period", ViewData["period"])
+@Html.Hidden("invdate", ViewData["invdate"])
+@Html.Hidden("HOStatus", ViewData["HOStatus"])
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 col-sm-2">
+        <label for="PeriodIndex" class="col-sm-3 col-form-label col-form-label-sm">Period</label>
+        <div class="col-sm-7">
+            @*<input class="form-control form-control-sm bg-white datepicker text-box single-line flatpickr-input valid active" data-val="true" id="PeriodIndex" name="Period" type="text" aria-describedby="Mont-error" aria-invalid="false">*@
+            @Html.TextBox("PeriodIndex","",htmlAttributes: new { @class="form-control form-control-sm bg-white", @id="PeriodIndex"})
+        </div>
+    </div>
+
+    <div class="row mb-2 justify-content-between col-sm-3">
+        <div class="col-sm-12">
+            <label for="PeriodIndex" class="col-sm-4 col-form-label col-form-label-sm">Invoice Date</label>
+            @Html.TextBox("InvDate", "", htmlAttributes: new { @class = "form-control form-control-sm bg-white col-sm-8" })
+        </div>
+    </div>
+
+    <div class="row mb-2 col-sm-1">
+        <div class="col-sm-12">
+            <button class="btn btn-sm btn-primary" type="button" onclick="Process()">
+                Process
+            </button>
+        </div>
+    </div>
+</div>
+
+@*<div class="row mb-0">
+    
+</div>*@
+
+<div class="row mb-0" hidden>
+    <div class="row mb-2 justify-content-between col-sm-3">
+        <label for="InvNoStart" class="col-sm-7 col-form-label col-form-label-sm">Invoice Number Start From</label>
+        <div class="col-sm-4">
+            @Html.TextBox("InvNoStart", "", htmlAttributes: new { @class = "form-control form-control-sm bg-white", @maxlength = 5 })
+        </div>
+    </div>
+</div>
+
+@Html.Label(" ",htmlAttributes: new { @id= "lblNextInvoiceNumberHTML",@class="text-danger" })
+
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center" role="document">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="row">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="row">
+                <strong>Process...</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="errorMessageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content" style="height:300px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorMessageModal">Error Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="modalClose()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="divErrorMessage">
+                <textarea class="form-control" style="height:100%; resize:none" id="txtErrorMessage"></textarea>
+            </div>
+            @*<div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+
+
+
+    <script type="text/javascript">
+        var HOSStatus = $("#HOStatus").val();
+        var result = $("#result").val();
+        var period = $("#period").val();
+        var invdate = $("#InvDate").val();
+
+        var PeriodValue = $("#PeriodIndex").val();
+
+        $(document).ready(function () {
+            //PeriodValue = $("#dtpValue").val();
+            $("#txtErrorMessage").prop("readonly", true);
+
+            flatpickr("#PeriodIndex", {
+                shorthand: true,
+                dateFormat: "M-Y",
+                altFormat: "F Y",
+                //defaultDate: ["today"],
+                static: true,
+                disableMobile: true,
+                plugins: [new monthSelectPlugin({
+                    shorthand: true, //defaults to false
+                    dateFormat: "M Y", //defaults to "F Y"
+                    altFormat: "F Y"
+                })],
+            });
+
+            flatpickr("#InvDate", {
+                shorthand: true,
+                dateFormat: "d/M/Y",
+                altFormat: "F Y",
+                defaultDate: ["today"],
+                //minDate: $('#PeriodIndex').val(),
+                static: true,
+            });
+
+            //$("#PeriodIndex").val(PeriodValue);
+
+            if (result != "") {
+                $("#PeriodIndex").val(period);
+                $("#InvDate").val(invdate);
+                
+                alert(result);  
+                //modalErrorMessage();
+            }
+
+            if (HOSStatus == 0) {
+            }
+        });
+
+        $('#PeriodIndex').change(function () {
+            var periodPar = $('#PeriodIndex').val();
+            var offsetPar = 0;
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetNextInvoiceNumber", "ProcessInvoice", new { Area = "Sales" })',
+                dataType: 'json',
+                data: { offset: offsetPar,
+                        period: periodPar
+                      },
+                success: function (respond) {
+                    $('#lblNextInvoiceNumberHTML').empty();
+                    $('#lblNextInvoiceNumberHTML').append(respond);
+                }
+            });
+            
+            $('#InvDate').val(moment(new Date(periodPar)).format('DD/MMM/YYYY'));
+        });
+
+        function modalProcess() {
+            $('#loadingModal').modal({ backdrop: 'static', keyboard: false })
+            $('#loadingModal').modal('show');
+            setTimeout(function () {
+                $('#loadingModal').modal('hide');
+            });
+        }
+
+        function modalErrorMessage() {
+            $('#txtErrorMessage').val($('#MessageError').val());
+
+            if ($('#MessageError').val() != "") {
+                $('#errorMessageModal').modal('show');
+            }
+        }
+
+        function modalClose() {
+            $('#errorMessageModal').modal('hide');
+        }
+
+        function Process() {
+            if ($('#PeriodIndex').val() == '' || $('#PeriodIndex').val() == null) {
+                alert('Please Input Period');
+                return false;
+            }
+
+            var answer = confirm("Are you sure want to Process Invoice at Period " + $('#PeriodIndex').val() + " ?");
+
+            if (answer) {
+                modalProcess();
+
+                var url = '@Url.Action("Index", "ProcessInvoice", new { Area = "Sales" })';
+
+                var form = $('<form action="' + url + '" method="POST">');
+                form.append('<input type="hidden" name="period" value="' + $("#PeriodIndex").val() + '" />');
+                form.append('<input type="hidden" name="invNo" value="' + $("#InvNoStart").val() + '" />');
+                form.append('<input type="hidden" name="invDate" value="' + $("#InvDate").val() + '" />');
+                form.append('</form>');
+                $('body').append(form);
+                form.submit();
+            } else {
+                return false;
+            }
+
+            
+            //PeriodValue = $("#PeriodIndex").val();
+            //alert($('#result').val());
+        }
+
+        $('#InvNoStart').keypress(function (event) {
+            return isNumber(event, this)
+        });
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+    </script>
+}
+

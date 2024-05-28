@@ -1,0 +1,207 @@
+﻿@model IDS.Sales.InvoiceDetail
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEditDtl" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+                    @*@Html.Hidden("MaxCounter", "0");
+                    @Html.Hidden("MaxSubCounter", "0");*@
+
+                    <script type="text/javascript">
+                        $('form#formCreateEditDtl').removeData("validator");
+                        $('form#formCreateEditDtl').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEditDtl'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Counter, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Counter, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Counter" } })
+                            @Html.ValidationMessageFor(model => model.Counter, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.SubCounter,"Sub Counter", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.SubCounter, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Sub Counter" } })
+                            @Html.ValidationMessageFor(model => model.SubCounter, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Remark, "Description", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Remark, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Description" } })
+                            @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.TaxInvoice, htmlAttributes: new { @class = "col-form-label-sm col-sm-3 align-text-top", name = "TaxInvoice" })
+                        <div class="col-md-9 align-text-bottom" style="vertical-align:text-bottom">
+                            <input style="text-align:center; vertical-align:middle" type="checkbox" id="TaxInvoice" data-val="false" name="TaxInvoice" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.SubAmount,"Sub Amount", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.SubAmount, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Sub Amount" } })
+                            @Html.ValidationMessageFor(model => model.SubAmount, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Amount, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Amount" } })
+                            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNewDtl">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSaveDtl">Save</button>
+                <button type="button" class="btn btn-default" id="btnCloseDtl" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+}
+
+<script type="text/javascript">
+    
+    var CounterVal = 0;
+    var SubCounterVal = 0;
+
+    $(document).ready(function () {
+        if ($("#Counter").val() != 0) {
+            CounterVal = $("#Counter").val();
+        }
+
+        if ($("#SubCounter").val() != 0) {
+            SubCounterVal = $("#SubCounter").val();
+        }
+
+        $("#btnSaveDtl").click(function () {
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetDataDetailEdit", "SalesInvoice", new { Area = "Sales" })',
+                dataType: 'json',
+                data: { countryCode: country },
+                success: function (respond) {
+                    $('#cboCity').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboCity').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+
+            @*var htmlTaxInv = ''; 
+
+            if ($('#TaxInvoice').is(':checked')) {
+                htmlTaxInv = '<input type="checkbox" disabled class="editor-taxinvoice" checked="true">';
+            } else {
+                htmlTaxInv = '<input type="checkbox" disabled class="editor-taxinvoice">';
+            }
+
+            var confirmText = "";
+            confirmText = ("Are you sure want to save data ?");
+
+            var answer = confirm(confirmText);
+            var teest = 'asdasd';
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Create", "SalesInvoice", new { Area = "Sales" })',
+                processData: false,
+                success: function (respond) {
+                    $("#Counter").prop('disabled', false);
+
+                    //$("#tableInvDetail").append('<tr class="details-control" style="select:os;">' +
+                    //            '<td class="details-control" style="width:10px; select:os;">' + CounterVal + '</td>' +
+                    //            '<td class="details-control" style="width:10px;">' + SubCounterVal + '</td>' +
+                    //            '<td class="details-control" style="width:300px;">' + $("#Remark").val() + '</td>' +
+                    //            '<td class="details-control" style="width:10px;">' + htmlTaxInv + '</td>' +
+                    //            '<td class="details-control" style="width:120px;">' + parseFloat($("#SubAmount").val()).toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") + '</td>' +
+                    //            '<td class="details-control" style="width:120px;">' + parseFloat($("#Amount").val()).toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") + '</td>' +
+                    //            '</tr>');
+                    
+
+                    $("#Counter").prop('disabled', true);
+
+                    CounterVal = parseInt(CounterVal) + 1;
+                    SubCounterVal = parseInt(SubCounterVal) + 1;
+
+                    $("#CounterTemp").val(CounterVal);
+                    $("#SubCounterTemp").val(SubCounterVal);
+                }
+            });*@
+        }),
+
+        $("#btnAddNewDtl").click(function () {
+            if (!$('#Counter, #SubCounter').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEditDtl").trigger("reset");
+                    $(':input', '#formCreateEditDtl').not(':button, :submit, :reset, :hidden').val('');
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+
+                    $('#SubCounter').val(SubCounterVal);
+                    $('#Counter').val(CounterVal);
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $("#btnCloseDtl").click(function () {
+            $("#CreateEditForm").modal('hide');
+            @*if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "AccrualCustProject", new { Area = "Sales" })';
+            }*@
+        }),
+
+        $('#Amount').keypress(function (event) {
+            return isNumber(event, this)
+        });
+
+        $('#SubAmount').keypress(function (event) {
+            return isNumber(event, this)
+        });
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+    });
+
+</script>

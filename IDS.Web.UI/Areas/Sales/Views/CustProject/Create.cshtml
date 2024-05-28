@@ -1,0 +1,479 @@
+﻿@model IDS.Sales.CustProject
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+@*<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">*@
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modalTitle"></h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                        @Html.Hidden("FormSave", "0");
+
+                        <script type="text/javascript">
+                            $('form#formCreateEdit').removeData("validator");
+                            $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                            $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                        </script>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.CustProjCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.CustProjCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, name = "CustProjCode", placeholder = "Project Code" } })
+                                @Html.ValidationMessageFor(model => model.CustProjCode, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.CustProjName, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.CustProjName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 200, name = "CustProjName", placeholder = "Project Name" } })
+                                @Html.ValidationMessageFor(model => model.CustProjName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.CustCode, "Cust. Code", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @*@Html.DropDownListFor(model => model.CustCode, (SelectList)ViewData["SelectListCust"], new { @id = "cboCust", @class = "form-control select2DDList", @style = "width:100%;" })*@
+                                @Html.DropDownListFor(model => model.CustCode, (SelectList)ViewData["SelectListCust"], new { @id = "cboCust", @class = "form-control select2DDList" })
+                                @Html.ValidationMessageFor(model => model.CustCode, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.BranchProject.BranchName, "Branch", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                            <div class="col-sm-4">
+                                @Html.DropDownListFor(model => model.BranchProject.BranchCode, (SelectList)ViewData["SelectListBranch"], "", new { @id = "cboBranch", @class = "form-control select2DDList text-right", @style = "width:100%;" })
+                                @Html.ValidationMessageFor(model => model.BranchProject.BranchName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.PaymentCycle, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.PaymentCycle, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, name = "PaymentCycle", placeholder = "Payment Term" } })
+                                @Html.ValidationMessageFor(model => model.PaymentCycle, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.StartPeriod, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.StartPeriod, new { htmlAttributes = new { @class = "form-control form-control-sm col-sm-10 bg-white" } })
+                                @Html.ValidationMessageFor(model => model.StartPeriod, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.NextPeriod, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-2">
+                                @Html.EditorFor(model => model.NextPeriod, new { htmlAttributes = new { @class = "form-control form-control-sm col-sm-12 bg-white" } })
+                                @Html.ValidationMessageFor(model => model.NextPeriod, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.CustProjCCy.CurrencyCode, "Ccy", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-2">
+                                @Html.DropDownListFor(model => model.CustProjCCy.CurrencyCode, (SelectList)ViewData["SelectListCcy"], " ", htmlAttributes: new { @id = "cboCcy", @class = "form-control select2DDList col-sm-12", @style = "width:100%;" })
+                                @Html.ValidationMessageFor(model => model.CustProjCCy.CurrencyCode, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.AmountBilling, "Amount", htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.AmountBilling, new { htmlAttributes = new { @id = "AmountBilling", @class = "form-control form-control-sm text-right", name = "AmountBilling", placeholder = "Amount" } })
+                                @Html.ValidationMessageFor(model => model.AmountBilling, "", new { @class = "text-danger" })
+                            </div>
+
+
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.DiscountAmount, "Discount Percentage", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="input-group col-sm-2">
+                                @Html.TextBox("discPerc", 0, htmlAttributes: new { @class = "form-control form-control-sm col-sm-12 text-right", @id = "discPerc", aria_describeby = "DiscountAmountSpan" })
+                                <span class="input-group-text text-sm form-control-sm col-sm-1" style="text-align:left;" id="DiscountAmountSpan">%</span>
+                            </div>
+                            <div class="col-sm-7">
+                                @Html.EditorFor(model => model.DiscountAmount, new { htmlAttributes = new { @class = "form-control form-control-sm text-right bg-white", name = "DiscountAmount", placeholder = "Discount Amount" } })
+                                @Html.ValidationMessageFor(model => model.DiscountAmount, "", new { @class = "text-danger", @style = "text-align:center;" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.CustProjAcc.Account, "Account Receivable", htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "CustProjAcc.Account" })
+                            <div class="col-md-9">
+                                @Html.DropDownListFor(model => model.CustProjAcc.Account, (SelectList)ViewData["SelectListAR"], new { @id = "cboAR", @class = "form-control select2DDList", @style = "width:100%;" })
+                                @Html.ValidationMessageFor(model => model.CustProjAcc.Account, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.UnearnedACC, htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "UnearnedACC.Account" })
+                            <div class="col-md-9">
+                                @Html.DropDownListFor(model => model.UnearnedACC, (SelectList)ViewData["SelectListUnearnedACC"], new { @id = "cboUnearned", @class = "form-control select2DDList", @style = "width:100%;" })
+                                @Html.ValidationMessageFor(model => model.UnearnedACC, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.StatusActive, htmlAttributes: new { @class = "control-label col-sm-2" })
+                            <div class="col-sm-2">
+                                <div class="checkbox">
+                                    @Html.EditorFor(model => model.StatusActive, new { @id = "chkStatusActive" })
+                                    @Html.ValidationMessageFor(model => model.StatusActive, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            @Html.LabelFor(model => model.StatusPPn, htmlAttributes: new { @class = "control-label col-sm-2" })
+                            <div class="col-sm-4">
+                                <div class="checkbox">
+                                    @Html.EditorFor(model => model.StatusPPn, new { @id = "chkStatusPPn" })
+                                    @Html.ValidationMessageFor(model => model.StatusPPn, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.Remark, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.Remark, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "Remark", placeholder = "Description" } })
+                                @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                        {
+                            <div class="form-group row text-sm-left">
+
+                                @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="col-sm-3">
+                                    @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                    @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="col-sm-3">
+                                    @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                    @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        }
+
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                    <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                    <button type="button" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/GeneralScript.js"></script>
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        //Select2
+        $(".select2DDList").select2();
+
+        //$("#cboBranch").select2({
+        //    dropdownParent: $("#CreateEditForm")
+        //});
+
+        //$("#cboCust").select2({
+        //    dropdownParent: $("#CreateEditForm")
+        //});
+
+        //$("#cboUnearned").select2({
+        //    dropdownParent: $("#CreateEditForm")
+        //});
+
+        //$("#cboAR").select2({
+        //    dropdownParent: $("#CreateEditForm")
+        //});
+        //Select2
+
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        var dateNow = new Date().getDate() + "-" + monthNames[new Date().getMonth()] + "-" + new Date().getFullYear();
+        var dateMonthNow = monthNames[new Date().getMonth()] + " " + new Date().getFullYear();
+
+        if ($("#FormAction").val() == 2) {
+            dateNow = new Date($("#StartPeriod").val()).getDate() + "-" + monthNames[new Date($("#StartPeriod").val()).getMonth()] + "-" + new Date($("#StartPeriod").val()).getFullYear();
+
+            var text = $("#NextPeriod").val();
+            dateMonthNow = monthNames[parseInt(text.substring(4, 6)) - 1] + " " + parseInt(text.substring(0, 4));
+            $("#AmountBilling").val(AddCommaDecimal($("#AmountBilling").val()));
+            $("#DiscountAmount").val(AddCommaDecimal($("#DiscountAmount").val()));
+            calcDiscPerc()
+        }
+
+        flatpickr("#StartPeriod", {
+            dateFormat: "d/M/Y",
+            defaultDate: [dateNow],
+            static: true,
+            disableMobile: true,
+        });
+
+        flatpickr("#NextPeriod", {
+            //shorthand: true,
+            dateFormat: "M/Y",
+            altFormat: "F Y",
+            defaultDate: [dateMonthNow],
+            static: true,
+            disableMobile: true,
+            plugins: [new monthSelectPlugin({
+                shorthand: true, //defaults to false
+                dateFormat: "M Y", //defaults to "F Y"
+                altFormat: "F Y"
+            })],
+        });
+
+        $("#DiscountAmount").attr('readonly', 'true');
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Project Code : " + $("#CustProjCode").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            $("#AmountBilling").val(parseFloat(RemoveAllComma($("#AmountBilling").val())));
+            $("#DiscountAmount").val(parseFloat(RemoveAllComma($("#DiscountAmount").val())));
+
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "CustProject", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#AmountBilling").val(AddCommaDecimal($("#AmountBilling").val()));
+                            $("#DiscountAmount").val(AddCommaDecimal($("#DiscountAmount").val()));
+                            $("#FormSave").val("1");
+                            $("#FormAction").val("2");
+                            $("#CustProjCode").attr('readonly', 'true');
+                            table = LoadData();
+                            alert(respond);
+                        },
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "CustProject", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#AmountBilling").val(AddCommaDecimal($("#AmountBilling").val()));
+                            $("#DiscountAmount").val(AddCommaDecimal($("#DiscountAmount").val()));
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            } else {
+                return false;
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "Project", new { Area = "GLTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#ProjectCode, #Group, #ProjectName, #cboBranch').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    dateNow = new Date().getDate() + "/" + monthNames[new Date().getMonth()] + "/" + new Date().getFullYear();
+                    dateMonthNow = monthNames[new Date().getMonth()] + " " + new Date().getFullYear();
+
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden,#cboCust,#cboAR,#cboBranch,#cboCcy').val('');
+                    $('#CustProjCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+        
+                    //$('#cboCust').val('');
+                    $("#StartPeriod").val(dateNow);
+                    $('#NextPeriod').val(dateMonthNow);
+                    $("#StatusActive").prop('checked', false);
+                    $("#StatusPPn").prop('checked', false);
+                    $("#discPerc").val(0);
+                    $("#DiscountAmount").val(0);
+                    $("#AmountBilling").val(0);
+
+                    $('#cboCcy').val('IDR');
+                    //$('#cboAR').empty();
+                    //$('#cboUnearned').empty();
+
+                    LoadAccWithType('AR');
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $('#cboCcy').change(function () {
+            $('#cboAR').empty();
+            $('#cboUnearned').empty();
+
+            LoadAccWithType('AR');
+        });
+
+        $('#cboCust').change(function () {
+            $('#cboAR').empty();
+            $('#cboUnearned').empty();
+
+            LoadAccWithType('AR');
+        });
+
+        $('#StartPeriod').change(function () {
+            $('#NextPeriod').val(monthNames[new Date($('#StartPeriod').val()).getMonth()] + " " + (new Date($('#StartPeriod').val()).getFullYear() + 1));
+        });
+
+        $('#DiscountAmount').change(function () {
+            calcDiscAmtJQ();
+        });
+
+        $('#discPerc').change(function () {
+            if (parseFloat(RemoveAllComma($('#AmountBilling').val())) > 0) {
+                calcDiscAmtJQ();
+            }
+        });
+
+        $('#AmountBilling').change(function () {
+            if (parseFloat(RemoveAllComma($('#AmountBilling').val())) > 0) {
+                calcDiscAmtJQ();
+            }
+        });
+
+        function calcDiscAmtJQ() {
+            $('#DiscountAmount').val(AddCommaDecimal(RemoveAllComma($('#AmountBilling').val()) * RemoveAllComma($('#discPerc').val()) / 100));
+        }
+
+        function calcDiscPerc() {
+            $('#discPerc').val(AddCommaDecimal(RemoveAllComma($('#DiscountAmount').val()) / RemoveAllComma($('#AmountBilling').val()) * 100));
+        }
+
+        function LoadAccWithType(prefixPar) {
+            var parCcy = $('#cboCcy').val();
+            var parCustCode = $('#cboCust').val();
+
+            if (parCustCode != '' && parCcy != '') {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetCustAccForDataSource", "Customer", new { Area = "GeneralTable" })',
+                    dataType: 'json',
+                    data: {
+                        custCode: parCustCode
+                    },
+                    success: function (respond) {
+                        $('#cboAR').empty();
+                        $.each(respond, function (i, item) {
+                            $('#cboAR').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                    dataType: 'json',
+                    data: { currencyCode: parCcy },
+                    success: function (respond) {
+                        $('#cboUnearned').empty();
+                        $.each(respond, function (i, item) {
+                            $('#cboUnearned').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+            }
+        }
+
+
+        //$('#AmountBilling').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        //$('#DiscountAmount').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        //$('#discPerc').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        $('#AmountBilling,#DiscountAmount,#discPerc,#PaymentCycle').keyup(function (event) {
+            InputNumber(this);
+        });
+
+        $('#discPerc').keyup(function (event) {
+            if ($('#discPerc').val() > 100) {
+                $('#discPerc').val(100);
+            }
+        });
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+        //$('#PaymentCycle').change(function () {
+        //    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        //    var date = new Date($('#InvoiceDate').val());
+        //    date.setDate(date.getDate() + parseInt($('#TermOfPayment').val()));
+
+        //    $('#DtpDueDate').val(("0" + date.getDate()).slice(-2) + "/" + months[date.getMonth()] + "/" + date.getFullYear());
+        //});
+    });
+
+
+
+</script>

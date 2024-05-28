@@ -1,0 +1,160 @@
+﻿@model IDS.GeneralTable.Staff
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.StaffCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.StaffCode, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 20, placeholder = "Staff Code" } })
+                            @Html.ValidationMessageFor(model => model.StaffCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.StaffName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.StaffName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, placeholder = "Staff Name" } })
+                            @Html.ValidationMessageFor(model => model.StaffName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Department.DepartmentCode,"Department", htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "Department.DepartmentCode" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.Department.DepartmentCode, (SelectList)ViewData["SelectListDept"], "", new { @id = "cboDept", @class = "form-control select2DDList"})
+                            @Html.ValidationMessageFor(model => model.Department.DepartmentCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Division.DivisiCode, "Disivion", htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "Disivion.DisivionCode" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.Division.DivisiCode, (SelectList)ViewData["SelectListDiv"], "", new { @id = "cboDiv", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.Division.DivisiCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Gender, "Gender", htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "Gender" })
+                        <div class="col-md-9">
+                            @Html.EnumDropDownListFor(model => model.Gender, new { @id = "cboGender", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+            //modalProcess();
+            if ($("#FormAction").val() == 1) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Create", "Staff", new { Area = "GeneralTable" })',
+                    processData: false,
+                    data: $("#formCreateEdit").serialize(),
+                    success: function (respond) {
+                        //$('#loadingModal').modal('hide');
+                        $("#FormSave").val("1");
+                        LoadData();
+                        alert(respond);
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Edit", "staff", new { Area = "GeneralTable" })',
+                    processData: false,
+                    data: $("#formCreateEdit").serialize(),
+                    success: function (respond) {
+                        //$('#loadingModal').modal('hide');
+                        $("#FormSave").val("1");
+                        LoadData();
+                        alert(respond);
+                    }
+                });
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            @*if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "City", new { Area = "GeneralTable" })';
+            }*@
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#StaffCode, #StaffName, #cboCountry').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#StaffCode').prop('readonly', false);
+                    $('#cboCountry').prop('disabled', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+
+                    $(".select2DDList").select2();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+    });
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

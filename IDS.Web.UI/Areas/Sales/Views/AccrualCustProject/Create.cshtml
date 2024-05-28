@@ -1,0 +1,210 @@
+﻿@model IDS.Sales.AccrualCustProject
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.InvoiceNo, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.InvoiceNo, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Invoice No" } })
+                            @Html.ValidationMessageFor(model => model.InvoiceNo, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Period, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Period, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Period" } })
+                            @Html.ValidationMessageFor(model => model.Period, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Branch, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.Branch, (SelectList)ViewData["SelectListBranch"], " ", new { @id = "cboBranch", @class = "form-control select2DDList", @style = "width:100%;" })
+                            @Html.ValidationMessageFor(model => model.Branch, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Ccy, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.Ccy, (SelectList)ViewData["SelectListCurrency"], " ", new { @id = "cboCcy", @class = "form-control select2DDList", @style = "width:100%;" })
+                            @Html.ValidationMessageFor(model => model.Ccy, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.Amount, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Amount" } })
+                            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.GLStatus, htmlAttributes: new { @class = "col-form-label-sm col-sm-3 align-text-top", name = "GLStatus" })
+                        <div class="col-md-9 align-text-bottom" style="vertical-align:text-bottom">
+                            <input style="text-align:center; vertical-align:middle" type="checkbox" id="GLStatus" data-val="false" name="GLStatus" />
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>*@
+                <button type="button"  class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+
+        $("#cboBranch").select2({
+            dropdownParent: $("#CreateEditForm")
+        });
+
+        $("#cboCcy").select2({
+            dropdownParent: $("#CreateEditForm")
+        });
+
+        flatpickr("#Period", {
+            shorthand: true,
+            dateFormat: "M-Y",
+            altFormat: "F Y",
+            defaultDate: ["today"],
+            static: true,
+            plugins: [new monthSelectPlugin({
+                shorthand: true, //defaults to false
+                dateFormat: "M Y", //defaults to "F Y"
+                altFormat: "F Y"
+            })],
+        });
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                //confirmText = ("Are you sure want to edit Currency Code : ?");
+                confirmText = ("Are you sure want to edit Invoice No : " + $("#InvoiceNo").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                if ($('#GLStatus').is(":checked")) {
+                    $("#GLStatus").val(true);
+                }
+
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "AccrualCustProject", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $("#InvoiceNo").removeAttr('disabled');
+                    $("#cboBranch").removeAttr('disabled');
+                    $("#Period").removeAttr('disabled');
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "AccrualCustProject", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+
+                    $("#Period").attr('disabled', 'disabled');
+                    $("#InvoiceNo").attr('disabled', 'disabled');
+                    $("#cboBranch").attr('disabled', 'disabled');
+                }
+            } else {
+                return false;
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "AccrualCustProject", new { Area = "Sales" })';
+            }
+        }),
+
+        //$("#btnAddNew").click(function () {
+        //    if (!$('#Period').val() == "") {
+        //        var answer = confirm("Are you sure want to clear this form ?");
+
+        //        if (answer) {
+        //            $("form#formCreateEdit").trigger("reset");
+        //            $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+        //            $("#Period").removeAttr('disabled');
+        //            $("#InvoiceNo").removeAttr('disabled');
+        //            $("#cboBranch").removeAttr('disabled');
+        //            $("#cboCcy").removeAttr('disabled');
+        //            $("#GLStatus").removeAttr('disabled');
+        //            $("#FormAction").val("1");
+        //            $("#FormSave").val("1");
+        //        }
+        //        else {
+        //            e.preventDefault();
+        //        }
+        //    }
+        //    else {
+        //        e.preventDefault();
+        //    }
+        //})
+
+        $('#Amount').keypress(function (event) {
+            return isNumber(event, this)
+        });
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+    });
+
+</script>

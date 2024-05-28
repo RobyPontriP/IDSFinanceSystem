@@ -1,0 +1,80 @@
+[
+  {
+    "outputFileName": "Content/AdminLTE/css/adminlte.min.css",
+    "inputFiles": [
+      "Content/AdminLTE/css/adminlte.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap.min.css",
+    "inputFiles": [
+      "Content/bootstrap.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap.rtl.min.css",
+    "inputFiles": [
+      "Content/bootstrap.rtl.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap-grid.min.css",
+    "inputFiles": [
+      "Content/bootstrap-grid.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap-grid.rtl.min.css",
+    "inputFiles": [
+      "Content/bootstrap-grid.rtl.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap-reboot.min.css",
+    "inputFiles": [
+      "Content/bootstrap-reboot.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap-reboot.rtl.min.css",
+    "inputFiles": [
+      "Content/bootstrap-reboot.rtl.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap-utilities.min.css",
+    "inputFiles": [
+      "Content/bootstrap-utilities.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/bootstrap-utilities.rtl.min.css",
+    "inputFiles": [
+      "Content/bootstrap-utilities.rtl.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css",
+    "inputFiles": [
+      "Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.css"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/jquery.mask.min.js",
+    "inputFiles": [
+      "Scripts/jquery.mask.js"
+    ]
+  },
+  {
+    "outputFileName": "Areas/GeneralTable/Views/Bank/TestJS.min.js",
+    "inputFiles": [
+      "Areas/GeneralTable/Views/Bank/TestJS.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/TestJS.min.js",
+    "inputFiles": [
+      "Scripts/TestJS.js"
+    ]
+  }
+]

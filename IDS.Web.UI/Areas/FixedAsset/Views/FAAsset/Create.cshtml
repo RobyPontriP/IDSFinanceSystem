@@ -1,0 +1,1229 @@
+﻿@model IDS.FixedAsset.FAAsset
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["Title"];
+}
+
+@section Styles {
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/flatpickr/flatpickr.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+}
+
+@Html.Hidden("HO", Convert.ToInt32(ViewData["HO"]))
+
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormSave", "0");
+
+    @Html.Hidden("Journal", Convert.ToInt32(ViewData["Journal"]))
+
+    <div class="row">
+        <h4 class="text-bold">Fixed Asset</h4>
+    </div>
+
+    <div class="row">
+        <h6 class="text-bold">General Information</h6>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BranchCode, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.BranchCode, (ViewData["BranchList"] as SelectList), new { @class = "form-control form-control-sm", maxlength = 5 })
+                @Html.ValidationMessageFor(model => model.BranchCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AssetNo, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.AssetNo, new { @class = "form-control form-control-sm", @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.AssetNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.Description, new { @class = "form-control form-control-sm", @maxlength = 50 })
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Group, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Group.Code, (ViewData["FAGroupList"] as SelectList), "-- Select Group --", new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Group.Code, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.Label("Depre. Method", htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBox("DepreMethod", "", new { @class = "form-control form-control-sm", @maxlength = 100, @style = "width: 100%;", @id = "DepreMethodName", @disabled = "disabled" })
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.TaxCategoryID, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.TaxCategoryID, (ViewData["FATaxCategory"] as SelectList), string.Empty, new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.TaxCategoryID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.PartOf, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.PartOf, (ViewData["FAPartOf"] as SelectList), string.Empty, new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.PartOf, "", new { @class = "text-danger" })
+            </div>
+
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.SerialNo, "Serial No", new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.SerialNo, new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.SerialNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Vendor, "Vendor", new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Vendor, (ViewData["VendorList"] as SelectList), new { @class = "form -control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Vendor, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Department, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Department, (ViewData["DeptList"] as SelectList), "-- Select Department --", new { @class = "form-control form-control-sm select2DDList", @maxlength = 30, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Department, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Location, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Location, (ViewData["LocationList"] as SelectList), "-- Select Location --", new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Location, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Status, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Status, (ViewData["FAAssetStatus"] as SelectList), "-- Select Status --", new { @class = "form -control form-control-sm select2DDList", @maxlength = 15, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.StatusDate, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.StatusDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.StatusDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.Label("Purchase Date", new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.AcquisitionDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.AcquisitionDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.StartingDate, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.StartingDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.StartingDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.EndDate, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.EndDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm", @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BusinessUse, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                <div class="input-group">
+                    @Html.EditorFor(model => model.BusinessUse, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", @maxlength = 15 } })
+                    <span class="input-group-text pb-0 pt-0" id="basic-addon2">%</span>
+                </div>
+                @Html.ValidationMessageFor(model => model.BusinessUse, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AssetVoucher, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.EditorFor(model => model.AssetVoucher, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50 } })
+                @Html.ValidationMessageFor(model => model.AssetVoucher, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-12">
+            <h6 class="text-bold">Value Information</h6>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Currency, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Currency, (ViewData["CCyList"] as SelectList), "-- Select Currency --", new { @class = "form-control form-control-sm select2DDList", @maxlength = 15, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Currency, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ExchangeRate, "Rate", new { @class = "col-form-label col-form-label-sm", Title = "Exchange Rate" })
+                @Html.TextBoxFor(model => model.ExchangeRate, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 15, @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.ExchangeRate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Qty, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.Qty, "{0:#,###,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 18 })
+                @Html.ValidationMessageFor(model => model.Qty, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.UnitPrice, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.UnitPrice, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 18 })
+                @Html.ValidationMessageFor(model => model.UnitPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.TotalPrice, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.TotalPrice, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 18, @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.TotalPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            &nbsp;
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ResidualValue, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.ResidualValue, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 15 })
+                @Html.ValidationMessageFor(model => model.ResidualValue, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BaseTotalPrice, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.BaseTotalPrice, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 15, @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.BaseTotalPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <h6 class="text-bold">Depreciation List</h6>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-6">
+            <div class="text-right">
+                <p>
+                    @{
+                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" id="btnGenSchedule">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" onclick="NoAccess()">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive table-responsive-sm p-2 bg-white border mb-2">
+        <table id="tableData" class="table table-bordered table-hover w-100">
+            <thead>
+                <tr>
+                    <th class="align-middle">Period</th>
+                    <th class="align-middle">Beg Val</th>
+                    <th class="align-middle">Increment</th>
+                    <th class="align-middle">Decrement</th>
+                    <th class="align-middle">Depreciation</th>
+                    <th class="align-middle">Accumulation</th>
+                    <th class="align-middle">EndingValue</th>
+                    <th class="align-middle">Journal</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    @*<div class="row">
+        <p class="text-right">
+            <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+            <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+            <button type="button" class="btn btn-default notd" id="btnClose">Close</button>
+        </p>
+    </div>*@
+                        <div class="modal-footer">
+                            @if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                            {
+                                <div class="form-group mr-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Operator ID</span>
+                                        @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })
+                                    </div>
+                                </div>
+
+                                <div class="form-group mr-auto col-sm-3 mr-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Last Update</span>
+                                        @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                    </div>
+                                </div>
+                            }
+                            
+
+                            <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                            <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                            <button type="button" class="btn btn-danger notd" id="btnClose">Close</button>
+                        </div>
+                        }
+
+
+
+
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+
+
+    <script type="text/javascript">
+        function CalculateFAPrice() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CalculatePrice", "FAAsset", new { Area = "FixedAsset" })',
+                dataType: 'json',
+                data: {
+                    "ccy": $('#Currency').val(),
+                    "price": RemoveAllComma($('#UnitPrice').val()),
+                    "qty": RemoveAllComma($('#Qty').val()),
+                    "exRate" : RemoveAllComma($('#ExchangeRate').val())
+                },
+                success: function (result) {
+                    let arr;
+
+                    if (result.includes(';')) {
+                        arr = result.split(';');
+                        $('#TotalPrice').val(arr[0]);
+                        $('#BaseTotalPrice').val(arr[1]);
+                    }
+                    else {
+                        $('#TotalPrice').val("0");
+                        $('#BaseTotalPrice').val("0");
+                    }
+                },
+                error: function (requestObject, error, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $('form#formCreateEdit').removeData("validator");
+            $('form#formCreateEdit').removeData("unobtrusiveValidation");
+            $.validator.unobtrusive.parse($('form#formCreateEdit'));
+
+            if ($('#FormAction').val() == "1") {
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                var dateNow = new Date().getDate() + '-' + months[new Date().getMonth()] + '-' + new Date().getFullYear();
+                $("#StartingDate, #AcquisitionDate, #StatusDate").val(dateNow);
+                $('#EndDate').val(moment(new Date()).format('DD/MMM/yyyy'))
+            }
+
+            $(".select2DDList").select2();
+
+            flatpickr('#AcquisitionDate, #StartingDate, #StatusDate', {
+                //dateFormat: "Y-m-d",
+                dateFormat: "d/M/Y",
+                disableMobile: "true"
+            });
+
+            $('input.inputnumber').keyup(function (event) {
+                if (event.which >= 37 && event.which <= 40) return;
+                $(this).val(function (index, value) {
+                    return value
+                      // Keep only digits and decimal points:
+                      .replace(/[^\d.]/g, "")
+                      // Remove duplicated decimal point, if one exists:
+                      .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                      // Keep only two digits past the decimal point:
+                      .replace(/\.(\d{2})\d+/, '.$1')
+                      // Add thousands separators:
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                });
+            });
+
+            $('#UnitPrice, #Qty, #ExchangeRate').change(function () {
+                var fields = $("#UnitPrice, #Qty, #ExchangeRate");
+
+                var valuesSet = true;
+                fields.each(function () {
+                    if (!$(this).val()) { //inside a jQuery "each", "this" refers to the current item in the loop
+                        valuesSet = false;
+                    }
+                });
+
+                if (valuesSet) {
+                    CalculateFAPrice();
+                }
+            });
+
+            $('#Currency, #AcquisitionDate').change(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetNearestExchangeRate", "ExchangeRate", new { Area = "GLTable" })',
+                    dataType: 'json',
+                    data: {
+                        "ccyTo": $('#Currency').val(),
+                        "date": $('#AcquisitionDate').val()
+                    },
+                    success: function (result) {
+
+                        $('#ExchangeRate').val(result.toString()).trigger('keyup');
+                        CalculateFAPrice();
+                    },
+                    error: function (requestObject, error, errorThrown) {
+                        alert(requestObject.responseText);
+                    }
+                });
+            });
+
+            $('#Group_Code').change(function () {
+                GetEndDate();
+            });
+
+            $('#StartingDate').change(function () {
+                GetEndDate();
+            });
+
+            function GetEndDate() {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetDepreMethodAndYear", "FAGroup", new { Area = "FixedAsset" })',
+                    dataType: 'json',
+                    data: { "GroupCode": $('#Group_Code').val().toString() },
+                    success: function (result) {
+                        if (result.includes(";")) {
+                            arr = result.split(';');
+                            $('#DepreMethodName').val(arr[0].toString());
+
+                            var eDate = new Date($('#StartingDate').val());
+                            var eYear = parseFloat(eDate.getFullYear()) + parseFloat(arr[1]);
+                            var eFullDate = new Date((eDate.getMonth()).toString() + "/" + eDate.getDate().toString() + "/" + eYear.toString());
+
+                            $('#EndDate').val(moment(eFullDate).format('DD/MMM/yyyy'));
+                        }
+                    },
+                    error: function (requestObject, error, errorThrown) {
+                        alert(requestObject.responseText);
+                    }
+                });
+            }
+
+            $("#btnClose").click(function () {
+                var answer = confirm("Are you sure want to quit ?");
+                if (answer) {
+                    window.location.href = '@Url.Action("index", "FAAsset", new { Area = "FixedAsset" })';
+                }
+            });
+
+            $('#btnSave').click(function () {
+                if (!$("form#formCreateEdit").valid()) {
+                    return false;
+                }
+
+                var answer = confirm("Are you sure want to save ?");
+
+                if (!answer) {
+                    return;
+                }
+
+                if ($('#FormAction').val() == 1) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Create", "FAAsset", new { Area = "FixedAsset" })',
+                        dataType: 'json',
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (result) {
+                            if (typeof result === 'object' && result !== null) {
+                                if (result.code == 200) {
+                                    alert(result.msg.toString());
+                                    window.location = '@Url.Action("Edit", "FAAsset", new { Area = "FixedAsset" })?assetNo=' + result.id + "&branchCode=" + result.branchCode;
+                                }
+                                else {
+                                    alert(result.msg.toString());
+                                }
+                            }
+                            else {
+                                alert(result.toString());
+                            }
+
+                        },
+                        error: function (requestObject, error, errorThrown) {
+                            alert(requestObject.responseText);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Edit", "FAAsset", new { Area = "FixedAsset" })',
+                        dataType: 'json',
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (result) {
+                            if (typeof result === 'object' && result !== null) {
+                                if (result.code == 200) {
+                                    alert(result.msg.toString());
+                                    window.location = '@Url.Action("Edit", "FAAsset", new { Area = "FixedAsset" })?assetNo=' + result.id + "&branchCode=" + result.branchCode;
+                                }
+                                else {
+                                    alert(result.msg.toString());
+                                }
+                            }
+                            else {
+                                alert(result.toString());
+                            }
+
+                        },
+                        error: function (requestObject, error, errorThrown) {
+                            alert(requestObject.responseText);
+                        }
+                    });
+                }
+            });
+
+            if ($('#Journal').val() == "1") {
+                $(':input:not(:button.notd)').prop('disabled', true);
+            }
+
+            $('#btnGenSchedule').click(function () {
+                var table = $('#tableData').DataTable
+                ({
+                    "destroy": true,
+                    "columnDefs": [
+                        {
+                            "targets": 'no-sort',
+                            "orderable": false,
+                        },
+                        {
+                            "data": null,
+                            "width": "80px",
+                            "defaultContent": '',
+                            "orderable": false,
+                            "className": "select-checkbox",
+                            "checkboxes": {
+                                "selectRow": true
+                            },
+                            "targets": [0]
+                        },
+                        {
+                            "orderable": false,
+                            "className": "text-right",
+                            "targets": [1,2,3,4,5,6]
+                        },
+                        {
+                            "width": "70px",
+                            "orderable": false,
+                            "className": "text-center",
+                            "targets": [7]
+                        }
+                    ],
+                    "searching": false,
+                    "language":
+                    {
+                        "search": "",
+                        "searchPlaceholder": "Search...",
+                        "emptyTable": "No record found.",
+                        "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                    },
+                    "processing": "true",
+                    "order": [[0, "asc"]],
+                    "serverSide": "true",
+                    "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                    "pageLength": 10,
+                    "ajax":
+                    {
+                        "url": '@Url.Action("GenerateFASchedule", "FAAsset", new { Area = "FixedAsset" })',
+                        "type": "POST",
+                        "dataType": "JSON",
+                        "data": {
+                            "assetNo": $("#AssetNo").val(),
+                            "branchCode": $("#BranchCode").val()
+                        }
+                    },
+                    "columns": [
+                        { "data": "Period", "name": "Period" },
+                        { "data": "BegVal", "name": "BegVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Increment", "name": "Increment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Decrement", "name": "Decrement", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Depreciation", "name": "Depreciation", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "AccumDepre", "name": "AccumDepre", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "EndVal", "name": "EndVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        {
+                            "data": "IsJournal", "name": "IsJournal",
+                            "render": function (data, type, row, meta) {
+                                if (data == true) {
+                                    return '<input type="checkbox" class="editor-active" onclick="return false;" checked>';
+                                } else {
+                                    return '<input type="checkbox" onclick="return false;" class="editor-active">';
+                                }
+                                return data;
+                            }
+                        }
+                    ]
+                });
+            });
+        });
+
+    </script>
+}
+@*@model IDS.FixedAsset.FAAsset
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["Title"];
+}
+
+@section Styles {
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/flatpickr/flatpickr.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+}
+
+@Html.Hidden("HO", Convert.ToInt32(ViewData["HO"]))
+
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormSave", "0");
+
+    @Html.Hidden("Journal", Convert.ToInt32(ViewData["Journal"]))
+
+    <div class="row">
+        <h4 class="text-bold">Fixed Asset</h4>
+    </div>
+
+    <div class="row">
+        <h6 class="text-bold">General Information</h6>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BranchCode, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.BranchCode, (ViewData["BranchList"] as SelectList), new { @class = "form-control form-control-sm", maxlength = 5 })
+                @Html.ValidationMessageFor(model => model.BranchCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AssetNo, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.AssetNo, new { @class = "form-control form-control-sm", @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.AssetNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.Description, new { @class = "form-control form-control-sm", @maxlength = 50 })
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Group, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Group.Code, (ViewData["FAGroupList"] as SelectList), "-- Select Group --", new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Group.Code, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.Label("Depre. Method", htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBox("DepreMethod", "", new { @class = "form-control form-control-sm", @maxlength = 100, @style = "width: 100%;", @id = "DepreMethodName", @disabled = "disabled" })
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.TaxCategoryID, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.TaxCategoryID, (ViewData["FATaxCategory"] as SelectList), string.Empty, new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.TaxCategoryID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.PartOf, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.PartOf, (ViewData["FAPartOf"] as SelectList), string.Empty, new { @class = "form-control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.PartOf, "", new { @class = "text-danger" })
+            </div>
+
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.SerialNo, "Serial No", new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.SerialNo, new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.SerialNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Vendor, "Vendor", new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Vendor, (ViewData["VendorList"] as SelectList), new { @class = "form -control form-control-sm select2DDList", @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Vendor, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Department, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Department, (ViewData["DeptList"] as SelectList), "-- Select Department --", new { @class = "form-control form-control-sm select2DDList", @maxlength = 30, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Department, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Location, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Location, (ViewData["LocationList"] as SelectList), "-- Select Location --", new { @class = "form-control form-control-sm select2DDList", @maxlength = 20, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Location, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Status, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Status, (ViewData["FAAssetStatus"] as SelectList), "-- Select Status --", new { @class = "form -control form-control-sm select2DDList", @maxlength = 15, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.StatusDate, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.StatusDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.StatusDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.Label("Purchase Date", new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.AcquisitionDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.AcquisitionDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.StartingDate, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.StartingDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm" })
+                @Html.ValidationMessageFor(model => model.StartingDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.EndDate, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.EndDate, "{0:dd/MMM/yyyy}", new { @class = "form-control form-control-sm", @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BusinessUse, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                <div class="input-group">
+                    @Html.EditorFor(model => model.BusinessUse, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", @maxlength = 15 } })
+                    <span class="input-group-text pb-0 pt-0" id="basic-addon2">%</span>
+                </div>
+                @Html.ValidationMessageFor(model => model.BusinessUse, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.AssetVoucher, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.EditorFor(model => model.AssetVoucher, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50 } })
+                @Html.ValidationMessageFor(model => model.AssetVoucher, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-12">
+            <h6 class="text-bold">Value Information</h6>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Currency, new { @class = "col-form-label col-form-label-sm" })
+                @Html.DropDownListFor(model => model.Currency, (ViewData["CCyList"] as SelectList), "-- Select Currency --", new { @class = "form-control form-control-sm select2DDList", @maxlength = 15, @style = "width: 100%;" })
+                @Html.ValidationMessageFor(model => model.Currency, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ExchangeRate, "Rate", new { @class = "col-form-label col-form-label-sm", Title = "Exchange Rate" })
+                @Html.TextBoxFor(model => model.ExchangeRate, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 15, @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.ExchangeRate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Qty, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.Qty, "{0:#,###,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 18 })
+                @Html.ValidationMessageFor(model => model.Qty, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.UnitPrice, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.UnitPrice, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 18 })
+                @Html.ValidationMessageFor(model => model.UnitPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.TotalPrice, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.TotalPrice, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 18, @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.TotalPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            &nbsp;
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ResidualValue, new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.ResidualValue, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 15 })
+                @Html.ValidationMessageFor(model => model.ResidualValue, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BaseTotalPrice, htmlAttributes: new { @class = "col-form-label col-form-label-sm" })
+                @Html.TextBoxFor(model => model.BaseTotalPrice, "{0:#,##0.00}", new { @class = "form-control form-control-sm text-right inputnumber", @maxlength = 15, @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.BaseTotalPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <h6 class="text-bold">Depreciation List</h6>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-6">
+            <div class="text-right">
+                <p>
+                    @{
+                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" id="btnGenSchedule">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" onclick="NoAccess()">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive table-responsive-sm p-2 bg-white border mb-2">
+        <table id="tableData" class="table table-bordered table-hover w-100">
+            <thead>
+                <tr>
+                    <th class="align-middle">Period</th>
+                    <th class="align-middle">Beg Val</th>
+                    <th class="align-middle">Increment</th>
+                    <th class="align-middle">Decrement</th>
+                    <th class="align-middle">Depreciation</th>
+                    <th class="align-middle">Accumulation</th>
+                    <th class="align-middle">EndingValue</th>
+                    <th class="align-middle">Journal</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="row">
+        <p class="text-right">
+            <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+            <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+            <button type="button" class="btn btn-default notd" id="btnClose">Close</button>
+        </p>
+    </div>
+                        }
+
+
+
+
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+
+
+    <script type="text/javascript">
+        function CalculateFAPrice() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CalculatePrice", "FAAsset", new { Area = "FixedAsset" })',
+                dataType: 'json',
+                data: {
+                    "ccy": $('#Currency').val(),
+                    "price": RemoveAllComma($('#UnitPrice').val()),
+                    "qty": RemoveAllComma($('#Qty').val()),
+                    "exRate" : RemoveAllComma($('#ExchangeRate').val())
+                },
+                success: function (result) {
+                    let arr;
+
+                    if (result.includes(';')) {
+                        arr = result.split(';');
+                        $('#TotalPrice').val(arr[0]);
+                        $('#BaseTotalPrice').val(arr[1]);
+                    }
+                    else {
+                        $('#TotalPrice').val("0");
+                        $('#BaseTotalPrice').val("0");
+                    }
+                },
+                error: function (requestObject, error, errorThrown) {
+                    alert(errorThrown);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $('form#formCreateEdit').removeData("validator");
+            $('form#formCreateEdit').removeData("unobtrusiveValidation");
+            $.validator.unobtrusive.parse($('form#formCreateEdit'));
+
+            if ($('#FormAction').val() == "1") {
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                var dateNow = new Date().getDate() + '-' + months[new Date().getMonth()] + '-' + new Date().getFullYear();
+                $("#StartingDate, #AcquisitionDate, #StatusDate").val(dateNow);
+                $('#EndDate').val(moment(new Date()).format('DD/MMM/yyyy'))
+            }
+
+            $(".select2DDList").select2();
+
+            flatpickr('#AcquisitionDate, #StartingDate, #StatusDate', {
+                //dateFormat: "Y-m-d",
+                dateFormat: "d/M/Y",
+                disableMobile: "true"
+            });
+
+            $('input.inputnumber').keyup(function (event) {
+                if (event.which >= 37 && event.which <= 40) return;
+                $(this).val(function (index, value) {
+                    return value
+                      // Keep only digits and decimal points:
+                      .replace(/[^\d.]/g, "")
+                      // Remove duplicated decimal point, if one exists:
+                      .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                      // Keep only two digits past the decimal point:
+                      .replace(/\.(\d{2})\d+/, '.$1')
+                      // Add thousands separators:
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                });
+            });
+
+            $('#UnitPrice, #Qty, #ExchangeRate').change(function () {
+                var fields = $("#UnitPrice, #Qty, #ExchangeRate");
+
+                var valuesSet = true;
+                fields.each(function () {
+                    if (!$(this).val()) { //inside a jQuery "each", "this" refers to the current item in the loop
+                        valuesSet = false;
+                    }
+                });
+
+                if (valuesSet) {
+                    CalculateFAPrice();
+                }
+            });
+
+            $('#Currency, #AcquisitionDate').change(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetNearestExchangeRate", "ExchangeRate", new { Area = "GLTable" })',
+                    dataType: 'json',
+                    data: {
+                        "ccyTo": $('#Currency').val(),
+                        "date": $('#AcquisitionDate').val()
+                    },
+                    success: function (result) {
+
+                        $('#ExchangeRate').val(result.toString()).trigger('keyup');
+                        CalculateFAPrice();
+                    },
+                    error: function (requestObject, error, errorThrown) {
+                        alert(requestObject.responseText);
+                    }
+                });
+            });
+
+            $('#Group_Code').change(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetDepreMethodAndYear", "FAGroup", new { Area = "FixedAsset" })',
+                    dataType: 'json',
+                    data: { "GroupCode": $('#Group_Code').val().toString() },
+                    success: function (result) {
+                        if (result.includes(";")) {
+                            arr = result.split(';');
+                            $('#DepreMethodName').val(arr[0].toString());
+
+                            var eDate = new Date($('#StartingDate').val());
+                            var eYear = parseFloat(eDate.getFullYear()) + parseFloat(arr[1]);
+                            var eFullDate = new Date((eDate.getMonth() + 1).toString() + "/" + eDate.getDate().toString() + "/" + eYear.toString());
+
+                            $('#EndDate').val(moment(eFullDate).format('DD/MMM/yyyy'));
+                        }
+                    },
+                    error: function (requestObject, error, errorThrown) {
+                        alert(requestObject.responseText);
+                    }
+                });
+            });
+
+            $("#btnClose").click(function () {
+                var answer = confirm("Are you sure want to quit ?");
+                if (answer) {
+                    window.location.href = '@Url.Action("index", "FAAsset", new { Area = "FixedAsset" })';
+                }
+            });
+
+            $('#btnSave').click(function () {
+                if (!$("form#formCreateEdit").valid()) {
+                    return false;
+                }
+
+                var answer = confirm("Are you sure want to save ?");
+
+                if (!answer) {
+                    return;
+                }
+
+                if ($('#FormAction').val() == 1) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Create", "FAAsset", new { Area = "FixedAsset" })',
+                        dataType: 'json',
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (result) {
+                            if (typeof result === 'object' && result !== null) {
+                                if (result.code == 200) {
+                                    alert(result.msg.toString());
+                                    window.location = '@Url.Action("Edit", "FAAsset", new { Area = "FixedAsset" })?assetNo=' + result.id + "&branchCode=" + result.branchCode;
+                                }
+                                else {
+                                    alert(result.msg.toString());
+                                }
+                            }
+                            else {
+                                alert(result.toString());
+                            }
+
+                        },
+                        error: function (requestObject, error, errorThrown) {
+                            alert(requestObject.responseText);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Edit", "FAAsset", new { Area = "FixedAsset" })',
+                        dataType: 'json',
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (result) {
+                            if (typeof result === 'object' && result !== null) {
+                                if (result.code == 200) {
+                                    alert(result.msg.toString());
+                                    window.location = '@Url.Action("Edit", "FAAsset", new { Area = "FixedAsset" })?assetNo=' + result.id + "&branchCode=" + result.branchCode;
+                                }
+                                else {
+                                    alert(result.msg.toString());
+                                }
+                            }
+                            else {
+                                alert(result.toString());
+                            }
+
+                        },
+                        error: function (requestObject, error, errorThrown) {
+                            alert(requestObject.responseText);
+                        }
+                    });
+                }
+            });
+
+            if ($('#Journal').val() == "1") {
+                $(':input:not(:button.notd)').prop('disabled', true);
+            }
+
+            $('#btnGenSchedule').click(function () {
+                var table = $('#tableData').DataTable
+                ({
+                    "destroy": true,
+                    "columnDefs": [
+                        {
+                            "targets": 'no-sort',
+                            "orderable": false,
+                        },
+                        {
+                            "data": null,
+                            "width": "80px",
+                            "defaultContent": '',
+                            "orderable": false,
+                            "className": "select-checkbox",
+                            "checkboxes": {
+                                "selectRow": true
+                            },
+                            "targets": [0]
+                        },
+                        {
+                            "orderable": false,
+                            "className": "text-right",
+                            "targets": [1,2,3,4,5,6]
+                        },
+                        {
+                            "width": "70px",
+                            "orderable": false,
+                            "className": "text-center",
+                            "targets": [7]
+                        }
+                    ],
+                    "searching": false,
+                    "language":
+                    {
+                        "search": "",
+                        "searchPlaceholder": "Search...",
+                        "emptyTable": "No record found.",
+                        "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                    },
+                    "processing": "true",
+                    "order": [[0, "asc"]],
+                    "serverSide": "true",
+                    "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                    "pageLength": 10,
+                    "ajax":
+                    {
+                        "url": '@Url.Action("GenerateFASchedule", "FAAsset", new { Area = "FixedAsset" })',
+                        "type": "POST",
+                        "dataType": "JSON",
+                        "data": {
+                            "assetNo": $("#AssetNo").val(),
+                            "branchCode": $("#BranchCode").val()
+                        }
+                    },
+                    "columns": [
+                        { "data": "Period", "name": "Period" },
+                        { "data": "BegVal", "name": "BegVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Increment", "name": "Increment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Decrement", "name": "Decrement", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Depreciation", "name": "Depreciation", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "AccumDepre", "name": "AccumDepre", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "EndVal", "name": "EndVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        {
+                            "data": "IsJournal", "name": "IsJournal",
+                            "render": function (data, type, row, meta) {
+                                if (data == true) {
+                                    return '<input type="checkbox" class="editor-active" onclick="return false;" checked>';
+                                } else {
+                                    return '<input type="checkbox" onclick="return false;" class="editor-active">';
+                                }
+                                return data;
+                            }
+                        }
+                    ]
+                });
+            });
+        });
+
+    </script>
+}*@

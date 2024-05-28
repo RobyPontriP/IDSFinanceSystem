@@ -1,0 +1,496 @@
+﻿
+@{
+    ViewBag.Title = "JOURNAL";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+
+
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/Responsive-2.2.9/css/responsive.dataTables.min.css" />
+
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <link href="~/Content/JQuery_UI/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+
+
+<style type="text/css">
+    td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_open.png")") no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_close.png")") no-repeat center center;
+    }
+
+    .fontSizeCustom {
+        width: 20px;
+    }
+</style>
+}
+
+
+
+
+
+
+
+
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <section class="col-lg-12 p-0 connectedSortable">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <b>   @ViewBag.Title</b>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content p-0">
+                            <div class="row mb-1">
+                                <section class="col-lg-12 connectedSortable">
+                                    <div class="card">
+                                        <div class="card-header ui-sortable-handle" style="cursor: move;">
+                                            <h3 class="card-title">
+                                                Filter
+                                            </h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mb-1">
+
+                                                <div class="form-group row mb-1 col-sm-4">
+                                                    <label for="dtxPeriod" class="col-form-label-sm col-sm-4">Period</label>
+                                                    <div class="col-sm-8">
+                                                        @Html.TextBox("Period", "", htmlAttributes: new { @class = "form-control form-control-sm bg-white datepicker text-box single-line flatpickr-input valid active", @id = "dtxPeriod" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1 col-sm-4">
+                                                    <label for="dtxPeriod" class="col-form-label-sm col-sm-4 text-right">Branch</label>
+                                                    <div class="col-sm-8">
+                                                        @Html.DropDownList("Branch", (SelectList)ViewData["SelectListBranch"], new { @id = "cboBranchCode", @class = "form-control form-control-sm select2DDList" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1 col-sm-4">
+                                                    <label for="dtxPeriod" class="col-form-label-sm col-sm-5 text-right">Currency</label>
+                                                    <div class="col-sm-7">
+                                                        @Html.DropDownList("Currency", (SelectList)ViewData["SelectListCurrency"], new { @id = "cboCurrency", @class = "form-control form-control-sm select2DDList" })
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+
+
+                                            <div class="row mb-1">
+                                                <div class="col-sm-12 text-left">
+                                                    <button type="button" class="btn btn-outline-info col-sm-2 form-control-sm" id="btn_refresh">Refresh</button>
+                                                    <button type="button" class="btn btn-outline-info col-sm-2 form-control-sm" id="cmdProccess">Process</button>
+                                                    <button type="button" onclick="SelectAll()" data-toggle="tooltip" data-placement="top" title="To Check All Data On the Grid" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnSelAll">Select All</button>
+                                                    <button type="button" onclick="UnselectAll()" data-toggle="tooltip" data-placement="top" title="To Uncheck All Data On the Grid" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnUnSelAll">Unselect All</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <div class="card-header ui-sortable-handle" style="cursor: move;">
+                                            <h3 class="card-title">
+                                                Data Table
+                                            </h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mb-1">
+                                                <div class="table-responsive table-responsive-sm p-2 bg-white border">
+                                                    <table id="mydatatable" class="table caption-top table-bordered table-hover w-100">
+                                                        <thead>
+                                                            <tr>
+                                                                <th></th>
+                                                                <th>#</th>
+                                                                <th>Period</th>
+                                                                <th>Group</th>
+                                                                <th>Beginning Value</th>
+                                                                <th>Increment</th>
+                                                                <th>Decrement</th>
+                                                                <th>Depreciation</th>
+                                                                <th>Accumulation</th>
+                                                                <th>Ending Value</th>
+                                                                <th>Journal</th>
+                                                                <th>Voucher</th>
+                                                                <th></th>
+                                                            </tr>
+                                                        </thead>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+<div id="PartialSectionSecond">
+
+</div>
+
+
+@section Scripts{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript">
+        var mydatatable = null;
+            $(document).ready(function () {
+                
+
+                mydatatable = RefreshData_init($('#dtxPeriod').val(), $('#cboCurrency').val(), $('#cboBranchCode').val());
+
+                $(".connectedSortable").sortable();
+                $(".select2DDList").select2({
+                    theme: "classic",
+                    width: "100%"
+                });
+
+                flatpickr("#dtxPeriod", {
+                    dateFormat: "M/Y",
+                    altFormat: "F Y",
+                    defaultDate:"today",
+                    static: true,
+                    plugins: [new monthSelectPlugin({
+                        shorthand: true, //defaults to false
+                        dateFormat: "M Y", //defaults to "F Y"
+                        altFormat: "F Y",
+                        defaultDate: "today"
+                    })]
+                });//flatpickr - cboInvDate
+
+
+                $("#cmdProccess").click(function () {
+                    //var selRow = mydatatable.rows('.selected').data();
+
+                    var selRow = mydatatable.rows(function (idx, data, node) {
+                        // Get all the checkboxes in the row
+                        var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                        // Keep the rows with checked checkboxes
+                        return checkedTargets(cells).length;
+                    }).data();
+
+                    if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                        alert("Please select the data you want to Process");
+                        return false;
+                    }
+
+                    function checkedTargets(checkboxes) {
+                        return checkboxes.filter(function (index) {
+                            return $(checkboxes[index]).prop('checked');
+                        });
+                    }
+
+                    var dataCollection = '';
+                    var ItemGroup_ = '';
+                    jsonObj = [];
+                    $.each(selRow, function (index, row) {
+                        //ItemGroup = row["ItemGroup"];
+                        item = {}
+                        item["ItemGroup"] = row["ItemGroup"];
+                        item["Period"] = row["Period"];
+                        item["IDR"] = $("#cboCurrency").val();//
+                        item["Branch"] = $("#cboBranchCode").val();//
+                        jsonObj.push(item);
+                    })
+
+                    //console.log(JSON.stringify(jsonObj));
+
+                    if (jsonObj.length != 0) {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Confirm", "FAJournal", new { Area = "FixedAsset" })',
+                            data: JSON.stringify(jsonObj),
+                            contentType: 'application/json; charset=utf-8',
+                            dataType: 'html',
+                            success: function (respond) {
+                                $('#PartialSectionSecond').html('');
+                                $("#PartialSectionSecond").html(respond);
+                                $("#msgbox").modal('show');
+                            }
+                        });
+                    }//End If
+
+                });
+
+                // Start Here
+                $("#btn_refresh").click(function () {
+                    mydatatable = RefreshData_init($('#dtxPeriod').val(), $('#cboCurrency').val(), $('#cboBranchCode').val());
+                });
+
+                $('#mydatatable tbody').on('click', 'td.details-control', function () {
+                    var selRow = mydatatable.rows(this).data();
+                    var tr = $(this).closest('tr');
+                    var row = mydatatable.row(tr);
+                    var data = $('#mydatatable').DataTable().row(tr).data();
+                    var forsplit = data['KEY'];
+                    var ccy_ = forsplit.split(";")[0];
+                    var period_ = forsplit.split(";")[1];
+                    var group_ = forsplit.split(";")[2];
+                    var branch_ = forsplit.split(";")[3];
+                    //var h = "ccy_->" + ccy_ + ", period_->" + period_ + ", group_->" + group_ + ", branch_->" + branch_;
+                    //console.log(h);
+
+                    if (row.child.isShown()) {
+                        // This row is already open - close it
+                        row.child.hide();
+                        tr.removeClass('shown');
+                    }
+                    else {
+                        // Open this row
+                        var table_element_id = mydatatable.row(this).index();
+                        var uri ='@Url.Action("GetDataDetail", "FAJournal", new { Area = "FixedAsset" })';
+                        var wb_param = { 'ccy': ccy_, 'period': period_, 'group': group_, 'branch': branch_, 'id': table_element_id };
+                        //var wb_param = { 'ccy': 'IDR', 'period': '202212', 'group': 'BL1', 'branch': 'DTN', 'id': table_element_id };
+                        var wb_methode = 'POST';
+                        var return_ = httpGet(wb_methode, uri, JSON.stringify(wb_param));
+                        row.child(return_).show();
+                        $('#ctb' + table_element_id).DataTable()
+                        tr.addClass('shown');
+                    }
+                });
+
+                mydatatable.on("user-select", function (e, dt, type, cell, originalEvent) {
+                    if ($(cell.node()).hasClass("details-control")) {
+                        e.preventDefault();
+                    }
+                });
+
+
+                function formatx(d) {
+
+                    // `d` is the original data object for the row
+                    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                        '<tr>' +
+                            '<td>Date arrival:</td>' +
+                            '<td>' + d.date_arrival + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td>Date departure:</td>' +
+                            '<td>' + d.date_departure + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td>Extra info:</td>' +
+                            '<td>And any further details here (images etc)...</td>' +
+                        '</tr>' +
+                    '</table>';
+                }
+
+
+                function formatj(d) {
+
+                    // `d` is the original data object for the row
+                    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                        '<tr>' +
+                            '<td>Date arrival:</td>' +
+                            '<td>' + 'd.date_arrival' + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td>Date departure:</td>' +
+                            '<td>' + 'd.date_departure' + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td>Extra info:</td>' +
+                            '<td>And any further details here (images etc)...</td>' +
+                        '</tr>' +
+                    '</table>';
+                }
+
+
+
+                
+            })//$(document).ready(function ()
+
+        function SelectAll() {
+            mydatatable.rows().select();
+            $("input[type='checkbox'][id='chkProcess']", mydatatable.cells().nodes()).prop('checked', true);
+        }
+
+        function UnselectAll() {
+            mydatatable.rows().deselect();
+            $("input[type='checkbox'][id='chkProcess']", mydatatable.cells().nodes()).prop('checked', false);
+        }
+
+
+            function RefreshData_init(period_, ccy_, branch_) {
+               // var datanya = { "data": [{ "KEY": "IDR;202205;BL1;DTN", "Ccy": "IDR", "BranchCode": "DTN", "AccumAccNo": "2222000000", "AccumAccName": "Acc.Depr.-Building and Improvements (-/-)", "DepAccNo": "7021500100", "DepAccName": "Exp - Depre - Building and Improvements", "Period": "202205", "ItemGroup": "BL1", "BegVal": "230349.0000", "Increment": "0.0000", "Depreciation": "964.0000", "AccumDepr": "1928.0000", "EndVal": "229385.0000", "Journal": "False", "Voucher": "" }, { "KEY": "IDR;202205;CE1;DTN", "Ccy": "IDR", "BranchCode": "DTN", "AccumAccNo": "2225000000", "AccumAccName": "Acc.Depr-Machineries \u0026 Komputer (-/-)", "DepAccNo": "7021500400", "DepAccName": "Exp - Depre - Machineries (Computer)", "Period": "202205", "ItemGroup": "CE1", "BegVal": "299729717.0000", "Increment": "0.0000", "Depreciation": "15116376.0000", "AccumDepr": "660630659.0000", "EndVal": "284613341.0000", "Journal": "False", "Voucher": "" }, { "KEY": "IDR;202205;OE1;DTN", "Ccy": "IDR", "BranchCode": "DTN", "AccumAccNo": "2224000000", "AccumAccName": "Acc.Depr.-Furniture and Fixture, Office Equipments (-/-)", "DepAccNo": "7021500300", "DepAccName": "Exp - Depre - Furniture and Fixture, Office Equipments", "Period": "202205", "ItemGroup": "OE1", "BegVal": "3109594.0000", "Increment": "0.0000", "Depreciation": "155484.0000", "AccumDepr": "10968617.0000", "EndVal": "2954110.0000", "Journal": "False", "Voucher": "" }, { "KEY": "IDR;202205;OE2;DTN", "Ccy": "IDR", "BranchCode": "DTN", "AccumAccNo": "2224000000", "AccumAccName": "Acc.Depr.-Furniture and Fixture, Office Equipments (-/-)", "DepAccNo": "7021500300", "DepAccName": "Exp - Depre - Furniture and Fixture, Office Equipments", "Period": "202205", "ItemGroup": "OE2", "BegVal": "13139775.0000", "Increment": "0.0000", "Depreciation": "298631.0000", "AccumDepr": "32092606.0000", "EndVal": "12841144.0000", "Journal": "False", "Voucher": "" }, { "KEY": "IDR;202205;VE2;DTN", "Ccy": "IDR", "BranchCode": "DTN", "AccumAccNo": "2223000000", "AccumAccName": "Acc.Depr.-Car, Transportation Equipments (-/-)", "DepAccNo": "7021500200", "DepAccName": "Exp - Depre - Car, Transportation Equipments", "Period": "202205", "ItemGroup": "VE2", "BegVal": "829114502.0000", "Increment": "0.0000", "Depreciation": "18843510.0000", "AccumDepr": "402929008.0000", "EndVal": "810270992.0000", "Journal": "False", "Voucher": "" }] };
+                return $('#mydatatable').DataTable({
+                     destroy: true,
+                    "processing": true,
+                    "serverSide": true,
+                    "pageLength": 5,
+                    "ajax":
+                   {
+                       "url": '@Url.Action("GetData", "FAJournal", new { Area = "FixedAsset" })',
+                       "type": "POST",
+                       "dataType": "JSON",
+                       "data": {
+                           'period': period_,
+                           'ccy': ccy_,
+                           'branch': branch_
+                       }
+                   },
+                    "columns": [
+                        {
+                            "class": "details-control",
+                            "orderable": false,
+                            "data": null,
+                            "defaultContent": ""
+                        },
+                        {
+                            "data": null, "name": "chkProcess",
+                            "render": function (data, type, row) {
+                                if (type == 'display') {
+                                    return '<input type="checkbox" class="editor-chkprocess" id="chkProcess" name="chkProcess">';
+                                }
+                                return data;
+                            }
+                        },
+                        { "data": "Period", "name": "Period" },
+                        { "data": "ItemGroup", "name": "ItemGroup" },
+                        { "data": "BegVal", "name": "BegVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Increment", "name": "Increment", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "AccumDepr", "name": "AccumDepr", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Depreciation", "name": "Depreciation", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "AccumDepr", "name": "AccumDepr", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "EndVal", "name": "EndVal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                        { "data": "Journal", "name": "Journal" },
+                        { "data": "Voucher", "name": "Voucher" },
+                        { "data": "KEY", "name": "KEY" }
+
+                    ], "select": {
+                        "style": 'single'
+                    },
+                    "columnDefs": [
+                             {
+                                 "searchable": true,
+                                 "targets": [12],
+                                 "visible": false
+                             }
+                    ],
+                    "language":
+                    {
+                        "search": "",
+                        "searchPlaceholder": "Search...",
+                        "emptyTable": "No record found.",
+                        "processing": "<div class='overlay custom-loader-background'><i class='fa fa-spinner fa-spin custom-loader-color' style='font-size:30px;color:#2196F3'></i></div>"
+                    }
+                });
+            }
+
+
+            function format(xccy, xperiod, xgroup, xbranch) {
+                // `d` is the original data object for the row
+                return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;border: none;">' +
+                    '<tr>' +
+                        '<td>CCY:</td>' +
+                        '<td>' + xccy + '</td>' + //this is fine
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>Period:</td>' +
+                        '<td>' + xperiod + '</td>' + //Need to get Contact here
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>Group:</td>' +
+                        '<td>' + xgroup + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td>Branch:</td>' +
+                        '<td>' + xbranch + '</td>' +
+                    '</tr>' +
+                '</table>';
+            }
+
+            
+
+            function httpGet(getOrpost, theUrl, param) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open(getOrpost, theUrl, false); // false for synchronous request
+                xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xmlHttp.send(param);
+                return xmlHttp.responseText;
+            }
+            function goClose() {
+                $("#msgbox").modal('hide');
+            }
+            function goProccess() {
+                var ItemGroup_ = '';
+                jsonObj = [];
+                var tableR = $("#tblmsgbox tbody");
+                tableR.find('tr').each(function (i) {
+
+                    item = {}
+                    var $tds = $(this).find('td');
+                    item["ItemGroup"] = $tds.eq(0).text();
+                    item["Period"] = $tds.eq(1).text();
+                    item["IDR"] = $tds.eq(2).text();
+                    item["Branch"] = $tds.eq(3).text();
+                    jsonObj.push(item);
+                });
+
+                //console.log(JSON.stringify(jsonObj));
+
+                if (jsonObj.length != 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("ConfirmToProccess", "FAJournal", new { Area = "FixedAsset" })',
+                        data: JSON.stringify(jsonObj),
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'html',
+                        success: function (respond) {
+                            mydatatable = RefreshData_init($('#dtxPeriod').val(), $('#cboCurrency').val(), $('#cboBranchCode').val());
+                            alert(respond);
+                            $('#PartialSectionSecond').empty();
+                            $("#PartialSectionSecond").html(respond);
+                            $("#msgok").modal('show');
+                        }
+                    });
+                }//End If
+                goClose();
+            }//goProccess
+
+
+            function closeMsg() {
+                $("#msgok").modal('hide');
+            }
+
+    </script><!-- <script type="text/javascript">  -->
+
+}
+

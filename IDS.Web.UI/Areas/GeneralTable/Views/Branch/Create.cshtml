@@ -1,0 +1,562 @@
+﻿@model IDS.GeneralTable.Branch
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["Branch"];
+}
+
+@section Styles {
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <link href="~/Content/JQuery_UI/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+}
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormSave", "0");
+
+    <script type="text/javascript">
+
+    </script>
+
+    @*<div class="row">
+            <h4>Branch</h4>
+        </div>*@
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <section class="col-lg-12 p-0 connectedSortable">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                Branch
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content p-0">
+                                <div class="row mb-1">
+                                    <section class="col-lg-6 connectedSortable">
+                                        <div class="card">
+                                            <div class="card-header ui-sortable-handle" style="cursor: move;">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-cubes mr-1"></i>
+                                                    General Information
+                                                </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Ho Status</label>
+                                                    <div class="col-sm-9">
+                                                        <div class="form-check form-switch">
+                                                            @Html.CheckBoxFor(model => model.HOStatus, htmlAttributes: new { @class = "form-check-input" })
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-2">
+                                                    @Html.LabelFor(model => model.BranchCode, htmlAttributes: new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.BranchCode, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 5 } })
+                                                        @Html.ValidationMessageFor(model => model.BranchCode, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.BranchName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.BranchName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 30 } })
+                                                        @Html.ValidationMessageFor(model => model.BranchName, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Contact Limit</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.ContractLimit, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 30 } })
+                                                        @Html.ValidationMessageFor(model => model.ContractLimit, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Address1, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Address1, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50 } })
+                                                        @Html.ValidationMessageFor(model => model.Address1, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Address2, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Address2, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50 } })
+                                                        @Html.ValidationMessageFor(model => model.Address2, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Address3, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Address3, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50 } })
+                                                        @Html.ValidationMessageFor(model => model.Address3, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.BranchCountry.CountryCode, "Country", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.DropDownListFor(model => model.BranchCountry.CountryCode, (SelectList)ViewData["CountryList"], "-- Select Country --", new { @class = "form-control form-control-sm select2DDList", @id = "cboCountry" })
+                                                        @Html.ValidationMessageFor(model => model.BranchCountry.CountryCode, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.BranchCity.CityCode, "City", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.DropDownListFor(model => model.BranchCity.CityCode, (SelectList)ViewData["CityList"], "-- Select City --", new { @class = "form-control form-control-sm select2DDList", @id = "cboCity" })
+                                                        @Html.ValidationMessageFor(model => model.BranchCity.CityCode, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Phone1, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Phone1, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 15 } })
+                                                        @Html.ValidationMessageFor(model => model.Phone1, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Phone2, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Phone2, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 15 } })
+                                                        @Html.ValidationMessageFor(model => model.Phone2, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Phone3, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Phone3, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 15 } })
+                                                        @Html.ValidationMessageFor(model => model.Phone3, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.Fax, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 15 } })
+                                                        @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Telex</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.Telex, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 15 } })
+                                                        @Html.ValidationMessageFor(model => model.Telex, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.PostalCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 5 } })
+                                                        @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <section class="col-lg-6 connectedSortable">
+                                        <div class="card">
+                                            <div class="card-header ui-sortable-handle" style="cursor: move;">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-chart-pie mr-1"></i>
+                                                    Other
+                                                </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.FinAccOfficer, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.FinAccOfficer, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 30 } })
+                                                        @Html.ValidationMessageFor(model => model.FinAccOfficer, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    @Html.LabelFor(model => model.NPWP, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.NPWP, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, @id = "npwp" } })
+                                                        @Html.ValidationMessageFor(model => model.NPWP, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Tax Establish Date</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.TextBoxFor(model => model.TaxEstablishDate, System.Convert.ToDateTime(Model.TaxEstablishDate).ToString(IDS.Tool.GlobalVariable.DEFAULT_DATE_FORMAT), new { @class = "form-control form-control-sm", @maxlength = 20, @id = "TaxEstablishDate" })
+                                                        @Html.ValidationMessageFor(model => model.TaxEstablishDate, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Branch Manager</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.BranchManagerName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, @id = "BranchManager" } })
+                                                        @Html.ValidationMessageFor(model => model.BranchManagerName, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Repno</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.DropDownListFor(model => model.Repno, (SelectList)ViewData["GetRepNo"], new { @class = "form-control form-control-sm select2DDList" })
+                                                        @Html.ValidationMessageFor(model => model.Repno, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">HopNo</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.DropDownListFor(model => model.Hopno, (SelectList)ViewData["GetHopNo"], new { @class = "form-control form-control-sm select2DDList" })
+                                                        @Html.ValidationMessageFor(model => model.Hopno, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Tax Sign By</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.DropDownListFor(model => model.TaxSignBy, (SelectList)ViewData["GetTaxSignBY"], new { @class = "form-control form-control-sm select2DDList" })
+                                                        @Html.ValidationMessageFor(model => model.TaxSignBy, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Tax Occupation</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.TaxOccupation, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20 } })
+                                                        @Html.ValidationMessageFor(model => model.TaxOccupation, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Inv Sign By</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.DropDownListFor(model => model.InvSignBy, (SelectList)ViewData["GetInvSignBY"], new { @class = "form-control form-control-sm select2DDList" })
+                                                        @Html.ValidationMessageFor(model => model.InvSignBy, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-1">
+                                                    <label class="col-form-label-sm col-sm-3" for="BranchName">Inv Occupation</label>
+                                                    <div class="col-sm-9">
+                                                        @Html.EditorFor(model => model.InvOccupation, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20 } })
+                                                        @Html.ValidationMessageFor(model => model.InvOccupation, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header ui-sortable-handle" style="cursor: move;">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-print mr-1"></i>
+                                                    Printer Settings
+                                                </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="tab-content p-0">
+                                                    <div class="row mb-1">
+                                                        <section class="col-lg-6">
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Name</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintBranchName, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">City</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintBranchCity, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Country</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintBranchCountry, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Language</label>
+                                                                <div class="col-sm-7">
+                                                                    @Html.DropDownListFor(model => model.Language, (SelectList)ViewData["GetLanguage"], new { @class = "form-control form-control-sm p-0 select2DDList" })
+                                                                    @Html.ValidationMessageFor(model => model.Language, "", new { @class = "text-danger" })
+                                                                </div>
+                                                            </div>
+                                                        </section>
+                                                        <section class="col-lg-6">
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Addr</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintBranchAddress, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Date</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintDate, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Time</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintTime, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row mb-1">
+                                                                <label class="col-form-label-sm col-sm-3" for="BranchName">Page</label>
+                                                                <div class="col-sm-9">
+                                                                    <div class="form-check form-switch">
+                                                                        @Html.CheckBoxFor(model => model.PrintPage, htmlAttributes: new { @class = "form-check-input text-md" })
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </section>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="modal-footer">
+                                    @if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                                    {
+                                        <div class="form-group mr-4">
+                                            <div class="input-group">
+                                                <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Operator ID</span>
+                                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group mr-auto col-sm-3 mr-4">
+                                            <div class="input-group">
+                                                <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Last Update</span>
+                                                @*@Html.TextBoxFor(model => model.LastUpdate, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })*@
+                                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy hh:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                            </div>
+                                        </div>
+                                    }
+                                    
+
+                                    <button type="button" class="btn btn-secondary" title="Input New Branch" id="btnAddNew">Add New</button>
+                                    <button type="button" class="btn btn-primary" title="Save Branch" id="btnSave">Save</button>
+                                    <button type="button" class="btn btn-danger" title="Clsoe This Form" id="btnClose">Close</button>
+                                </div>
+                                @*<div class="row mb-1">
+                                    <p class="text-right">
+                                        <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                                        <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                                        <button type="button" class="btn btn-danger" id="btnClose">Close</button>
+                                    </p>
+                                </div>*@
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+}
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.mask.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript">
+                    $(document).ready(function () {
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+
+                        $("#npwp").mask('00.000.000.0-000.000');
+
+                        if ($("#FormAction").val() == 2) {
+                            $('#BranchCode').prop('disabled', true);
+                         //   Get_TaxEstablishDate();
+                        }
+
+                        Get_Ho_Exist();
+
+
+
+                        $('input.inputnumber').keyup(function (event) {
+                            if (event.which >= 37 && event.which <= 40) return;
+                            $(this).val(function (index, value) {
+                                return value
+                                  // Keep only digits and decimal points:
+                                  .replace(/[^\d.]/g, "")
+                                  // Remove duplicated decimal point, if one exists:
+                                  .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                                  // Keep only two digits past the decimal point:
+                                  .replace(/\.(\d{2})\d+/, '.$1')
+                                  // Add thousands separators:
+                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                            });
+                        });
+
+                        $('#cboCountry').change(function () {
+                            var strSelected = "";
+
+                            $("#cboCountry option:selected").each(function () {
+                                strSelected += $(this)[0].value;
+                            });
+
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("GetCity", "City", new { Area = "GeneralTable" })',
+                                dataType: 'json',
+                                data: { countryCode: strSelected },
+                                success: function (result) {
+                                    $("#cboCity").empty();
+                                    $.each(result, function (i, member) {
+                                        $("#cboCity").append('<option value="'
+                                        + member.Value + '">'
+                                        + member.Text + '</option>');
+                                    });
+                                },
+                                error: function (ex) {
+                                    alert('Failed to retrieve city.' + ex);
+                                }
+                            });
+                        }),
+
+                        $(".select2DDList").select2({
+                            theme:"classic",
+                            width:"100%"
+                        });
+
+                        $(".connectedSortable").sortable();
+                        //connectedSortable
+                    });
+
+                    flatpickr("#TaxEstablishDate", {
+                        dateFormat: "d/M/Y",
+                        altFormat: "Y",
+                        static: true
+                    });
+
+                    $("#btnSave").click(function () {
+                        if (!$("form#formCreateEdit").valid()) {
+                            return false;
+                        }
+
+                        var confirmText = "";
+                        if ($("#FormAction").val() == 1) {
+                            confirmText = ("Are you sure want to save data ?");
+                        } else {
+                            confirmText = ("Are you sure want to edit Branch Code : " + $("#BranchCode").val() + " ?");
+                        }
+                        var answer = confirm(confirmText);
+
+                        if (answer) {
+                            if ($("#FormAction").val() == 1) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: '@Url.Action("Create", "Branch", new { Area = "GeneralTable" })',
+                                    processData: false,
+                                    data: $("#formCreateEdit").serialize(),
+                                    success: function (respond) {
+                                        $("#FormSave").val("1");
+                                        alert(respond);
+                                    },
+                                    error: function (ts) { alert(ts.responseText) }
+                                });
+                            }
+                            else {
+                                $('#BranchCode').prop('disabled', false);
+                                $.ajax({
+                                    type: "POST",
+                                    url: '@Url.Action("Edit", "Branch", new { Area = "GeneralTable" })',
+                                    processData: false,
+                                    data: $("#formCreateEdit").serialize(),
+                                    success: function (respond) {
+                                        $('#BranchCode').prop('disabled', true);
+                                        $("#FormSave").val("2");
+                                        alert(respond);
+                                    },
+                                    error: function (ts) { alert(ts.responseText) }
+                                });
+                            }
+                        }
+                    })
+
+                    function Get_TaxEstablishDate() {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Get_TaxEstablishDate", "Branch", new { Area = "GeneralTable" })',
+                            data: { Branch: $('#BranchCode').val() },
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                var date = moment(respond).format('DD/MMM/YYYY');
+                                $('#TaxEstablishDate').val(date);
+                            },
+                            error: function (respond) {
+                                alert(respond);
+                            }
+                        })
+                    }
+
+                    function Get_Ho_Exist() {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Get_HO_Exist", "Branch", new { Area = "GeneralTable" })',
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                if(respond==true){
+                                    $('#HOStatus').prop('disabled', true);
+                                }
+
+                            },
+                            error: function (respond) {
+                                alert(respond);
+                            }
+                        })
+                    }
+
+                    $("#btnAddNew").click(function () {
+                        var answer = confirm("Are you sure want to clear this form ?");
+
+                        if (answer) {
+                            document.location = '@Url.Action("Create", "Branch", new { Area = "GeneralTable" })';
+                        }
+                        else {
+                            e.preventDefault();
+                        }
+                    }),
+
+                    $("#btnClose, .close").click(function () {
+                        document.location = '@Url.Action("index", "Branch", new { Area = "GeneralTable" })';
+                        @*$("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "Customer", new { Area = "GeneralTable" })';
+            }*@
+                    });
+
+    </script>
+}

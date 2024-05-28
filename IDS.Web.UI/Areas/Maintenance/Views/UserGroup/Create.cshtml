@@ -1,0 +1,142 @@
+﻿@model IDS.Maintenance.UserGroup
+
+<div class='modal fade' id='CreateEditForm' tabindex='-1' role='dialog' aria-labelledby='myModalLabel' aria-hidden='true'>
+    <div class='modal-dialog modal-dialog-centered' role='document'>
+        <div class='modal-content card'>
+            <div class='card-header'>
+                <div id='btnjf1' class='card-title modal-title'>
+                    <table>
+                        <tr>
+                            <td>
+                                <img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='AdminLTE Logo'
+                                     class='brand-image img-circle elevation-3' style='width: 23%;height: 23%;'>
+                            </td>
+                            <td>
+                                <div id='modalTitle' style='font-weight: bold;'>Edit User</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class='card-tools'>
+                    <ul class='nav nav-pills ml-auto'>
+                        <li class='nav-item'>
+                            <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' onclick='boxeditClose()'>
+                                <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class='card-body modal-body'>
+                <!-- Mulai-->
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.GroupCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.GroupCode, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 20, placeholder = "User Group Code" } })
+                            @Html.ValidationMessageFor(model => model.GroupCode, "", new { @id = "valGroupCode", @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.GroupName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.GroupName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, placeholder = "User Group Name" } })
+                            @Html.ValidationMessageFor(model => model.GroupName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+                <!-- selesai -->
+            </div>
+            <div class='modal-footer'>
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSave").click(function () {
+            if(!$("form#formCreateEdit").valid())
+            {
+                return false;
+            }
+            if ($("#FormAction").val() == 1) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Create", "UserGroup", new { Area = "Maintenance" })',
+                    processData: false,
+                    data: $("#formCreateEdit").serialize(),
+                    success: function (respond) {
+                        $("#FormSave").val("1");
+
+                        RefreshUserGroup();
+
+                        // NoAccessModal(respond);
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Edit", "UserGroup", new { Area = "Maintenance" })',
+                    processData: false,
+                    data: $("#formCreateEdit").serialize(),
+                    success: function (respond) {
+                        $("#FormSave").val("1");
+
+                        RefreshUserGroup();
+
+                        $("#CreateEditForm").modal('hide');
+                        // NoAccessModal(respond);
+                    }
+                });
+            }
+            
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#GroupCode, #GroupName').val() == "") {
+                $("form#formCreateEdit").trigger("reset");
+                $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                $('#GroupCode').prop('readonly', false);
+                $("#FormAction").val("1");
+                $("#FormSave").val("1");
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+    });
+
+    function boxeditClose() {
+        $("#CreateEditForm").modal('hide');
+    }
+
+</script>
+}

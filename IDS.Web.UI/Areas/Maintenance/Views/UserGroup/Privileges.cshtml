@@ -1,0 +1,88 @@
+﻿
+<div class="row mb-2">
+    <section class="col-lg-6 connectedSortable ui-sortable">
+        <div class='row mb-2'>
+            <div class='row pb-0 col-sm-12 mb-1'>
+                <label for='txtgroupcode' class='col-sm-2 col-form-label col-form-label-sm'>Group Code</label>
+                <div class='col-sm'>
+                    <input type='text' class='form-control form-control-sm' id='txtgroupcode' required>
+                </div>
+            </div>
+            <div class='row pb-0 col-sm-12 mb-1'>
+                <label for='txtgroupname' class='col-sm-2 col-form-label col-form-label-sm'>Group Name</label>
+                <div class='col-sm'>
+                    <input type='text' class='form-control form-control-sm' id='txtgroupname' required>
+                </div>
+            </div>
+            <div class='row pb-0 col-sm-12 mb-1'>
+                <label for='txtprojectmain' class='col-sm-2 col-form-label col-form-label-sm'>Project Main</label>
+                <div class='col-sm'>
+                    <select id='txtprojectmain' class="form-control form-control-sm" aria-label="Default select example" onchange="txtprojectmainchangeHandler(this)">
+                        <option selected>Open this select menu</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="col-lg-6 connectedSortable ui-sortable">
+        <div class='row mb-2'>
+            <div class='row pb-0 col-sm-12 mb-1'>
+                <label for='cbopermission' class='col-sm-2 col-form-label col-form-label-sm'>Permission</label>
+                <div class='col-sm'>
+                    <select id='cbopermission' class="form-control form-control-sm" aria-label="Default select example">
+                        <option selected>Open this select menu</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>
+                </div>
+            </div>
+            <div class='row pb-0 col-sm-12 mb-1'>
+                <label for='ckselectallform' class='col-sm-2 col-form-label col-form-label-sm'>Select All form</label>
+                <div class='col-sm'>
+                    <input type='checkbox' class='form-control-sm' id='ckselectallform'>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="row">
+    <section class="col-lg-12 connectedSortable ui-sortable">
+        <div id="classgrid1" class="row mb-1">
+            <div class="table-responsive table-responsive-sm p-2 bg-white border">
+                <table id="tblprivileges" class="table table-bordered table-hover w-100">
+                    <thead>
+                        <tr>
+                            <th><input name="select_all" value="1" id="example-select-all" type="checkbox" /></th>
+                            <th>Menu Url</th>
+                            <th>Form Of</th>
+                            <th>Project Name</th>
+                            <th>Privilege</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section class="col-lg-12 text-right connectedSortable ui-sortable mt-1">
+        <button type="button" class="btn btn-primary btn-sm" onclick="btnPrivilegesBack_click()">Back</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="btnPrivilegesSave_click()">Save</button>
+    </section>
+</div>
+
+@section Scripts{
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#example-select-all,#ckselectallform').on('click', function () {
+            var tbl_ = $('#tblprivileges').DataTable();
+            var rows = tbl_.rows({ 'search': 'applied' }).nodes();
+            $('input[type="checkbox"]', rows).prop('checked', this.checked);
+        });
+    });
+  
+</script>
+}

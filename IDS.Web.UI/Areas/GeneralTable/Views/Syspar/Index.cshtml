@@ -1,0 +1,411 @@
+﻿@model IDS.GeneralTable.Syspar
+
+@{
+    ViewBag.Title = "System Parameter";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+<h2>System Parameter</h2>
+
+@using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("PageEdit", Convert.ToInt32(ViewData["Page.Edit"]))
+    @Html.Hidden("rbLanguage", ViewData["rbLanguage"])
+    @Html.Hidden("DefaultDate", ViewData["DefaultDate"])
+    @Html.Hidden("FormSave", "0");
+
+    @*<script type="text/javascript">
+        $('form#formCreateEdit').removeData("validator");
+        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+    </script>*@
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="form-group-sm row mb-3">
+                            <h5 class="card-title" style="font-weight:bold">Company Profile</h5>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Name, "Name", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, name = "Name", placeholder = "Name" } })
+                                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Address1, "Address", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.TextAreaFor(model => model.Address1, new { @class = "form-control form-control-sm", @maxlength = 50, @rows = "2", @style = "resize:none" })
+                                @Html.ValidationMessageFor(model => model.Address1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Address2, "Address2", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.TextAreaFor(model => model.Address2, new { @class = "form-control form-control-sm", @maxlength = 50, @rows = "2", @style = "resize:none" })
+                                @Html.ValidationMessageFor(model => model.Address2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Address3, "Address3", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.TextAreaFor(model => model.Address3, new { @class = "form-control form-control-sm", @maxlength = 50, @rows = "2", @style = "resize:none" })
+                                @Html.ValidationMessageFor(model => model.Address3, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.CountryCode, "Country", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.DropDownListFor(model => model.CountryCode, (SelectList)ViewData["SelectListCountry"], "--- Select Country ---", new { @id = "cboCountry", @class = "form-control form-control-sm" })
+                                @Html.ValidationMessageFor(model => model.CountryCode, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.BaseCCy, "Base Ccy", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.DropDownListFor(model => model.BaseCCy, (SelectList)ViewData["SelectListCcy"], "--- Select Ccy ---", new { @id = "cboCcy", @class = "form-control form-control-sm" })
+                                @Html.ValidationMessageFor(model => model.BaseCCy, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Department, "Department", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.DropDownListFor(model => model.Department, (SelectList)ViewData["SelectListDept"], "--- Select Department ---", new { @id = "cboDept", @class = "form-control form-control-sm" })
+                                @Html.ValidationMessageFor(model => model.Department, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Version, "Version", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.Version, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, name = "Version", placeholder = "Version" } })
+                                @Html.ValidationMessageFor(model => model.Version, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Phone, "Phone", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, name = "Phone", placeholder = "Phone" } })
+                                @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group-sm row mb-1">
+                            @Html.LabelFor(model => model.Fax, "Fax", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                            <div class="col-sm-9">
+                                @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, name = "Fax", placeholder = "Fax" } })
+                                @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="">
+                        <div class="form-group row mb-3">
+                            <h5 class="card-title text-bold">Fiscal Year</h5>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group row mb-1">
+                                    @Html.LabelFor(model => model.StartFiscalYear, "Start Fiscal", new { @class = "col-form-label col-form-label-sm col-sm-4" })
+                                    <div class="col-sm-8">
+                                        @Html.EditorFor(model => model.StartFiscalYear, new { htmlAttributes = new { @class = "form-control form-control-sm", @name = "StartFiscalYear", @style="width: 100% !important;" } })
+                                        @Html.ValidationMessageFor(model => model.StartFiscalYear, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group row mb-1">
+                                    @Html.Label("End Fiscal", new { @class = "col-form-label col-form-label-sm col-sm-4" })
+                                    <div class="col-sm-8">
+                                        @Html.TextBox("End Fiscal", "", new { @id = "EndFiscal", @class = "form-control form-control-sm" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="row">
+                        <div class="form-group-sm mb-2">
+                            <h5 class="card-title" style="font-weight:bold">Report Settings</h5>
+                        </div>
+
+                        <div class="form-row mb-2">
+                            <div class="form-check form-check-inline" style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintName)
+                                @Html.Label("chkPrintName", "Print Company Name", new { @class = "form-check-label ml-2" })
+                            </div>
+
+                            <div class="form-check form-check-inline" style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintAddress)
+                                @Html.Label("chkPrintAddress", "Print Address", new { @class = "form-check-label ml-2" })
+                            </div>
+
+                            <div class="form-check form-check-inline" style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintCity)
+                                @Html.Label("chkPrintCity", "Print City", new { @class = "form-check-label ml-2" })
+                            </div>
+
+                            <div class="form-check form-check-inline" style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintCountry)
+                                @Html.Label("chkPrintCountry", "Print Country", new { @class = "form-check-label ml-2" })
+                            </div>
+
+                            <div class="form-check form-check-inline" style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintDate)
+                                @Html.Label("chkPrintDate", "Print Date", new { @class = "form-check-label ml-2" })
+                            </div>
+
+                            <div class="form-check form-check-inline "style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintTime)
+                                @Html.Label("chkPrintTime", "Print Time", new { @class = "form-check-label ml-2" })
+                            </div>
+
+                            <div class="form-check form-check-inline" style="border-width:1px; border-style:solid; border-color:dodgerblue">
+                                @Html.CheckBoxFor(model => model.PrintPageNumber)
+                                @Html.Label("chkPrintPageNumber", "Print Page Number", new { @class = "form-check-label ml-2" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            @Html.LabelFor(model => model.VAT, htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                            <div class="input-group col-sm-2 mr-5">
+                                @Html.EditorFor(model => model.VAT, new { htmlAttributes = new { @class = "form-control form-control-sm text-right col-sm-10", aria_describeby = "vat" } })
+                                <span class="input-group-text text-sm form-control-sm col-sm-2 text-center" id="varianceLimit">%</span>
+                                @Html.ValidationMessageFor(model => model.VAT, "", new { @class = "text-danger" })
+                            </div>
+                            
+
+                            <label class="align-middle mt-2">Language :</label>
+                            
+                            <div class="form-check form-check-inline">
+                                @Html.RadioButtonFor(model => model.Language, "INGGRIS", new { @class="align-middle ml-2 mt-1" })
+                                @Html.Label("chkPrintLanguageInggris", "English", new { @class = "form-check-label ml-2 mt-1 align-middle" })
+                            </div>
+
+                            <div class="form-check form-check-inline ml-2">
+                                @Html.RadioButtonFor(model => model.Language, "BAHASA", new { @class="align-middle ml-2 mt-1" })
+                                @Html.Label("chkPrintLanguageIndonesia", "Indonesia", new { @class = "form-check-label ml-2 mt-1 align-middle" })
+                            </div>
+
+                            @Html.ValidationMessageFor(model => model.Language, "", new { @class = "text-danger" })
+                        </div>
+
+                        @*<div class="form-row mt-2">
+                            <div class="col-sm-6">
+                                <div class="form-group row mb-1">
+                                    @Html.LabelFor(model => model.SignBy1, "Sign 1", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                    <div class="col-sm-10">
+                                        @Html.EditorFor(model => model.SignBy1, new { htmlAttributes = new { @class = "form-control form-control-sm", @name = "SignBy1", @style = "width: 100% !important;" } })
+                                        @Html.ValidationMessageFor(model => model.SignBy1, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group row mb-1">
+                                    @Html.LabelFor(model => model.Occupation1, "Occupation 1", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                    <div class="col-sm-9">
+                                        @Html.EditorFor(model => model.Occupation1, new { htmlAttributes = new { @class = "form-control form-control-sm", @name = "Occupation1", @style = "width: 100% !important;" } })
+                                        @Html.ValidationMessageFor(model => model.Occupation1, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row mt-2">
+                            <div class="col-sm-6">
+                                <div class="form-group row mb-1">
+                                    @Html.LabelFor(model => model.SignBy2, "Sign 2", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                    <div class="col-sm-10">
+                                        @Html.EditorFor(model => model.SignBy2, new { htmlAttributes = new { @class = "form-control form-control-sm", @name = "SignBy2", @style = "width: 100% !important;" } })
+                                        @Html.ValidationMessageFor(model => model.SignBy2, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group row mb-1">
+                                    @Html.LabelFor(model => model.Occupation2, "Occupation 2", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                    <div class="col-sm-9">
+                                        @Html.EditorFor(model => model.Occupation2, new { htmlAttributes = new { @class = "form-control form-control-sm", @name = "Occupation2", @style = "width: 100% !important;" } })
+                                        @Html.ValidationMessageFor(model => model.Occupation2, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" id="btnSave">Edit</button>
+    <button type="button" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+
+    <script type="text/javascript">
+        $('form#formCreateEdit').removeData("validator");
+        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+
+        $(document).ready(function () {
+            var languages = $('#rbLanguage').val();
+            var defaultDate = $('#DefaultDate').val();
+
+            if ($('#FormAction').val() == 2) {
+            }
+
+            $('#EndFiscal').attr('disabled', 'disabled')
+
+            //alert($('#Language').val());
+
+            $(':radio[value="' + languages + '"]').attr('checked', 'checked');
+
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var dateNow = new Date().getDate() + '-' + months[new Date().getMonth()] + '-' + new Date().getFullYear();
+
+            flatpickr("#StartFiscalYear", {
+                dateFormat: "d-M-Y",
+                defaultDate: [defaultDate],
+                disabledMobile: true,
+            });
+
+            if ($('#EndFiscal').val() == '') {
+                var result1 = new Date($('#StartFiscalYear').val());
+                result1.setYear(result1.getFullYear() + 1);
+                result1.setDate(result1.getDate() - 1);
+
+                $('#EndFiscal').val(('0' + result1.getDate()).slice(-2) + '-' + months[result1.getMonth()] + '-' + result1.getFullYear());
+            }
+
+            $('#StartFiscalYear').change(function () {
+                var result = new Date($('#StartFiscalYear').val());
+                result.setYear(result.getFullYear() + 1);
+                result.setDate(result.getDate() - 1);
+
+                $('#EndFiscal').val(('0'+result.getDate()).slice(-2) + '-' + months[result.getMonth()] + '-' + result.getFullYear());
+            });
+
+            $("#btnSave").click(function () {
+                if ($("#PageEdit").val() == 0) {
+                    alert("You don't have access");
+                    return false;
+                }
+                else if ($("#PageEdit").val() == 1 && $("#btnSave").text() == "Edit") {
+                    $('input, select, textarea').removeAttr('disabled');
+                    $('#EndFiscal').attr('disabled', 'disabled');
+                    $("#btnSave").text("Save")
+                    return false;
+                }
+
+                if (!$("form#formCreateEdit").valid()) {
+                    return false;
+                }
+
+                var confirmText = "";
+                if ($("#FormAction").val() == 1) {
+                    confirmText = ("Are you sure want to save data ?");
+                } else {
+                    confirmText = ("Are you sure want to edit System Parameter ?");
+                }
+
+                var answer = confirm(confirmText);
+
+                if (answer) {
+                    if ($("#FormAction").val() == 1) {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Create", "syspar", new { Area = "GeneralTable" })',
+                            processData: false,
+                            data: $("#formCreateEdit").serialize(),
+                            success: function (respond) {
+                                $("#FormSave").val("1");
+                                alert(respond);
+                            },
+                            error: function (ts) { alert(ts.responseText) }
+                        });
+                    }
+                    else {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Edit", "Customer", new { Area = "GeneralTable" })',
+                            processData: false,
+                            data: $("#formCreateEdit").serialize(),
+                            success: function (respond) {
+                                $("#FormSave").val("1");
+                                alert(respond);
+                            },
+                            error: function (ts) { alert(ts.responseText) }
+                        });
+                    }
+                }
+            }),
+
+            //$('#Phone').keypress(function (event) {
+            //    return isNumber(event, this)
+            //});
+
+            //$('#Outstanding').keypress(function (event) {
+            //    return isNumber(event, this)
+            //});
+            
+            $('input, select, textarea').attr('disabled', 'disabled');
+
+            function isNumber(evt, element) {
+                var charCode = (evt.which) ? evt.which : event.keyCode
+                if (
+                    (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                    (charCode < 48 || charCode > 57))
+                    return false;
+                return true;
+            }
+
+            $("#btnClose, .close").click(function () {
+                document.location = '@Url.Action("index", "Main", new { Area = "" })';
+            });
+        });
+
+    </script>
+}
+

@@ -1,0 +1,1417 @@
+﻿
+@{
+    ViewBag.Title = "Void Invoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+    td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_open.png")") no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_close.png")") no-repeat center center;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<h2>@ViewBag.Title</h2>
+
+@section Styles{
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+<div class="card" id="firstform">
+    <div class="card-header">
+        <h3 class="card-title">Filter</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-6 mb-2">
+                <div class="form-group row mb-0">
+                    <div class="control-label col-sm-3 col-form-label">
+                        <div class="form-check form-check-inline">
+                            @Html.CheckBox("chkFilterDate", false, new { @id = "chkTransDate", @class = "form-check-input" })
+                            @Html.Label("chkFilterDate", "Filter Date", new { @class = "form-check-label" })
+                        </div>
+                    </div>
+                    <div class="col-sm-4 mb-0">
+                        @Html.TextBox("FromDate", ViewData["FirstDayOfMonth"], new { @id = "txtFromDate", @class = "form-control form-control-sm bg-white", disabled = true })
+                    </div>
+                    <div class="col-sm-4 mb-0">
+                        @Html.TextBox("ToDate", ViewData["CurrDate"], new { @id = "txtToDate", @class = "form-control form-control-sm bg-white", disabled = true })
+                    </div>
+                </div>
+
+                <div class="form-group row mb-0">
+                    @Html.Label("View", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-sm-9 mb-0">
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButton("filterView", "3", true, new { @class = "form-check-input" })
+                            @Html.Label("Void Invoice", new { @class = "form-check-label" })
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButton("filterView", "2", new { @class = "form-check-input" })
+                            @Html.Label("Void Reference", new { @class = "form-check-label" })
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButton("filterView", "1", new { @class = "form-check-input" })
+                            @Html.Label("New Void", new { @class = "form-check-label" })
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButton("filterView", "4", new { @class = "form-check-input" })
+                            @Html.Label("Export Faktur", new { @class = "form-check-label" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 mb-2">
+                <div class="form-group row mb-2">
+                    @Html.Label("Customer", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-xs-12 col-sm-9">
+                        @Html.DropDownList("Customer", (ViewData["CustList"] as SelectList), "-- ALL --", new { @id = "cboCustomer", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+                </div>
+                <div class="form-group row mb-0">
+                    @Html.Label("InvNo","Invoice No.", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-sm-7 mb-2">
+                        @Html.DropDownList("InvNo", (ViewData["InvNoList"] as SelectList), "-- ALL --", new { @id = "cboInvNo", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+
+                    @*<div class="col-sm-1 mb-2 ml-5">
+                        <a class="btn btn-sm btn-default" onclick="Refresh()" title="Refresh Data">
+                            <i class="fas fa-search"></i>
+                        </a>
+                    </div>*@
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="partialView">
+
+</div>
+
+<div class="row">
+    <div class="col-sm-6 col-md-6 col-6 text-left">
+        <div class="form-group row mb-2" id="ctrlNewVoid">
+            @Html.Label("ProcessDate", "Process Date", new { @class = "control-label col-sm-2 col-form-label" })
+            <div class="col-xs-12 col-sm-2">
+                @Html.TextBox("ProcessDate", ViewData["CurrDate"], new { @id = "txtProcessDate", @class = "form-control form-control-sm bg-white" })
+            </div>
+
+            <button type="button" data-toggle="tooltip" data-placement="top" title="Process Void Invoice" onclick="Process()" class="btn btn-outline-info col-sm-2 form-control-sm" id="btnProcess">Process</button>
+        </div>
+
+        <div class="form-group row mb-2 ml-1" id="ctrlExportFaktur">
+            <button type="button" data-toggle="tooltip" data-placement="top" title="Export Faktur Pajak" onclick="ExportFaktur()" class="btn btn-outline-info col-sm-3 form-control-sm" id="btnExportFaktur">Export Faktur</button>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-6 col-6 text-right">
+        <p>
+            <a onclick="Refresh()" data-toggle="tooltip" data-placement="top" title="Refresh Data On Grid" class="btn btn-sm btn-success" href="#">
+                <i class="fas fa-sync"></i>
+            </a>
+            @*<a href="#" class="btn btn-sm btn-primary" onclick="LoadCreateNewForm()">
+                <i class="fas fa-plus"></i>
+            </a>
+
+            <a class="btn btn-sm btn-info" onclick="LoadEditForm()">
+                <i class="fas fa-edit"></i>
+            </a>
+
+            <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                <i class="fas fa-trash"></i>
+            </a>*@
+
+            @*<a onclick="Delete()" class="btn btn-sm btn-warning" href="#">
+                    <i class="fas fa-sync"></i>
+                </a>
+                <a href="#" class="btn btn-sm btn-primary" onclick="GoHome()">
+                    <i class="fas fa-home"></i>
+                </a>*@
+        </p>
+    </div>
+</div>
+
+@*<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Invoice List</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+
+            <div class="card">
+                <div class="card-header p-0 pt-1 border-bottom-0">
+                    <ul class="nav nav-tabs" id="custom-tabs-two-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="custom-tabs-two-home-tab" data-toggle="pill" href="#custom-tabs-two-home" role="tab" aria-controls="custom-tabs-two-home" aria-selected="true">Void Invoice</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="custom-tabs-two-profile-tab" data-toggle="pill" href="#custom-tabs-two-profile" role="tab" aria-controls="custom-tabs-two-profile" aria-selected="false">Void Reference</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="custom-tabs-two-tabContent">
+                        <div class="tab-pane fade active show" id="custom-tabs-two-home" role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
+                            <div class="table-responsive table-responsive-sm p-2 bg-white border" id="void">
+                                <table id="tableData" class="table table-bordered table-hover w-100">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Invoice No.</th>
+                                            <th>Void Date</th>
+                                            <th>Reference No.</th>
+                                            <th>Customer</th>
+                                            <th>Currency</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Voucher</th>
+                                            <th>User ID</th>
+                                            <th>Log Date</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="custom-tabs-two-profile" role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
+                            <div class="table-responsive table-responsive-sm p-2 bg-white border" id="ref">
+                                <table id="tableDataRef" class="table table-bordered table-hover w-100">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Invoice No.</th>
+                                            <th>Void Date</th>
+                                            <th>Reference No.</th>
+                                            <th>Customer</th>
+                                            <th>Currency</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>User ID</th>
+                                            <th>Log Date</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>*@
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border" id="void">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Invoice No.</th>
+                <th>Void Date</th>
+                <th>Reference No.</th>
+                <th>Customer</th>
+                <th>Currency</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Voucher</th>
+                <th>User ID</th>
+                <th>Log Date</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border" id="ref">
+    <table id="tableDataRef" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Invoice No.</th>
+                <th>Void Date</th>
+                <th>Reference No.</th>
+                <th>Customer</th>
+                <th>Currency</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>User ID</th>
+                <th>Log Date</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border" id="newVoid">
+    <table id="tableDataNewVoid" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>Invoice No.</th>
+                <th>Invoice Date</th>
+                <th>Reference No.</th>
+                <th>Customer</th>
+                <th>Currency</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>User ID</th>
+                <th>Log Date</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border" id="ExportFaktur">
+    <table id="tableDataExportFaktur" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Invoice No.</th>
+                <th>Void Date</th>
+                <th>Reference No.</th>
+                <th>Customer</th>
+                <th>Currency</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Voucher</th>
+                <th>User ID</th>
+                <th>Log Date</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+
+    <script type="text/javascript">
+        //var HOSStatus = $("#HOStatus").val();
+        //var result = $("#result").val();
+        var table = null;
+        var tableRef = null;
+        var tableNewVoid = null;
+        var tableExportFaktur = null;
+        var rowIndex = null;
+
+        function format(d, rowindex) {
+
+            return '<div class="table-responsive table-responsive-sm p-2 bg-white border" style="width:75%">' +
+                        '<table id="' + rowindex.toString() + '" class="table table-bordered" name="tableDetail" style="width:100%">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Invoice Number</th>' +
+                                    '<th>Remark</th>' +
+                                    '<th>Invoice Amount</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                        '</table>'+
+                    '</div>';
+        }
+
+        function formatRef(d, rowindex) {
+
+            return '<div class="table-responsive table-responsive-sm p-2 bg-white border" style="width:75%">' +
+                        '<table id="'+"ref" + rowindex.toString() + '" class="table table-bordered" name="tableRefDetail" style="width:100%">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Invoice Number</th>' +
+                                    '<th>Remark</th>' +
+                                    '<th>Invoice Amount</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                        '</table>' +
+                    '</div>';
+        }
+
+        function formatNewVoid(d, rowindex) {
+
+            return '<div class="table-responsive table-responsive-sm p-2 bg-white border" style="width:75%">' +
+                        '<table id="' + "newVoid" + rowindex.toString() + '" class="table table-bordered" name="tableNewVoidDetail" style="width:100%">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Invoice Number</th>' +
+                                    '<th>Remark</th>' +
+                                    '<th>Invoice Amount</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                        '</table>' +
+                    '</div>';
+        }
+
+        $(document).ready(function () {
+            $(".select2DDList").select2();
+            flatpickr("#txtFromDate, #txtToDate,#txtProcessDate", {
+                dateFormat: "d/M/Y",
+                disableMobile: true,
+                static: true,
+            });
+
+            LoadDataInv();
+
+            $('#tableData tbody').on('click', 'td.details-control', function () {
+                var selRow = table.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+                //GetRowChild($("#cboBranchCode").val(), selRow[0]["SCode"], selRow[0]["Voucher"], rowIndex);
+
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(format(row.data(), rowIndex)).show();
+                    LoadDataDetail(selRow[0]["InvoiceNumber"], rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+
+            $('#tableDataRef tbody').on('click', 'td.details-control', function () {
+                var selRow = tableRef.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+                //GetRowChild($("#cboBranchCode").val(), selRow[0]["SCode"], selRow[0]["Voucher"], rowIndex);
+
+                var tr = $(this).closest('tr');
+                var row = tableRef.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(formatRef(row.data(), rowIndex)).show();
+                    LoadDataDetail(selRow[0]["InvoiceNumber"], "ref" + rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+
+            $('#tableDataNewVoid tbody').on('click', 'td.details-control', function () {
+                var selRow = tableNewVoid.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+                //GetRowChild($("#cboBranchCode").val(), selRow[0]["SCode"], selRow[0]["Voucher"], rowIndex);
+
+                var tr = $(this).closest('tr');
+                var row = tableNewVoid.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(formatNewVoid(row.data(), rowIndex)).show();
+                    LoadDataDetail(selRow[0]["InvoiceNumber"], "newVoid" + rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+
+            $('#tableDataExportFaktur tbody').on('click', 'td.details-control', function () {
+                var selRow = tableExportFaktur.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+                //GetRowChild($("#cboBranchCode").val(), selRow[0]["SCode"], selRow[0]["Voucher"], rowIndex);
+
+                var tr = $(this).closest('tr');
+                var row = tableExportFaktur.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(format(row.data(), rowIndex)).show();
+                    LoadDataDetail(selRow[0]["InvoiceNumber"], rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+
+            $("#chkTransDate").change(function () {
+                if ($('#chkTransDate').is(':checked')) {
+                    $('#txtFromDate').prop('disabled', false);
+                    $('#txtToDate').prop('disabled', false);
+                } else {
+                    $('#txtFromDate').prop('disabled', true);
+                    $('#txtToDate').prop('disabled', true);
+                }
+            });
+
+            HideShowTable();
+        });
+
+        $('input[type=radio][name=filterView]').change(function () {
+            HideShowTable();
+        });
+
+        $('#cboCustomer').change(function () {
+            LoadInvDataSource($('input[name="filterView"]:checked').val());
+            @*if ($('input[name="filterView"]:checked').val() == "1") {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetInvoiceNewVoid", "VoidInvoice", new { Area = "Sales" })',
+                    dataType: 'json',
+                    data: { cust: $('#cboCustomer').val() },
+                    success: function (respond) {
+                        $('#cboInvNo').empty();
+                        $('#cboInvNo').append('<option value = "">-- ALL --</option>');
+                        $.each(respond, function (i, item) {
+                            $('#cboInvNo').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetInvoice", "VoidInvoice", new { Area = "Sales" })',
+                    dataType: 'json',
+                    data: { cust: $('#cboCustomer').val() },
+                    success: function (respond) {
+                        $('#cboInvNo').empty();
+                        $('#cboInvNo').append('<option value = "">-- ALL --</option>');
+                        $.each(respond, function (i, item) {
+                            $('#cboInvNo').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+            }*@
+        });
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow.length > 0) {
+                var SerialNo = selRow[0]["SerialNo"];
+
+                window.location = '@Url.Action("Edit", "Receive", new { Area = "Sales" })' + "?serialNo=" + SerialNo;
+                @*window.location = '@Url.Action("EditAP", "ProcessARAP", new { Area = "Sales" })' + "?rpP=" + invNo;*@
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var errCount = 0;
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var dataSerialNo = '';
+            //var includePosted = false;
+
+            $.each(selRow, function (index, row) {
+                //if (row["ProcessInv"]) {
+                //    alert('some data has been processed, delete Failed');
+                //    errCount++;
+                //    return false;
+                //}
+                dataSerialNo += row["SerialNo"] +'|';
+                dataCollection += '[' + row["SerialNo"] + ']' + "\n";
+            })
+
+            if (errCount == 0) {
+                var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+                if (answer) {
+                    if (dataCollection.length > 0) {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Delete", "Receive", new { Area = "Sales" })',
+                            data: { "receiveCollection": dataSerialNo },
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                switch (respond) {
+                                    case "NoAccess":
+                                        window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                        break;
+                                    case "Success":
+                                        alert(respond);
+                                        window.location.href = '@Url.Action("index", "Receive", new { Area = "Sales" })'
+                                        break;
+                                    default:
+                                        alert(respond);
+                                        window.location.href = '@Url.Action("index", "Receive", new { Area = "Sales" })'
+                                        break;
+                                }
+
+                            },
+                            error: function (respond, xhr, msg) {
+                                alert(msg);
+                            }
+                        })
+                        }
+                }
+                else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+
+
+        }
+
+        function LoadData(filterDate) {
+            return $('#tableData').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             //"dom": '<"toolbar">frtip',
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[2, "desc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetData", "VoidInvoice", new { Area = "Sales" })',
+                 "data": {
+                     //'view': $('input[name="filterView"]:checked').val(),
+                     'view': '3',
+                     'chkFilterDate': filterDate,
+                     'cust': $('#cboCustomer').val(),
+                     'inv': $('#cboInvNo').val(),
+                     'from': $('#txtFromDate').val(),
+                     'to': $('#txtToDate').val()
+                     //'chkFilterDate': true,
+                     //'cust': '',
+                     //'inv': '',
+                     //'from': '12/12/2021',
+                     //'to': '12/12/2021'
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 { "data": "InvoiceNumber", "name": "InvoiceNumber" },
+                 {
+                     "data": "InvoiceDate", "name": "InvoiceDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.InvoiceDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.InvoiceDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 { "data": "RefNo", "name": "RefNo" },
+                 { "data": "Cust.CUSTCode", "name": "Cust.CUSTCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 {
+                     "data": "StatusARAP", "name": "StatusARAP",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" onclick="return false;" class="editor-statusarap">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "InvoiceAmount", "name": "InvoiceAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Voucher", "name": "Voucher" },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ],
+             "rowCallback": function (row, data) {
+                 // Set the checked state of the checkbox in the table
+                 $('input.editor-statusarap', row).prop('checked', data.StatusARAP == 1);
+             }
+         });
+        }
+
+        function LoadDataRef(filterDate) {
+            return $('#tableDataRef').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [9]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[2, "desc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetData", "VoidInvoice", new { Area = "Sales" })',
+                 "data": {
+                     //'view': $('input[name="filterView"]:checked').val(),
+                     'view': '2',
+                     'chkFilterDate': filterDate,
+                     'cust': $('#cboCustomer').val(),
+                     'inv': $('#cboInvNo').val(),
+                     'from': $('#txtFromDate').val(),
+                     'to': $('#txtToDate').val()
+                     //'chkFilterDate': true,
+                     //'cust': '',
+                     //'inv': '',
+                     //'from': '12/12/2021',
+                     //'to': '12/12/2021'
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 { "data": "InvoiceNumber", "name": "InvoiceNumber" },
+                 {
+                     "data": "InvoiceDate", "name": "InvoiceDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.InvoiceDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.InvoiceDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 { "data": "RefNo", "name": "RefNo" },
+                 { "data": "Cust.CUSTCode", "name": "Cust.CUSTCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 {
+                     "data": "StatusARAP", "name": "StatusARAP",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" onclick="return false;" class="editor-statusarap">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "InvoiceAmount", "name": "InvoiceAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 //{ "data": "Voucher", "name": "Voucher" },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ],
+             "rowCallback": function (row, data) {
+                 // Set the checked state of the checkbox in the table
+                 $('input.editor-statusarap', row).prop('checked', data.StatusARAP == 1);
+             }
+         });
+        }
+
+        function LoadDataNewVoid() {
+            return $('#tableDataNewVoid').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "10px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "70",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[3, "desc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetDataNewVoid", "VoidInvoice", new { Area = "Sales" })',
+                 "data": {
+                     'cust': $('#cboCustomer').val(),
+                     'inv': $('#cboInvNo').val()
+                     //'chkFilterDate': true,
+                     //'cust': '',
+                     //'inv': '',
+                     //'from': '12/12/2021',
+                     //'to': '12/12/2021'
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 {
+                     "data": null, "name": "chkProcess",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" class="editor-chkprocess" id="chkProcess" name="chkProcess">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "InvoiceNumber", "name": "InvoiceNumber" },
+                 {
+                     "data": "InvoiceDate", "name": "InvoiceDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.InvoiceDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.InvoiceDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 { "data": "RefNo", "name": "RefNo" },
+                 { "data": "Cust.CUSTCode", "name": "Cust.CUSTCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 {
+                     "data": "StatusARAP", "name": "StatusARAP",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" onclick="return false;" class="editor-statusarap">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "InvoiceAmount", "name": "InvoiceAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 //{ "data": "Voucher", "name": "Voucher" },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ],
+             "rowCallback": function (row, data) {
+                 // Set the checked state of the checkbox in the table
+                 $('input.editor-statusarap', row).prop('checked', data.StatusARAP == 1);
+             }
+         });
+        }
+
+        function LoadDataExportFaktur(filterDate) {
+            return $('#tableDataExportFaktur').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             //"dom": '<"toolbar">frtip',
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[2, "desc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetData", "VoidInvoice", new { Area = "Sales" })',
+                 "data": {
+                     //'view': $('input[name="filterView"]:checked').val(),
+                     'view': '4',
+                     'chkFilterDate': filterDate,
+                     'cust': $('#cboCustomer').val(),
+                     'inv': $('#cboInvNo').val(),
+                     'from': $('#txtFromDate').val(),
+                     'to': $('#txtToDate').val()
+                     //'chkFilterDate': true,
+                     //'cust': '',
+                     //'inv': '',
+                     //'from': '12/12/2021',
+                     //'to': '12/12/2021'
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 { "data": "InvoiceNumber", "name": "InvoiceNumber" },
+                 {
+                     "data": "InvoiceDate", "name": "InvoiceDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.InvoiceDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.InvoiceDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 { "data": "RefNo", "name": "RefNo" },
+                 { "data": "Cust.CUSTCode", "name": "Cust.CUSTCode" },
+                 { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                 {
+                     "data": "StatusARAP", "name": "StatusARAP",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" onclick="return false;" class="editor-statusarap">';
+                         }
+                         return data;
+                     }
+                 },
+                 { "data": "InvoiceAmount", "name": "InvoiceAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Voucher", "name": "Voucher" },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ],
+             "rowCallback": function (row, data) {
+                 // Set the checked state of the checkbox in the table
+                 $('input.editor-statusarap', row).prop('checked', data.StatusARAP == 1);
+             }
+         });
+        }
+
+        function LoadDataDetail(invNo, rowIndexPar) {
+            return $("#" + rowIndexPar.toString() + "").DataTable
+        ({
+            destroy: true,
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [0]
+                },
+                {
+                    "width": "450px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [2]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                "search": "",
+                "searchPlaceholder": "Search...",
+                "emptyTable": "No record found.",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[0, "asc"]],
+            "serverSide": "true",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            "ajax":
+            {
+                "url": '@Url.Action("GetDataDetail", "VoidInvoice", new { Area = "Sales" })',
+                "data": { 'invNo': invNo },
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "columns": [
+                { "data": "InvoiceNumber", "name": "InvoiceNumber" },
+                { "data": "Remark", "name": "Remark" },
+                { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+            ]
+        });
+        }
+
+        function Refresh() {
+            LoadDataInv()
+        }
+
+        function Process() {
+            if ($('#txtProcessDate').val() == '' || $('#txtProcessDate').val() == null) {
+                alert('Please insert proccess date');
+                return;
+            }
+
+            var data = tableNewVoid.rows(function (idx, data, node) {
+                // Get all the checkboxes in the row
+                var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                // Keep the rows with checked checkboxes
+                return checkedTargets(cells).length;
+            }).data();
+            var dataInv = "";
+            var dataInvDate = "";
+            var dataCust = "";
+            var dataCollection = "";
+            $.each(data, function (index, rowId) {
+                //alert(rowId["InvoiceNumber"]);
+                //alert(rowId["InvoiceDate"]);
+                //alert(rowId["Cust"]["CUSTCode"]);
+                dataInv += rowId["InvoiceNumber"] + ',';
+                //dataInvDate += moment(rowId["InvoiceDate"]).format('DD/MMM/YYYY') + ',';
+                dataInvDate += $('#txtProcessDate').val() + ',';
+                dataCust += rowId["Cust"]["CUSTCode"] + ',';
+                dataCollection += '[' + rowId["InvoiceNumber"] + '] - ' + moment(rowId["InvoiceDate"]).format('DD/MMM/YYYY') + "\n";
+            })
+
+            function checkedTargets(checkboxes) {
+                return checkboxes.filter(function (index) {
+                    return $(checkboxes[index]).prop('checked');
+                });
+            }
+
+            var answer = confirm("You are about to process data:\n" + dataCollection + "\nAre you sure want to process the data ?");
+
+            if (answer) {
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("ProcessVoidInvoice", "VoidInvoice", new { Area = "Sales" })',
+                        data: { "invNoList": dataInv,
+                                "invDateList": dataInvDate,
+                                "custList": dataCust
+                        },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            alert(respond);
+                            LoadDataInv();
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+        }
+
+        function LoadDataInv() {
+            if ($('#chkTransDate').is(':checked')) {
+                table = LoadData(true);
+                tableRef = LoadDataRef(true);
+                tableExportFaktur = LoadDataExportFaktur(true);
+            } else {
+                table = LoadData(false);
+                tableRef = LoadDataRef(false);
+                tableExportFaktur = LoadDataExportFaktur(false);
+            }
+
+            tableNewVoid = LoadDataNewVoid();
+        }
+
+        function HideShowTable() {
+            if ($('input[name="filterView"]:checked').val() == "2") {
+                $('#void').hide();
+                $('#ref').show();
+                $('#newVoid').hide();
+                $('#ctrlNewVoid').hide();
+                $('#ExportFaktur').hide();
+                $('#ctrlExportFaktur').hide();
+            } else if($('input[name="filterView"]:checked').val() == "3") {
+                $('#void').show();
+                $('#ref').hide();
+                $('#newVoid').hide();
+                $('#ctrlNewVoid').hide();
+                $('#ExportFaktur').hide();
+                $('#ctrlExportFaktur').hide();
+            } else if ($('input[name="filterView"]:checked').val() == "1") {
+                $('#void').hide();
+                $('#ref').hide();
+                $('#newVoid').show();
+                $('#ctrlNewVoid').show();
+                $('#ExportFaktur').hide();
+                $('#ctrlExportFaktur').hide();
+            } else if ($('input[name="filterView"]:checked').val() == "4") {
+                $('#void').hide();
+                $('#ref').hide();
+                $('#newVoid').hide();
+                $('#ctrlNewVoid').hide();
+                $('#ctrlExportFaktur').show();
+                $('#ExportFaktur').show();
+            }
+
+            LoadInvDataSource($('input[name="filterView"]:checked').val());
+        }
+
+        function LoadInvDataSource(view) {
+            if (view == "1") {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetInvoiceNewVoid", "VoidInvoice", new { Area = "Sales" })',
+                    dataType: 'json',
+                    data: { cust: $('#cboCustomer').val() },
+                    success: function (respond) {
+                        $('#cboInvNo').empty();
+                        $('#cboInvNo').append('<option value = "">-- ALL --</option>');
+                        $.each(respond, function (i, item) {
+                            $('#cboInvNo').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetInvoice", "VoidInvoice", new { Area = "Sales" })',
+                    dataType: 'json',
+                    data: { cust: $('#cboCustomer').val() },
+                    success: function (respond) {
+                        $('#cboInvNo').empty();
+                        $('#cboInvNo').append('<option value = "">-- ALL --</option>');
+                        $.each(respond, function (i, item) {
+                            $('#cboInvNo').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+            }
+        }
+
+        function ExportFaktur() {
+
+            var dataInv = '';
+
+            var selRow = tableExportFaktur.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            } else {
+
+                var answer = confirm("Export Faktur can only be done once per invoice, Are You Sure Want To Export Faktur ?");
+
+                if (answer) {
+                    $.each(selRow, function (index, row) {
+                        dataInv += row["InvoiceNumber"] + '|';
+                    })
+                    window.location = '@Url.Action("ExportFaktur", "VoidInvoice", new { Area = "Sales" })' + "?invoiceCollection=" + dataInv;
+                }
+
+            }
+
+
+        }
+    </script>
+}

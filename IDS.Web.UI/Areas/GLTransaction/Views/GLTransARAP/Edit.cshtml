@@ -1,0 +1,1341 @@
+﻿@model IDS.GLTransaction.GLVoucherH
+
+@{
+    ViewBag.Title = "Edit AR / AP Voucher";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/Content/AdminLTE/plugins/jquery-ui/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" />
+    <style type="text/css">
+        .flatpickr-wrapper {
+            display: block !important;
+        }
+    </style>
+
+}
+
+<script type="text/javascript">
+    var index = 0;
+</script>
+
+<h2>Edit AR / AP Voucher</h2>
+
+@if (Convert.ToBoolean(ViewData["VDPostedStatus"]))
+{
+    <h6 class="text-right font-weight-bold" style="color: red">POSTED</h6>
+}
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormSave", "0");
+
+    @*<script type="text/javascript">
+            $('form#formCreateEdit').removeData("validator");
+            $('form#formCreateEdit').removeData("unobtrusiveValidation");
+            $.validator.unobtrusive.parse($('form#formCreateEdit'));
+        </script>*@
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Transaction Header</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group-sm row">
+                        @Html.LabelFor(model => model.SCode.Code, "Source Code", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @if (Convert.ToInt32(ViewData["FormAction"]) == 1)
+                            {
+                                @Html.DropDownListFor(model => model.SCode.Code, ViewData["SCodeList"] as SelectList, new { @class = "form-control form-control-sm" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(model => model.SCode.Code, ViewData["SCodeList"] as SelectList, new { @class = "form-control form-control-sm", @disabled = "disabled" })
+                            }
+                            @Html.ValidationMessageFor(model => model.SCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group-sm row">
+                        @Html.LabelFor(model => model.Voucher, new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @if (Convert.ToInt32(ViewData["FormAction"]) == 1)
+                            {
+                                @Html.EditorFor(model => model.Voucher, new { htmlAttributes = new { @class = "form-control form-control-sm", @placeholder = "Voucher", @title = "Voucher Number", @readonly = "readonly" } })
+                            }
+                            else
+                            {
+                                @Html.EditorFor(model => model.Voucher, new { htmlAttributes = new { @class = "form-control form-control-sm", @placeholder = "Voucher", @title = "Voucher Number", @disabled = "disabled" } })
+                            }
+                            @Html.ValidationMessageFor(model => model.Voucher, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group-sm row">
+                        @Html.LabelFor(model => model.TransDate, "Trans. Date", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @if (Convert.ToInt32(ViewData["FormAction"]) == 1)
+                            {
+                                @Html.TextBoxFor(model => model.TransDate, new { Value = Model.TransDate.ToString(IDS.Tool.GlobalVariable.DEFAULT_DATE_FORMAT), @class = "form-control form-control-sm" })
+                            }
+                            else if (Convert.ToBoolean(ViewData["VDPostedStatus"]))
+                            {
+                                @Html.TextBoxFor(model => model.TransDate, new { Value = Model.TransDate.ToString(IDS.Tool.GlobalVariable.DEFAULT_DATE_FORMAT), @class = "form-control form-control-sm", @disabled = "disabled" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(model => model.TransDate, new { Value = Model.TransDate.ToString(IDS.Tool.GlobalVariable.DEFAULT_DATE_FORMAT), @class = "form-control form-control-sm bg-white" })
+                            }
+
+                            @Html.ValidationMessageFor(model => model.TransDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group-sm row">
+                        @Html.LabelFor(model => model.VBranch.BranchCode, new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @if (Convert.ToInt32(ViewData["FormAction"]) == 1)
+                            {
+                                @Html.DropDownListFor(model => model.VBranch.BranchCode, ViewData["BranchList"] as SelectList, new { @class = "form-control form-control-sm" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(model => model.VBranch.BranchCode, ViewData["BranchList"] as SelectList, new { @class = "form-control form-control-sm", @disabled = "disabled" })
+                            }
+                            @Html.ValidationMessageFor(model => model.VBranch.BranchCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Journal Entries</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+
+                <div class="card">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-two-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="custom-tabs-two-home-tab" data-toggle="pill" href="#custom-tabs-two-home" role="tab" aria-controls="custom-tabs-two-home" aria-selected="true">Journal Item</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="custom-tabs-two-profile-tab" data-toggle="pill" href="#custom-tabs-two-profile" role="tab" aria-controls="custom-tabs-two-profile" aria-selected="false">Other Information</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="custom-tabs-two-tabContent">
+                            <div class="tab-pane fade active show" id="custom-tabs-two-home" role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
+                                <div class="table-responsive table-responsive-sm">
+                                    <table class="table table-condensed" id="table">
+                                        <thead>
+                                            <tr>
+                                                <td style="padding: 1px !important;">Currency</td>
+                                                <td style="padding: 1px !important;">Account</td>
+                                                <td style="padding: 1px !important;">Description</td>
+                                                <td style="padding: 1px !important;" hidden>Department</td>
+                                                <td style="padding: 1px !important;">Cash Acc</td>
+                                                <td style="padding: 1px !important;" class="text-right">Debit</td>
+                                                <td style="padding: 1px !important;" class="text-right">Credit</td>
+                                                <td style="padding: 1px !important;"></td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                                            {
+                                                bool statusPost = false;
+                                                if (Model.Detail != null)
+                                                {
+                                                    for (var i = 0; i < Model.Detail.Count; i++)
+                                                    {
+                                                        <tr id="@string.Format("r{0}", @i + 1)">
+                                                            <td style="padding: 1px 2px; !important; width: 65px;">
+                                                                @Html.DropDownListFor(model => model.Detail[i].CCy.CurrencyCode, (new SelectList(ViewData["CCyList"] as List<SelectListItem>, "Value", "Text", Model.Detail[i].CCy.CurrencyCode)), new { @style = "padding: 1px 2px !important; width: 65px;", @id = string.Format("cboCCy-{0}", (@i + 1)), @Name = "CCy.Currency", @onchange = "CCyChange(this)" })
+                                                            </td>
+                                                            <td style="padding: 1px 2px; !important; width: 140px;">
+                                                                @*@Html.TextBoxFor(model => model.Detail[i].COA.Account, new { @id = string.Format("txtAcc-{0}", (i + 1)), @Name = "COA.Account", style = "padding: 1px; border: none; max-width: 145px !important;", @disabled = "disabled", @Value = Model.Detail[i].COA.Account + " - " + Model.Detail[i].COA.AccountName, @title = Model.Detail[i].COA.Account + " - " + Model.Detail[i].COA.AccountName })*@
+                                                                @Html.DropDownListFor(model => model.Detail[i].COA.Account, (new SelectList(IDS.GLTable.ChartOfAccount.GetCOAForDatasource(Model.Detail[i].CCy.CurrencyCode), "Value", "Text", Model.Detail[i].COA.Account)), new { @style = "padding: 1px; border: none; max-width: 145px !important;", @id = string.Format("txtAcc-{0}", (i + 1)), @Name = "COA.Account", @onchange = "AccChange(this)", @disabled = "disabled" })
+                                                            </td>
+                                                            <td style="padding: 1px 2px !important;">
+                                                                @Html.TextBoxFor(model => model.Detail[i].Descrip, new { @id = string.Format("txtDescription-{0}", (i + 1)), @Name = "Descrip", style = "padding: 1px; width: 100%; border: none;" })
+                                                            </td>
+                                                            <td style="padding: 1px 2px !important; width: 56px;" hidden>
+                                                                @*@Html.DropDownListFor(model => model.Detail[i].Dept.DepartmentCode, (new SelectList(ViewData["deptList"] as List<SelectListItem>, "Value", "Text", Model.Detail[i].Dept.DepartmentCode)), new { @id = string.Format("cboDept-{0}", (i + 1)), @Name = "Dept.DepartmentCode", @style = "padding: 3px; border: 0; max-width: 60px !important;" })*@
+                                                                @Html.DropDownListFor(model => model.Detail[i].Dept.DepartmentCode, (new SelectList(ViewData["deptList"] as List<SelectListItem>, "Value", "Value", Model.Detail[i].Dept.DepartmentCode)), new { @id = string.Format("cboDept-{0}", (i + 1)), @class = "select2DDList", @Name = "Dept.DepartmentCode", @style = "padding: 3px; border: 0; max-width: 60px !important;", @hidden = true })
+                                                            </td>
+                                                            <td style="padding: 1px 2px !important; width: 88px;">
+                                                                @{
+                                                                    string nama = "";
+                                                                    nama = (string.IsNullOrEmpty((Model?.Detail?[i]?.CCy?.CurrencyCode)) ? "" : Model.Detail[i].CCy.CurrencyCode);
+                                                                }
+
+                                                                @if (!string.IsNullOrEmpty(Model.Detail[i].CashAccount) && ViewData[nama] != null)
+                                                                {
+                                                                    @Html.DropDownListFor(model => model.Detail[i].CashAccount, new SelectList((ViewData[Model.Detail[i].CCy.CurrencyCode] as List<SelectListItem>), "Value", "Text", Model.Detail[i].CashAccount), new { @id = string.Format("CashAcc-{0}", (i + 1)), @Name = "CashAccount", @style = "padding: 3px; border: 0; max-width: 80px !important; max-width: 80px !important;", @onchange = "OnCashBasisAccountChange(this)", @title = Model.Detail[i].CashAccount })
+                                                                }
+                                                                else
+                                                                {
+                                                                    @Html.DropDownListFor(model => model.Detail[i].CashAccount, new SelectList(new List<SelectListItem>(), "Value", "Text", ""), new { @id = string.Format("CashAcc-{0}", (i + 1)), @Name = "CashAccount", @style = "padding: 3px; border: 0; max-width: 80px !important; max-width: 80px !important;", @onchange = "OnCashBasisAccountChange(this)", @title = "", @disabled = "disabled" })
+                                                                }
+
+                                                            </td>
+                                                            <td style="padding: 1px 2px !important; width: 120px;">
+                                                                @if (Model.Detail[i].Amount >= 0)
+                                                                {
+                                                                    @Html.TextBoxFor(model => model.Detail[i].Amount, ((Model.Detail[i].Amount % 1) <= (double.Epsilon * 100) ? Model.Detail[i].Amount.ToString("N2") : Model.Detail[i].Amount.ToString("N0")), new { id = string.Format("txtDebit-{0}", (i + 1)), @Name = "Debit", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                                                }
+                                                                else
+                                                                {
+                                                                    @Html.TextBoxFor(model => model.Detail[i].Amount, "0", new { id = string.Format("txtDebit-{0}", (i + 1)), @Name = "Debit", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                                                }
+                                                            </td>
+                                                            <td style="padding: 1px 2px !important; width: 120px;">
+                                                                @if (Model.Detail[i].Amount < 0)
+                                                                {
+                                                                    @Html.TextBoxFor(model => model.Detail[i].Amount, (Math.Abs(Model.Detail[i].Amount % 1) <= (double.Epsilon * 100) ? Math.Abs(Model.Detail[i].Amount).ToString("N2") : Math.Abs(Model.Detail[i].Amount).ToString("N0")), new { id = string.Format("txtCredit-{0}", (i + 1)), @Name = "Credit", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                                                }
+                                                                else
+                                                                {
+                                                                    @Html.TextBoxFor(model => model.Detail[i].Amount, "0", new { id = string.Format("txtCredit-{0}", (i + 1)), @Name = "Credit", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                                                }
+                                                            </td>
+                                                            <td style="padding: 1px 2px !important; width: 26px;">
+                                                                <button type="button" name="btnRemove" class="fa fa-trash" onclick="RemoveRow(this)" style="width: 26px !important; height: 23px;"></button>
+                                                            </td>
+
+
+                                                        </tr>
+
+                                                        if (Model.Detail[i].UPD.Substring(0, 1) == "1")
+                                                        {
+                                                            statusPost = true;
+                                                        }
+                                                                    }
+                                            if (!statusPost)
+                                            {
+                                                <tr id="AddLine">
+                                                    <td colspan="8">
+                                                        <a href="#" role="button" id="linkNewRow">Add New Row</a>
+                                                    </td>
+                                                </tr>
+                                                    }
+                                                }
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="4">&nbsp;</td>
+                                                <td><p id="TotalDebit" class="text-right">0</p></td>
+                                                <td><p id="TotalCredit" class="text-right">0</p></td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <script type="text/javascript">
+                                        index = @Model.Detail.Count;
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="custom-tabs-two-profile" role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
+                                <div class="form-group row">
+                                    @Html.LabelFor(model => model.Description, new { @class = "col-form-label col-form-label-sm" })
+                                    @Html.TextAreaFor(model => model.Description, new { @class = "form-control form-control-sm", @maxlength = 2000, @rows = "5" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        @*<div class="card-footer">
+                Footer
+            </div>*@
+    </div>
+
+    @*<div>
+        <button type="button" class="btn btn-secondary notd" id="btnAddNew" onclick="ResetForm()">Add New</button>
+
+        @if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+        {
+            bool posted = false;
+            if (Model.Detail != null)
+            {
+                for (var i = 0; i < Model.Detail.Count; i++)
+                {
+                    if (Model.Detail[i].UPD.Substring(0, 1) == "1")
+                    {
+                        posted = true;
+                    }
+                }
+
+                if (posted)
+                {
+                    <button type="button" class="btn btn-primary" id="btnSave" onclick="SaveFormData();" disabled>Save</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary" id="btnSave" onclick="SaveFormData();">Save</button>
+                }
+            }
+        }
+
+        <button type="button" class="btn btn-danger notd" id="btnClose" onclick="CloseForm(this)">Close</button>
+    </div>*@
+
+    <div class="modal-footer">
+        <div class="form-group mr-4">
+            <div class="input-group">
+                <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Operator ID</span>
+                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })
+            </div>
+        </div>
+
+        <div class="form-group mr-auto col-sm-3 mr-4">
+            <div class="input-group">
+                <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Last Update</span>
+                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy hh:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+            </div>
+        </div>
+
+        <button type="button" data-toggle="tooltip" data-placement="top" title="Input New Voucher" class="btn btn-secondary" onclick="ResetForm()" id="btnAddNew">Add New</button>
+
+        @if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+        {
+            bool posted = false;
+            if (Model.Detail != null)
+            {
+                for (var i = 0; i < Model.Detail.Count; i++)
+                {
+                    if (Model.Detail[i].UPD.Substring(0, 1) == "1")
+                    {
+                        posted = true;
+                    }
+                }
+
+                if (posted)
+                {
+                    <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Save Voucher" id="btnSave" onclick="SaveFormData();" disabled>Save</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Save Voucher" id="btnSave" onclick="SaveFormData();">Save</button>
+                }
+            }
+        }
+
+
+        <button type="button" data-toggle="tooltip" data-placement="top" title="Close This Form" class="btn btn-danger" id="btnClose" onclick="CloseForm(this)" data-dismiss="modal">Close</button>
+    </div>
+                                                                    }
+
+
+
+@Html.Hidden("hfUrlReferrer", IDS.Tool.GeneralHelper.NullToString(ViewData["UrlReferrer"]))
+
+@section Scripts {
+    <script type="text/javascript" src="~/Content/AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/AdminLTE/plugins/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="~/Content/AdminLTE/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script src="~/Content/Select2/js/select2.full.min.js"></script>
+    @*<script type="text/javascript" src="~/Content/AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>*@
+
+    <script type="text/javascript">
+        flatpickr("#TransDate", {
+            dateFormat: "d/M/Y",
+            static: true,
+            disableMobile: true,
+        });
+
+        $(document).ready(function () {
+            $(".select2DDList").select2();
+
+            var TransDate = new Date($('#TransDate').val());
+            flatpickr("#TransDate", {
+                maxDate: new Date(TransDate.getFullYear(), TransDate.getMonth() + 1, 0),
+                minDate: new Date(TransDate.getFullYear(), TransDate.getMonth(), 1),
+                shorthand: true,
+                disableMobile: "true",
+                dateFormat: "d/M/Y",
+                altFormat: "F Y"
+            });
+        });
+
+        /// Untuk generate Row dari Template
+        function getTemplate() {
+            index = index + 1;
+            var newRow = '@Html.Raw(ViewData["NewRowTemplate"])';
+            return newRow;
+        }
+
+        function GenerateRowForEdit() {
+            var difPosition = GetDifferentPosition();
+            var difValue = CalculateDifferentValue();
+            var template = getTemplate();
+
+            switch (difPosition) {
+                case "C":
+                    template = template.replace('creditValue', difValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")).replace('debitValue', "0");
+                    break;
+                default:
+                    template = template.replace('debitValue', difValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")).replace('creditValue', "0");
+                    break;
+            }
+
+            $(this).closest('table tbody').find("tr:last").before(template);
+        }
+
+        //$("textarea[maxlength]").on("propertychange input", function () {
+        //    if (this.value.length > this.maxlength) {
+        //        this.value = this.value.substring(0, this.maxlength);
+        //    }
+        //});
+
+        $("textarea[maxlength]").on("propertychange input", function () {
+            if (this.value.length > this.maxlength) {
+                this.value = this.value.substring(0, this.maxlength);
+            }
+        });
+
+        $(document).on("click", "#table tr td input[name='Debit'], #table tr td input[name='Credit']", function (e) {
+            $(this).on('change', function () {
+                var idx = GetIndex(this);
+
+                switch (this.name) {
+                    case "Debit":
+                        $('#txtCredit-' + idx).val("0");
+                        break;
+                    case "Credit":
+                        $('#txtDebit-' + idx).val("0");
+                        break;
+                }
+
+                CalculateTotal();
+            });
+        });
+
+        $(document).on("click", "#table tr td input[name='COA.Account'], #table tr td input[name='Debit'], #table tr td input[name='Credit']", function (e) {
+            $('#' + this.id).on('click', function () {
+                this.select();
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        @*function InitPageLoad(e) {
+            debugger;
+            var rowIdx = GetIndex(e);
+
+            if (e.value == null || e.value == "") {
+                $('#txtAcc-' + rowIdx).prop('disabled', true);
+                $("#CashAcc-" + rowIdx).prop('disabled', true);
+            }
+            else {
+                $('#txtAcc-' + rowIdx).prop('disabled', false);
+                $("#CashAcc-" + rowIdx).prop('disabled', true);
+            }
+
+            CalculateTotal();
+
+            if (rowIdx) {
+                var isCashAcc = false;
+                debugger;
+                $('#txtAcc-' + i).autocomplete({
+                    source: function (request, response) {
+                        //var arrAcc = new Object();
+                        debugger;
+                        // Jika properties berdasarkan mata uang ada di Object arrAcc
+                        if (arrAcc.hasOwnProperty(e.value)) {
+
+                            var data = $.map(arrAcc[e.value], function (item) {
+                                if (item.Text.startsWith(request.term)) {
+                                    return {
+                                        label: item.Text,
+                                        value: item.Value
+                                    };
+                                }
+                                else {
+                                    return null;
+                                }
+                            });
+                            response(data);
+                        }
+                        else {
+                            $.get('@Url.Action("GetCOAList", "ChartOfAccount", new { Area = "GLTable" })',
+                            { currency: $('#' + e.id).val(), prefix: "" },
+                            function (json) {
+                                if (!arrAcc.hasOwnProperty(e.value)) {
+                                    arrAcc[e.value] = json;
+                                    response($.map(arrAcc[e.value], function (item, id) {
+                                        if (item.Text.startsWith(request.term)) {
+                                            return {
+                                                label: item.Text,
+                                                value: item.Value
+                                            }
+                                        }
+                                    }));
+                                }
+                        })
+                        }
+                    },
+                    minLength: 1,
+                    select: function (event, ui) {
+                        debugger;
+                        //alert('value dipilih ' + ui.item.label + ' ID: ' + ui.item.value);
+                        $('#txtAcc-' + i).val(ui.item.label);
+                        $('#txtAcc-' + i).prop("title", ui.item.label);
+
+                        $.post('@Url.Action("IsCashAccount", "ChartOfAccount", new { Area = "GLTable" })',
+                        { currency: $('#' + e.id).val(), account: ui.item.value },
+                        function (result) {
+                            isCashAcc = Boolean(result);
+                            debugger;
+                            $('#CashAcc-' + rowIdx).empty();
+
+                            if (isCashAcc == true) {
+
+                                $('#CashAcc-' + rowIdx).prop('disabled', false);
+
+                                $.post('@Url.Action("GetCashBasisAccountByCurrency", "CashBasisAccount", new { Area = "GLTable" })',
+                                { currency: $('#' + e.id).val() },
+                                function (data) {
+                                    if (data.length > 0) {
+                                        $('#CashAcc-' + rowIdx).append('<option value="" title=""></option>');
+                                    }
+
+                                    $.each(data, function (idx, value) {
+                                        //$('#CashAcc-' + rowIdx).append('<option value="' + data[idx].Value + '">' + data[idx].Text + '</option>');
+                                        $('#CashAcc-' + rowIdx).append('<option value="' + data[idx].Value + '" title="' + data[idx].Text + '">' + data[idx].Text + '</option>');
+                                    });
+                                })
+                            }
+                            else {
+                                $('#CashAcc-' + rowIdx).prop('disabled', true);
+                            }
+                        });
+
+                        return false;
+                    },
+                    change: function (event, ui) {
+                        if (ui.item == null) {
+                            alert("You have not entered account or invalid account no");
+                            $('#txtAcc-' + rowIdx).val('');
+                            $('#txtAcc-' + rowIdx).focus();
+                        }
+                    }
+                });
+            }
+        }*@
+
+        var arrCashAcc = new Array();
+        var arrAcc = new Object();
+
+
+        $('#linkNewRow').click(function () {
+            // Validasi apakah ada data yang kosong atau tidak valid
+
+            errorCount = 0;
+            var descrip = "";
+
+            if ($('table tbody tr:not(#AddLine)').length > 0) {
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    //$('input[name="COA.Account"]', this).autocomplete({
+                    //    select: function (event, ui) {
+                    //        console.log($('input[name="COA.Account"]', this).val(ui.item.value));
+                    //    }
+                    //});
+
+                    if (($('select[name="CCy.Currency"]', this).val() == null || $('select[name="CCy.Currency"]').val() == '') ||
+                        ($('select[name="COA.Account"]', this).val() == null || $('select[name="COA.Account"]', this).val() == '') || // Validasi Rate dan Cash Account belum
+                        ($('input[name="Descrip"]', this).val() == null || $('input[name="Descrip"]', this).val() == '') ||
+                        ($('input[name="Debit"]', this).val() == null || $('input[name="Debit"]', this).val() == '' || isNaN(parseFloat($('input[name="Debit"]', this).val())) == true || $('input[name="Debit"]').val() < 0) ||
+                        ($('input[name="Credit"]', this).val() == null || $('input[name="Credit"]', this).val() == '' || isNaN(parseFloat($('input[name="Credit"]', this).val())) == true || $('input[name="Credit"]').val() < 0) ||
+                        ($('input[name="Debit"]', this).val() == 0 && $('input[name="Credit"]', this).val() == 0)) {
+                        $(this).addClass('error');
+                        errorCount++;
+                    }
+
+                    if (errorCount == 0) {
+                        descrip = $('input[name="Descrip"]', this).val();
+                    }
+                });
+            }
+
+            if (errorCount > 0) {
+                alert("Please complete some data");
+                return;
+            }
+
+
+            var difPosition = GetDifferentPosition();
+            var difValue = CalculateDifferentValue();
+            var template = getTemplate();
+
+            switch (difPosition) {
+                case "C":
+                    template = template.replace('creditValue', difValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")).replace('debitValue', "0");
+                    break;
+                default:
+                    template = template.replace('debitValue', difValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")).replace('creditValue', "0");
+                    break;
+            }
+
+            $(this).closest('table tbody').find("tr:last").before(template);
+            $($(this).closest('table tbody').find('tr:last').prev().find('select[name="CCy.Currency"]')).trigger("change");
+            $($(this).closest('table tbody').find('tr:last').prev().find('input[name="Descrip"]')).val(descrip);
+
+            $(".select2DDList").select2();
+            $('select[name="CCy.Currency"]').select2({ width: '100%' });
+            $('select[name="Dept.DepartmentCode"]').select2({ width: '100%' });
+            $('select[name="CashAccount"]').select2({ width: '100px' });
+        });
+
+
+
+        /// Untuk menghapus Row
+        function RemoveRow(e) {
+            var answer = confirm("Are you sure wan to delete row ?");
+
+            if (answer) {
+                $(e).parent().parent().remove();
+                CalculateDifferentValue();
+                CalculateTotal();
+            }
+        }
+
+        /// Untuk mengambil Index Row
+        function GetIndex(e)
+        {
+            var lastIndex = e.id.lastIndexOf("-");
+            var rowIdx = e.id.substr(parseInt(lastIndex) + 1, parseInt(e.id.length) - parseInt(lastIndex) + 1);
+            return rowIdx;
+        }
+
+        function InputNumber(e) {
+            var rowIdx = GetIndex(e);
+
+            $("#" + e.id).keyup(function (event) {
+                if (event.which >= 37 && event.which <= 40) return;
+                $(this).val(function (index, value) {
+                    return value
+                    // Keep only digits and decimal points:
+                    .replace(/[^\d.]/g, "")
+                    // Remove duplicated decimal point, if one exists:
+                    .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                    // Keep only two digits past the decimal point:
+                    .replace(/\.(\d{2})\d+/, '.$1')
+                    // Add thousands separators:
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                });
+            });
+        }
+
+        function CCyChange(e) {
+            var rowIndex = GetIndex(e);
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: $("#cboCCy-" + rowIndex.toString() + "").val() },
+                success: function (respond) {
+                    $("#txtAcc-" + rowIndex.toString() + "").empty();
+                    $.each(respond, function (i, item) {
+                        //alert(item.Value);
+                        $("#txtAcc-" + rowIndex.toString() + "").append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+
+                    //alert($("#txtAcc-" + rowIndex.toString() + "").val());
+                    AccChange(e);
+                }
+            });
+
+
+            //CalcEqvDetail(e);
+            //CalculateDifference();
+            CalculateTotal();
+        }
+
+        function AccChange(e) {
+            var rowIndex = GetIndex(e);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("IsCashAccount", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currency: $("#cboCCy-" + rowIndex.toString() + "").val(), account: $("#txtAcc-" + rowIndex.toString() + "").val() },
+                success: function (respond) {
+                    //alert(respond);
+                    if (respond == true) {
+
+                        $('#CashAcc-' + rowIndex).prop('disabled', false);
+
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("GetCashBasisAccountByCurrency", "CashBasisAccount", new { Area = "GLTable" })',
+                            dataType: 'json',
+                            data: { currency: $("#cboCCy-" + rowIndex.toString() + "").val() },
+                            success: function (respond) {
+                                $("#CashAcc-" + rowIndex.toString() + "").empty();
+                                $.each(respond, function (i, item) {
+                                    $("#CashAcc-" + rowIndex.toString() + "").append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                                });
+                            }
+                        });
+                    } else {
+                        $('#CashAcc-' + rowIndex).empty();
+                        $('#CashAcc-' + rowIndex).prop('disabled', true);
+                    }
+
+
+                    //$("#txtAcc-" + rowIndex.toString() + "").empty();
+                    //$.each(respond, function (i, item) {
+                    //    //alert(item.Value);
+                    //    $("#txtAcc-" + rowIndex.toString() + "").append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    //});
+
+                    //alert($("#txtAcc-" + rowIndex.toString() + "").val());
+                }
+            });
+        }
+
+        @*function CCyChange(e) {
+            var rowIdx = GetIndex(e);
+            $('#txtAcc-' + rowIdx).val('');
+            $("#CashAcc-" + rowIdx).empty();
+
+            if (e.value == null || e.value == "") {
+                $('#txtAcc-' + rowIdx).prop('disabled', true);
+                $("#CashAcc-" + rowIdx).prop('disabled', true);
+            }
+            else {
+                $('#txtAcc-' + rowIdx).prop('disabled', false);
+                $("#CashAcc-" + rowIdx).prop('disabled', true);
+            }
+
+            CalculateTotal();
+
+            if (rowIdx) {
+                var isCashAcc = false;
+
+                $('#txtAcc-' + rowIdx).autocomplete({
+                    source: function (request, response) {
+                        //var arrAcc = new Object();
+
+                        // Jika properties berdasarkan mata uang ada di Object arrAcc
+                        if (arrAcc.hasOwnProperty(e.value)) {
+                            ////alert('dd');
+                            //var term = request.term;
+                            //if (term in arrAcc[e.value]) {
+                            //    response(arrAcc[e.value][term]);
+                            //    return;
+                            //}
+
+                            //var term = request.term;
+
+                            //var data = $.map(arrAcc[e.value], function (item, id) {
+                            //    return {
+                            //        label: item.Text,
+                            //        value: item.Value
+                            //    }
+                            //});
+
+                            //response($.ui.autocomplete.filter(data, request.term));
+
+                            var data = $.map(arrAcc[e.value], function (item) {
+                                if (item.Text.startsWith(request.term)) {
+                                    return {
+                                            label: item.Text,
+                                            value: item.Value
+                                    };
+                                }
+                                else {
+                                    return null;
+                                }
+                            });
+                            response(data);
+
+                            //response($.map(arrAcc[e.value], function(item){
+                            //    return {
+                            //        label: item.Text,
+                            //        value: item.Value
+                            //    }
+                            //}))
+                        }
+                        else {
+                            console.log("Enter old CCyChange");
+                            $.get('@Url.Action("GetCOAList", "ChartOfAccount", new { Area = "GLTable" })',
+                        //{ currency: $('#' + e.id).val(), prefix: request.term },
+                        { currency: $('#' + e.id).val(), prefix: "" },
+                        function (json) {
+                            if (!arrAcc.hasOwnProperty(e.value)) {
+                                arrAcc[e.value] = json;
+                                response($.map(arrAcc[e.value], function (item, id) {
+                                    if (item.Text.startsWith(request.term)) {
+                                        return {
+                                            label: item.Text,
+                                            value: item.Value
+                                        }
+                                    }
+                                }));
+                            }
+                            //response($.map(json, function (item, id) {
+                            //    //if (!arrAcc.hasOwnProperty(e.value)) {
+                            //    //    //arrAcc[e.value] = [];
+                            //    //    arrAcc[e.value].push({ label: item.Text, value: item.value });
+
+                            //    //}
+                            //    //else {
+                            //    //    console.log("OK" + id);
+                            //    //    return {
+                            //    //        label: item.Text,
+                            //    //        value: item.Value
+                            //    //    };
+                            //    //}
+
+                            //    arrAcc[e.value].push({ label: item.Text, value: item.value });
+                            //    return {
+                            //        label: item.Text,
+                            //        value: item.Value
+                            //    };
+                            //}));
+                        })
+                        }
+                    },
+                    minLength: 1,
+                    select: function (event, ui) {
+                        debugger;
+                        //alert('value dipilih ' + ui.item.label + ' ID: ' + ui.item.value);
+                        $('#txtAcc-' + rowIdx).val(ui.item.label);
+                        $('#txtAcc-' + rowIdx).prop("title", ui.item.label);
+
+                        $.post('@Url.Action("IsCashAccount", "ChartOfAccount", new { Area = "GLTable" })',
+                        { currency: $('#' + e.id).val(), account: ui.item.value },
+                        function (result) {
+                            isCashAcc = Boolean(result);
+
+                            $('#CashAcc-' + rowIdx).empty();
+
+                            if (isCashAcc == true) {
+
+                                $('#CashAcc-' + rowIdx).prop('disabled', false);
+
+                                $.post('@Url.Action("GetCashBasisAccountByCurrency", "CashBasisAccount", new { Area = "GLTable" })',
+                                { currency: $('#' + e.id).val() },
+                                function (data) {
+                                    if (data.length > 0) {
+                                        $('#CashAcc-' + rowIdx).append('<option value="" title=""></option>');
+                                    }
+
+                                    $.each(data, function (idx, value) {
+                                        //$('#CashAcc-' + rowIdx).append('<option value="' + data[idx].Value + '">' + data[idx].Text + '</option>');
+                                        $('#CashAcc-' + rowIdx).append('<option value="' + data[idx].Value + '" title="' + data[idx].Text + '">' + data[idx].Text + '</option>');
+                                    });
+                                })
+                            }
+                            else {
+                                $('#CashAcc-' + rowIdx).prop('disabled', true);
+                            }
+                        });
+
+                        return false;
+                    },
+                    change: function (event, ui) {
+                        if (ui.item == null) {
+                            alert("You have not entered account or invalid account no");
+                            $('#txtAcc-' + rowIdx).val('');
+                            $('#txtAcc-' + rowIdx).focus();
+                        }
+                    }
+                });
+
+                @*$('#txtAcc-' + rowIdx).autocomplete({
+                    source: function (request, response) {
+                        $.get('@Url.Action("GetCOAList", "ChartOfAccount", new { Area = "GLTable" })',
+                        { currency: $('#' + e.id).val(), prefix: request.term },
+                        function (json) {
+                            response($.map(json, function (item, id) {
+                                return {
+                                    label: item.Text,
+                                    value: item.Value
+                                };
+                            }));
+                        })
+                    },
+                    minLength: 1,
+                    select: function (event, ui) {
+                        //alert('value dipilih ' + ui.item.label + ' ID: ' + ui.item.value);
+                        $('#txtAcc-' + rowIdx).val(ui.item.label);
+                        $('#txtAcc-' + rowIdx).prop("title", ui.item.label);
+
+                        $.post('@Url.Action("IsCashAccount", "ChartOfAccount", new { Area = "GLTable" })',
+                        { currency: $('#' + e.id).val(), account: ui.item.value },
+                        function (result) {
+                            isCashAcc = Boolean(result);
+
+                            $('#CashAcc-' + rowIdx).empty();
+
+                            if (isCashAcc == true) {
+
+                                $('#CashAcc-' + rowIdx).prop('disabled', false);
+
+                                $.post('@Url.Action("GetCashBasisAccountByCurrency", "CashBasisAccount", new { Area = "GLTable" })',
+                                { currency: $('#' + e.id).val() },
+                                function (data) {
+                                    if (data.length > 0) {
+                                        $('#CashAcc-' + rowIdx).append('<option value="" title=""></option>');
+                                    }
+
+                                    $.each(data, function (idx, value) {
+                                        //$('#CashAcc-' + rowIdx).append('<option value="' + data[idx].Value + '">' + data[idx].Text + '</option>');
+                                        $('#CashAcc-' + rowIdx).append('<option value="' + data[idx].Value + '" title="' + data[idx].Text + '">' + data[idx].Text + '</option>');
+                                    });
+                                })
+                            }
+                            else {
+                                $('#CashAcc-' + rowIdx).prop('disabled', true);
+                            }
+                        });
+
+                        return false;
+                    }
+                });
+            }
+        }*@
+
+
+        function AccAjaxCall(url, prefix, response) {
+            $.ajax({
+                url: url,
+                data: JSON.stringify(myData),
+                dataType: "json",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                success: function (r) {
+                    response($.map(r, function (item) {
+                        return item;
+                    }))
+                },
+                error: function (r) {
+                    alert(r.responseText);
+                },
+                failure: function (r) {
+                    alert(r.responseText);
+                }
+            });
+        }
+
+        // Untuk menentukan nilai diferrent masuk ke kolom debit atau credit pada saat add new line
+        function GetDifferentPosition() {
+            var sumDebit = 0;
+            var sumCredit = 0;
+
+            $('input[name="Debit"]').each(function () {
+                sumDebit += parseFloat($(this).val().replace(/,/g, ''));
+            });
+
+            $('input[name="Credit"]').each(function () {
+                sumCredit += parseFloat($(this).val().replace(/,/g, ''));
+            });
+
+            if (sumCredit > sumDebit) {
+                return "D";
+            }
+            else {
+                return "C";
+            }
+        }
+
+        // Untuk mengambil nilai selisih antara debit dan credit
+        function CalculateDifferentValue() {
+            var sumDebit = 0;
+            var sumCredit = 0;
+
+            $('input[name="Debit"]').each(function () {
+                if (($('select[id="cboCCy-' + GetIndex(this) + '"]').val()) == "IDR") {
+                    sumDebit += parseFloat($(this).val().replace(/,/g, ''));
+                }
+            });
+
+            $('input[name="Credit"]').each(function () {
+                if (($('select[id="cboCCy-' + GetIndex(this) + '"]').val()) == "IDR") {
+                    sumCredit += parseFloat($(this).val().replace(/,/g, ''));
+                }
+            });
+
+            return Math.abs(parseFloat(sumDebit) - parseFloat(sumCredit));
+        }
+
+        function OnCashBasisAccountChange(e) {
+            //alert($('#' + e.id + ' option:selected').text());
+            if (e) {
+                $('#' + e.id).prop('title', $('#' + e.id + ' option:selected').text());
+            }
+        }
+
+        // Untuk menghitung nilai total
+        function CalculateTotal() {
+            var sumDebit = 0;
+            var sumCredit = 0;
+
+            $('input[name="Debit"]').each(function () {
+                if (($('select[id="cboCCy-' + GetIndex(this) + '"]').val()) == "IDR") {
+                    sumDebit += parseFloat($(this).val().replace(/,/g, ''));
+                }
+            });
+
+            $('#TotalDebit').text(parseFloat(sumDebit).toString()
+                      .replace(/[^\d.]/g, "")
+                      .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                      .replace(/\.(\d{2})\d+/, '.$1')
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+
+            $('input[name="Credit"]').each(function () {
+                if (($('select[id="cboCCy-' + GetIndex(this) + '"]').val()) == "IDR") {
+                    sumCredit += parseFloat($(this).val().replace(/,/g, ''));
+                }
+            });
+
+            $('#TotalCredit').text(parseFloat(sumCredit).toString()
+                      .replace(/[^\d.]/g, "")
+                      .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                      .replace(/\.(\d{2})\d+/, '.$1')
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+        }
+
+        // Untuk reset form
+        function ResetForm() {
+            var answer = confirm("Are you sure to reset form ?");
+
+            if (answer) {
+                window.location.href = '@Url.Action("Create", "GLTransARAP", new { Area = "GLTransaction" })';
+                //$("#SCode").val('');
+                //$("input#Voucher").val('');
+                //$('table tbody').find('tr:not(#AddLine)').remove();
+            }
+        }
+
+        var listDetail = [];
+
+        function SaveFormData() {
+            listDetail = [];
+            listDetail.length = 0;
+
+            var valResult = Validation();
+
+            var datas = {
+                "SCode.Code": $('#SCode').val(),
+                "VBranch.BranchCode": $('#VBranch_BranchCode').val(),
+                "Voucher": $('#Voucher').val(),
+                "TransDate": moment($('#TransDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                "Description": $('#Description').val(),
+                "Detail": listDetail
+            };
+
+            //alert(moment($('#TransDate').val(), 'DD/MMM/YYYY').format("YYYY-MM-DD"));
+
+            if (valResult) {
+                //alert($("#formCreateEdit").serialize());
+                //console.log($("#formCreateEdit").serialize());
+                //console.log(JSON.stringify(datas));
+
+                $.ajax({
+                    type: "POST",
+                    dataType: 'JSON',
+                    //data: JSON.stringify(datas),
+                    url: '@Url.Action("Edit", "Voucher", new { Area = "GLTransaction" })',
+                    //data:  $('#formCreateEdit').serialize(),
+                    data: {
+                        "FormAction": $('#FormAction').val(),
+                        "hfUrlReferrer": $('#hfUrlReferrer').val(),
+                        "voucher" : {
+                            "SCode.Code": $('#SCode_Code').val(),
+                            "VBranch.BranchCode": $('#VBranch_BranchCode').val(),
+                            "Voucher": $('#Voucher').val(),
+                            "TransDate": moment($('#TransDate').val(), "DD/MMM/YYYY").format("YYYY-MMM-DD"),
+                            "Description": $('#Description').val(),
+                            "Detail": listDetail
+                        }
+                    },
+                    success: function (result) {
+                        alert(result);
+                    },
+                    error: function (status, xhr, msg) {
+                        //console.log(status.responseText);
+                        alert(msg);
+                    }
+                });
+            }
+        }
+
+        function Validation() {
+            var msg = '';
+
+            if ($("#SCode_Code").val() == null || typeof $("#SCode_Code").val() === 'undefined') {
+                msg += "Source Code is required.";
+            }
+
+            if ($("#FormAction").val() == 2) {
+                if ($("input#Voucher").val() == "AUTO") {
+                    msg += "Voucher No. can not be found \r\n"; // Edit
+                }
+            }
+
+            if ($('#TransDate').val() == null || $('#TransDate').val() == '' || typeof $('#TransDate').val() === 'undefined') {
+                msg += "Trans. date is required \r\n";
+            }
+
+            if ($('#VBranch_BranchCode').val() == null || typeof $('#VBranch_BranchCode').val() === 'undefined') {
+                msg += "Branch is required \r\n";
+            }
+
+            // Hitung jumlah row
+            var tableRowCount = $('table tbody').find('tr:not(#AddLine)').length;
+
+            if (tableRowCount == 0) {
+                msg += "Your has not been insert detail data \r\n";
+            }
+            else {
+                CalculateTotal();
+
+                if (CalculateDifferentValue() != 0 || isNaN(CalculateDifferentValue())) {
+                    msg += "There is different between Debit and Credit Total \r\n";
+                }
+
+                var errorCount = 0;
+
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    if (($('select[name="CCy.Currency"]', this).val() == null || $('select[name="CCy.Currency"]').val() == '') ||
+                        ($('select[name="COA.Account"]', this).val() == null || $('select[name="COA.Account"]', this).val() == '') || // Validasi Rate dan Cash Account belum
+                        ($('input[name="Descrip"]', this).val() == null || $('input[name="Descrip"]', this).val() == '') ||
+                        ($('input[name="Debit"]', this).val() == null || $('input[name="Debit"]', this).val() == '' || isNaN(parseFloat($('input[name="Debit"]', this).val())) == true || $('input[name="Debit"]').val() < 0) ||
+                        ($('input[name="Credit"]', this).val() == null || $('input[name="Credit"]', this).val() == '' || isNaN(parseFloat($('input[name="Credit"]', this).val())) == true || $('input[name="Credit"]').val() < 0) ||
+                        ($('input[name="Debit"]', this).val() == 0 && $('input[name="Credit"]', this).val() == 0)) {
+                        $(this).addClass('error');
+                        msg += "Something error in journal row " + (idx + 1).toString();
+                        errorCount++;
+                    }
+                    else {
+                        listDetail.push({
+                            "CCy.CurrencyCode": $('select[name="CCy.Currency"]', this).val(),
+                            "COA.Account": $('select[name="COA.Account"]', this).val(),
+                            "Descrip": $('input[name="Descrip"]', this).val(),
+                            "Dept.DepartmentCode": $('select[name="Dept.DepartmentCode"]', this).val(),
+                            "CashAccount": $('select[name="CashAccount"]', this).val(),
+                            "Amount": (parseFloat($('input[name="Debit"]', this).val()) != 0 ? parseFloat(RemoveAllComma($('input[name="Debit"]', this).val())) : (parseFloat(RemoveAllComma($('input[name="Credit"]', this).val()))) * (-1))
+                        })
+                    }
+                });
+            }
+
+            if (msg.length > 0 || errorCount > 0) {
+                alert(msg);
+                return false;
+            }
+
+            return true;
+        }
+
+        function CloseForm(e) {
+            window.location.href = '@Url.Action("Index", "GLTransARAP", new { Area = "GLTransaction" })';
+            @*if ($('#hfUrlReferrer').val() != null) {
+                window.location.href = ($('#hfUrlReferrer').val());
+            }
+            else {
+                window.location.href = '@Url.Action("Index", "Voucher", new { Area = "GLTransaction" })';
+            }*@
+        }
+
+        function InitPageLoad() {
+            var loop = @Model.Detail.Count;
+
+            var selAcc;
+            var selCCy;
+
+            for (var i = 1; i <= loop; i++) {
+                $('#txtAcc-' + i).prop('disabled', false);
+
+                var e = $('#cboCCy-' + i)[0];
+
+                if (e.value == null || e.value == "") {
+                    $('#txtAcc-' + i).prop('disabled', true);
+                    //$("#CashAcc-" + i).prop('disabled', true);
+                }
+                else {
+                    $('#txtAcc-' + i).prop('disabled', false);
+                    //$("#CashAcc-" + i).prop('disabled', true);
+                    debugger;
+                    @if (ViewData["($('#cboCCy-' + i).val()"] != null)
+                {
+
+                }
+                }
+
+
+
+                CalculateTotal();
+                debugger;
+                AutoComplete(e, i);
+            }
+        }
+
+        function AutoComplete(e, i)
+        {
+            debugger;
+            var isCashAcc = false;
+
+            $("#txtAcc-" + i.toString()).autocomplete({
+                source: function (request, response) {
+                    //var arrAcc = new Object();
+
+                    // Jika properties berdasarkan mata uang ada di Object arrAcc
+                    if (arrAcc.hasOwnProperty(e.value)) {
+                        console.log("From Array");
+                        var data = $.map(arrAcc[e.value], function (item) {
+                            if (item.Text.startsWith(request.term)) {
+                                return {
+                                    label: item.Text,
+                                    value: item.Value
+                                };
+                            }
+                            else {
+                                return null;
+                            }
+                        });
+                        response(data);
+                    }
+                    else {
+                        console.log('currency: ' + $('#' + e.id).val())
+                        console.log("from db");
+                        $.get('@Url.Action("GetCOAList", "ChartOfAccount", new { Area = "GLTable" })',
+				            { currency: $('#' + e.id).val(), prefix: "" },
+				        function (json) {
+				            console.log("enter success");
+				            if (!arrAcc.hasOwnProperty(e.value)) {
+				                arrAcc[e.value] = json;
+				                response($.map(arrAcc[e.value], function (item, id) {
+				                    if (item.Text.startsWith(request.term)) {
+				                        return {
+				                            label: item.Text,
+				                            value: item.Value
+				                        }
+				                    }
+				                }));
+				            }
+				        })
+                    }
+                },
+                minLength: 1,
+                select: function (event, ui) {
+                    debugger;
+                    event.preventDefault();
+                    //alert('value dipilih ' + ui.item.label + ' ID: ' + ui.item.value);
+                    console.log("ui.item.label: " + ui.item.label);
+                    console.log("ui.item.label untuk ID: " + $('#txtAcc-' + i).id);
+
+                    $('#txtAcc-' + i).val(ui.item.label);
+                    $('#txtAcc-' + i).prop("title", ui.item.label);
+
+                    $.post('@Url.Action("IsCashAccount", "ChartOfAccount", new { Area = "GLTable" })',
+				    { currency: $('#' + e.id).val(), account: ui.item.value },
+				    function (result) {
+				        isCashAcc = Boolean(result);
+				        console.log("result: " + result);
+
+				        $('#CashAcc-' + i).empty();
+
+				        if (isCashAcc == true) {
+				            console.log("isCashAcc: " + isCashAcc);
+				            console.log("Cash Acc: CashAcc-" + i);
+
+				            $('#CashAcc-' + i).prop('disabled', false);
+
+				            $.post('@Url.Action("GetCashBasisAccountByCurrency", "CashBasisAccount", new { Area = "GLTable" })',
+						    { currency: $('#' + e.id).val() },
+						    function (data) {
+						        console.log("Enter Cash basis");
+						        if (data.length > 0) {
+						            $('#CashAcc-' + i).append('<option value="" title=""></option>');
+						        }
+
+						        $.each(data, function (idx, value) {
+						            //console.log(value);
+						            //$('#CashAcc-' + i).append('<option value="' + data[idx].Value + '">' + data[idx].Text + '</option>');
+						            $('#CashAcc-' + i).append('<option value="' + data[idx].Value + '" title="' + data[idx].Text + '">' + data[idx].Text + '</option>');
+						        });
+						    })
+				        }
+				        else {
+				            console.log("isCashAcc: False");
+				            $('#CashAcc-' + i).prop('disabled', true);
+				        }
+				    });
+
+                    //return false;
+                },
+                change: function (event, ui) {
+                    if (ui.item == null) {
+                        alert("You have not entered account or invalid account no");
+                        $('#txtAcc-' + i).val('');
+                        $('#txtAcc-' + i).focus();
+                    }
+                }
+            });
+        }
+
+        function RemoveAllComma(x) {
+            if (x != null && x !== 'undefined') {
+                return x.replaceAll(",", "");
+            }
+        }
+
+        $(function () {
+            InitPageLoad();
+
+            $(".select2DDList").select2();
+            $('select[name="COA.Account"]').select2({ width: '100%' });
+            $('select[name="CCy.Currency"]').select2({ width: '100%' });
+            $('select[name="Dept.DepartmentCode"]').select2({ width: '100%' });
+            $('select[name="CashAccount"]').select2({ width: '100px' });
+
+            @if (Convert.ToBoolean(ViewData["VDPostedStatus"])) {
+            @:$(':input:not(.notd)').prop('disabled', true);
+                    }
+        })
+
+    </script>
+}

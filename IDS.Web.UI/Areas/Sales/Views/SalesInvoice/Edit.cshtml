@@ -1,0 +1,1210 @@
+﻿@model IDS.Sales.Invoice
+
+@{
+    ViewBag.Title = "Edit Sales Invoice (CASI)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    var index = 0;
+    var indexSeqNo = 0;
+
+    var indexSeqAuto = 1;
+    var indexSubSeqAuto = 0;
+
+    var indexSeqMax = 1;
+
+    var StatusInvoice = '@Model.StatusInv';
+
+    /// Untuk generate Row dari Template
+    function getTemplate() {
+        index = index + 1;
+        var newRow = '@Html.Raw(ViewData["NewRowTemplate"])';
+        return newRow;
+    }
+
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+}
+
+<style type="text/css">
+    .form-control-sm {
+        height: 20px;
+        font-size: 10px;
+    }
+
+    .col-form-label-sm {
+        font-size: 10px;
+    }
+
+    input[type=radio] {
+        border-radius: 50%;
+        width: 11px;
+        height: 11px;
+    }
+</style>
+
+
+<h2>Edit Sales Invoice (CASI)</h2>
+
+@using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormSave", "0");
+    @Html.Hidden("invDate", ViewData["InvDate"].ToString())
+    @Html.Hidden("invTransDate", ViewData["InvTransDate"].ToString())
+    @Html.Hidden("invPayDate", ViewData["InvPayDate"].ToString())
+    @Html.Hidden("InvoiceNoSpan", ViewData["NextInvoiceNo"].ToString());
+    @Html.Hidden("ExportStatus", Convert.ToBoolean(ViewData["ExportStatus"]))
+
+    @*<script type="text/javascript">
+            $('form#formCreateEdit').removeData("validator");
+            $('form#formCreateEdit').removeData("unobtrusiveValidation");
+            $.validator.unobtrusive.parse($('form#formCreateEdit'));
+        </script>*@
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px; font-weight:bold">Sales Invoice</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="form-group row mb-2">
+                        @Html.LabelFor(model => model.InvoiceNumber, htmlAttributes: new { @class = "col-form-label-sm col-sm-4" })
+                        <div class="input-group col-sm-7">
+                            @*@Html.EditorFor(model => model.InvoiceNumber, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", @style = "height:27px;",disabled = "disabled", aria_describeby = "invoiceNumber", @maxlength = 5 } })*@
+                            @Html.EditorFor(model => model.InvoiceNumber, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", @style = "height:27px;", aria_describeby = "invoiceNumber", @maxlength = 5 } })
+                            <span class="input-group-text text-sm form-control-sm" style="font-size:10px;" id="invoiceNumber"></span>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.InvoiceNumber, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="form-group row mb-2">
+                        @Html.Label(ViewData["lblNextInvNo"].ToString(), htmlAttributes: new { @class = "col-form-label-sm col-sm text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group-sm row mb-1">
+                        @Html.LabelFor(model => model.CCy.CurrencyCode, "CCY", new { @class = "col-form-label col-form-label-sm col-sm-1" })
+                        <div class="col-sm-2">
+                            @Html.DropDownListFor(model => model.CCy.CurrencyCode, (SelectList)ViewData["SelectListCCY"], "", new { @id = "cboCcy", @class = "form-control select2DDList", @style = "height:27px;" })
+                            @Html.ValidationMessageFor(model => model.CCy.CurrencyCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.Account.Account, "Account", new { @class = "col-form-label col-form-label-sm col-sm-2 ml-3" })
+                        <div class="col-sm-6">
+                            @Html.DropDownListFor(model => model.Account.Account, (SelectList)ViewData["SelectListAcc"], "", new { @id = "cboAcc", @class = "form-control select2DDList", @style = "height:27px;" })
+                            @Html.ValidationMessageFor(model => model.Account.Account, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group-sm row mb-0">
+                        @Html.LabelFor(model => model.InvoiceDate, "Invoive Date", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="col-sm-3">
+                            @Html.EditorFor(model => model.InvoiceDate, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", name = "InvoiceDate", placeholder = "Invoice Date" } })
+                            @Html.ValidationMessageFor(model => model.InvoiceDate, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.ContractNo, "Contract No", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="col-sm-3">
+                            @Html.EditorFor(model => model.ContractNo, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "ContractNo", placeholder = "Contract No" } })
+                            @Html.ValidationMessageFor(model => model.ContractNo, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-2">
+                    @Html.LabelFor(model => model.TaxStatus, "Tax", new { @class = "align-middle mr-3" })
+                    @if (Model.IsPPn)
+                    {
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButtonFor(model => model.TaxStatus, 1, new { @class = "align-middle", @checked = true })
+                            @Html.Label("chkTaxStatus", "Yes", new { @class = "form-check-label ml-1 align-middle" })
+                        </div>
+
+                        <div class="form-check form-check-inline ml-2">
+                            @Html.RadioButtonFor(model => model.TaxStatus, 0, new { @class = "align-middle" })
+                            @Html.Label("chkTaxStatus", "No", new { @class = "form-check-label ml-2 align-middle" })
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButtonFor(model => model.TaxStatus, 1, new { @class = "align-middle" })
+                            @Html.Label("chkTaxStatus", "Yes", new { @class = "form-check-label ml-1 align-middle" })
+                        </div>
+
+                        <div class="form-check form-check-inline ml-2">
+                            @Html.RadioButtonFor(model => model.TaxStatus, 0, new { @class = "align-middle", @checked = true })
+                            @Html.Label("chkTaxStatus", "No", new { @class = "form-check-label ml-2 align-middle" })
+                        </div>
+                    }
+
+                </div>
+
+                <div class="col-sm-4">
+                    @Html.LabelFor(model => model.WHTax, "WH Tax", new { @class = "align-middle mr-3" })
+                    @if (Model.WHTax)
+                    {
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButtonFor(model => model.WHTax, 1, new { @class = "align-middle", @checked = true })
+                            @Html.Label("chkTaxStatus", "Yes", new { @class = "form-check-label ml-1 align-middle" })
+                        </div>
+
+                        <div class="form-check form-check-inline ml-2">
+                            @Html.RadioButtonFor(model => model.WHTax, 0, new { @class = "align-middle" })
+                            @Html.Label("chkTaxStatus", "No", new { @class = "form-check-label ml-2 align-middle" })
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButtonFor(model => model.WHTax, 1, new { @class = "align-middle" })
+                            @Html.Label("chkTaxStatus", "Yes", new { @class = "form-check-label ml-1 align-middle" })
+                        </div>
+
+                        <div class="form-check form-check-inline ml-2">
+                            @Html.RadioButtonFor(model => model.WHTax, 0, new { @class = "align-middle", @checked = true })
+                            @Html.Label("chkTaxStatus", "No", new { @class = "form-check-label ml-2 align-middle" })
+                        </div>
+                    }
+                    @*<div class="form-check form-check-inline">
+                            @Html.RadioButtonFor(model => model.WHTax, 1, new { @class = "align-middle" })
+                            @Html.Label("chkWHTaxStatus", "Yes", new { @class = "form-check-label ml-1 align-middle" })
+                        </div>
+
+                        <div class="form-check form-check-inline ml-2">
+                            @Html.RadioButtonFor(model => model.WHTax, 0, new { @class = "align-middle ml-1", @id = "WHTaxNo" })
+                            @Html.Label("chkWHTaxStatus", "No", new { @class = "form-check-label ml-1 align-middle" })
+                        </div>*@
+                </div>
+            </div>
+
+            <div class="row mt-1">
+                <div class="col-sm-6">
+                    <div class="form-group-sm row mb-0">
+                        @Html.LabelFor(model => model.InvoiceTransDate, "Inv. Trans. Date", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="col-sm-3">
+                            @Html.EditorFor(model => model.InvoiceTransDate, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", name = "InvoiceTransDate", placeholder = "Inv. Trans. Date", @id = "DtpInvTransDate" } })
+                            @Html.ValidationMessageFor(model => model.InvoiceTransDate, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.RefNo, "Reff No", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="col-sm-3">
+                            @Html.EditorFor(model => model.RefNo, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "RefNo", placeholder = "Reff No" } })
+                            @Html.ValidationMessageFor(model => model.RefNo, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group-sm row mb-1">
+                        @Html.LabelFor(model => model.WHTaxCode, "WH Tax %", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="col-sm-4">
+                            @Html.DropDownListFor(model => model.WHTaxCode, (SelectList)ViewData["SelectListWHTaxPercent"], "", new { @id = "cboWHTaxPercent", @class = "form-control select2DDList", @style = "height:27px;", disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.WHTaxCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.EquivAmount, "Equiv. Amount", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="col-sm-4">
+                            @Html.EditorFor(model => model.EquivAmount, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "EquivAmount", placeholder = "Equiv. Amount", disabled = "disabled" } })
+                            @Html.ValidationMessageFor(model => model.EquivAmount, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group-sm row">
+
+                        @Html.LabelFor(model => model.TermOfPayment, "Term", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                        <div class="input-group col-sm-3">
+                            @Html.EditorFor(model => model.TermOfPayment, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", @style = "height:27px;", aria_describeby = "termOfPayment" } })
+                            <span class="input-group-text text-sm form-control-sm" id="termOfPayment">Day</span>
+                            @Html.ValidationMessageFor(model => model.TermOfPayment, "", new { @class = "text-danger" })
+                        </div>
+
+
+                        @Html.LabelFor(model => model.PayDate, "Due Date", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                        <div class="input-group col-sm-3">
+                            @Html.EditorFor(model => model.PayDate, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "DueDate", placeholder = "Due Date", disabled = "disabled", @id = "DtpDueDate" } })
+                            @Html.ValidationMessageFor(model => model.PayDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <section class="col-lg-6 connectedSortable">
+            <div class="card">
+                <div class="card-header fw-bold text-center" style="font-size:14px;">
+                    Tax
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group row mb-0">
+                                @Html.LabelFor(model => model.TaxNumber.SerialNo, "Tax Number", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-10">
+                                    @Html.DropDownListFor(model => model.TaxNumber.SerialNo, (SelectList)ViewData["SelectListTaxNo"], " ", htmlAttributes: new { @id = "cboTaxNo", @class = "form-control select2DDList",disabled = false })
+                                    @Html.ValidationMessageFor(model => model.TaxNumber.SerialNo, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group row mb-0">
+                                @Html.LabelFor(model => model.TaxNumber.TransType, "Trans Type", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-10">
+                                    @Html.DropDownListFor(model => model.TaxNumber.TransType, (SelectList)ViewData["SelectListTaxTransType"], " ", htmlAttributes: new { @id = "cboTaxTransType", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.TaxNumber.TransType, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group row mb-0">
+                                @Html.LabelFor(model => model.TaxNumber.JenisFaktur, "Type", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-10">
+                                    @Html.DropDownListFor(model => model.TaxNumber.JenisFaktur, (SelectList)ViewData["SelectListTaxType"],"", htmlAttributes: new { @id = "cboTaxType", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.TaxNumber.JenisFaktur, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.card-body -->
+            </div>
+        </section>
+
+        <section class="col-lg-6 connectedSortable">
+            <div class="card">
+                <div class="card-header fw-bold text-center" style="font-size:14px;">
+                    Customer
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group-sm row">
+                                @Html.LabelFor(model => model.Cust.CUSTCode, "Customer ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-10">
+                                    @Html.DropDownListFor(model => model.Cust.CUSTCode, (SelectList)ViewData["SelectListCust"], " ", htmlAttributes: new { @id = "cboCust", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.Cust.CUSTCode, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group-sm row">
+                                @Html.LabelFor(model => model.Cust.Fax, "Cust. Fax", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-4">
+                                    @Html.EditorFor(model => model.Cust.Fax, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "Fax", placeholder = "Fax", disabled = "disabled", @id = "txtCustFax" } })
+                                    @Html.ValidationMessageFor(model => model.Cust.Fax, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.Cust.Phone, "Cust. Phone", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-4">
+                                    @Html.EditorFor(model => model.Cust.Phone, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "Phone", placeholder = "Phone", disabled = "disabled", @id = "txtCustPhone" } })
+                                    @Html.ValidationMessageFor(model => model.Cust.Phone, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group-sm row">
+                                @Html.LabelFor(model => model.Cust.Address1, "Cust. Address", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                                <div class="form-group col-sm-10">
+                                    @Html.TextAreaFor(model => model.Cust.Address1, new { @class = "form-control form-control-sm", @maxlength = 100, @rows = "2", @style = "resize:none", disabled = "disabled", @id = "txtCustAddr" })
+                                    @Html.ValidationMessageFor(model => model.Cust.Address1, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- /.card-body -->
+            </div>
+        </section>
+
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px; font-weight:bold">Sales Invoice Description</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group row mb-2">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="input-group col-sm-11">
+                            @Html.TextAreaFor(model => model.Description, new { @class = "form-control form-control-sm", @maxlength = 500, @rows = "3", @style = "resize:none" })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px; font-weight:bold">Invoice Detail</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive table-responsive-sm">
+                <table class="table table-condensed" id="table">
+                    <thead>
+                        <tr>
+                            <td style="padding: 1px !important;">No.</td>
+                            <td style="padding: 1px !important;">Seq. No.</td>
+                            <td style="padding: 1px !important;">Description</td>
+                            <td style="padding: 1px !important;">In Tax Invoice</td>
+                            <td style="padding: 1px !important;" class="text-right">Trans. Amount</td>
+                            <td style="padding: 1px !important;" class="text-right">Total Amount</td>
+                            <td style="padding: 1px !important;"></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                        {
+                            if (Model.InvDetail != null)
+                            {
+                                for (var i = 0; i < Model.InvDetail.Count; i++)
+                                {
+                                    <tr id="@string.Format("r{0}", @i + 1)">
+                                        <td style="padding: 1px 2px !important; width:60px;">
+                                            @Html.TextBoxFor(model => model.InvDetail[i].Counter, new { @id = string.Format("txtCounter-{0}", (i + 1)), @Name = "Counter", style = "padding: 1px; width: 60px; border: none;" })
+                                        </td>
+                                        <td style="padding: 1px 2px !important; width:60px;">
+                                            @Html.TextBoxFor(model => model.InvDetail[i].SubCounter, new { @id = string.Format("txtSubCounter-{0}", (i + 1)), @Name = "SubCounter", style = "padding: 1px; width: 60px; border: none;", disabled = "disabled" })
+                                        </td>
+                                        <td style="padding: 1px 2px !important;">
+                                            @if (Model.InvDetail[i].Remark == "PPN")
+                                            {
+                                                @Html.TextBoxFor(model => model.InvDetail[i].Remark, new { @id = string.Format("txtRemark-{0}", (i + 1)), @Name = "Remark", style = "padding: 1px; width: 100%; border: none;", @disabled = true })
+                                            }
+                                            else
+                                            {
+                                                @Html.TextBoxFor(model => model.InvDetail[i].Remark, new { @id = string.Format("txtRemark-{0}", (i + 1)), @Name = "Remark", style = "padding: 1px; width: 100%; border: none;" })
+                                            }
+                                        </td>
+                                        <td style="padding: 1px 2px !important;">
+                                            @Html.CheckBoxFor(model => model.InvDetail[i].TaxInvoice, new { @id = string.Format("chkTaxInvoice-{0}", (i + 1)), @Name = "TaxInvoice", style = "padding: 1px; width: 70px; border: none;" })
+                                        </td>
+                                        <td style="padding: 1px 2px !important; width:120px;">
+                                            @Html.TextBoxFor(model => model.InvDetail[i].SubAmount, new { id = string.Format("txtSubAmt-{0}", (i + 1)), @Name = "SubAmount", @class = "text-right", @style = "max-width: 120px !important; border: none;" })
+                                            @*@if (IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].SubAmount, 0) >= 0)
+                                                {
+                                                    @Html.TextBoxFor(model => model.InvDetail[i].SubAmount, ((IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].SubAmount, 0) % 1) <= (decimal.MinValue) ? IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].SubAmount, 0).ToString("N2") : IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].SubAmount, 0).ToString("N0")), new { id = string.Format("txtSubAmt-{0}", (i + 1)), @Name = "SubAmount", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                                }
+                                                else
+                                                {
+                                                    @Html.TextBoxFor(model => model.InvDetail[i].SubAmount, "0", new { id = string.Format("txtSubAmt-{0}", (i + 1)), @Name = "SubAmount", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                                }*@
+                                        </td>
+                                        <td style="padding: 1px 2px !important; width:120px;">
+                                            @if (IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].Amount, 0) >= 0)
+                                            {
+                                                @Html.TextBoxFor(model => model.InvDetail[i].Amount, ((IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].Amount, 0) % 1) <= (decimal.MinValue) ? IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].Amount, 0).ToString("N2") : IDS.Tool.GeneralHelper.NullToDecimal(Model.InvDetail[i].Amount, 0).ToString("N0")), new { id = string.Format("txtAmt-{0}", (i + 1)), @Name = "Amount", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                            }
+                                            else
+                                            {
+                                                @Html.TextBoxFor(model => model.InvDetail[i].Amount, "0", new { id = string.Format("txtAmt-{0}", (i + 1)), @Name = "Amount", @class = "text-right", @style = "max-width: 120px !important; border: none;", @onkeyup = "InputNumber(this)" })
+                                            }
+                                        </td>
+                                        <td style="padding: 1px 2px !important; width: 26px;">
+                                            <button type="button" name="btnRemove" class="fa fa-trash" onclick="RemoveRow(this)" style="width: 26px !important; height: 23px;"></button>
+                                        </td>
+
+
+                                    </tr>
+                                }
+                            }
+                        }
+                        <tr id="AddLine">
+                            <td colspan="8">
+                                <a href="#" role="button" id="linkNewRow">Add New Row</a>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <tfoot>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+<div class="modal-footer">
+    <div class="form-group mr-4">
+        <div class="input-group">
+            <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Operator ID</span>
+            @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })
+        </div>
+    </div>
+
+    <div class="form-group mr-auto col-sm-3 mr-4">
+        <div class="input-group">
+            <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Last Update</span>
+            @*@Html.TextBoxFor(model => model.LastUpdate, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })*@
+            @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy hh:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+        </div>
+    </div>
+
+    <button type="button" data-toggle="tooltip" data-placement="top" title="Input New Sales Invoice" class="btn btn-secondary" id="btnAddNew">Add New</button>
+    <button type="button" data-toggle="tooltip" data-placement="top" title="Save Sales Invoice" class="btn btn-primary" id="btnSave">Save</button>
+    <button type="button" data-toggle="tooltip" data-placement="top" title="Close This Form" class="btn btn-default" id="btnClose" onclick="CloseForm(this)" data-dismiss="modal">Close</button>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/GeneralScript.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+
+    <script type="text/javascript">
+        //$('form#formCreateEdit').removeData("validator");
+        //$('form#formCreateEdit').removeData("unobtrusiveValidation");
+        //$.validator.unobtrusive.parse($('form#formCreateEdit'));
+        $(document).ready(function () {
+            if (StatusInvoice == 1) {
+                $("form :input").prop("disabled", true);
+                $('#btnSave').prop('disabled', true);
+            }
+
+            
+            
+
+            const monthRomawi = ["I", "II", "III", "IV", "V", "VI",
+  "VII", "VIII", "IX", "X", "XI", "XII"
+            ];
+
+            $(".select2DDList").select2();
+
+            flatpickr("#InvoiceDate", {
+                shorthand: true,
+                disableMobile: "true",
+                dateFormat: "d/M/Y",
+                altFormat: "F Y",
+                defaultDate: ["today"]
+            });
+
+            flatpickr("#DtpInvTransDate", {
+                shorthand: true,
+                disableMobile: "true",
+                dateFormat: "d/M/Y",
+                altFormat: "F Y",
+                defaultDate: ["today"],
+                maxDate: new Date(new Date($('#InvoiceDate').val()).getFullYear(), new Date($('#InvoiceDate').val()).getMonth() + 1, 0),
+            });
+
+            flatpickr("#DtpDueDate", {
+                shorthand: true,
+                disableMobile: "true",
+                dateFormat: "d/M/Y",
+                altFormat: "F Y",
+                defaultDate: ["today"]
+            });
+
+            $('#DtpInvTransDate').val($('#invDate').val());
+            $('#InvoiceDate').val($('#invTransDate').val());
+
+            GetDueDate();
+
+            $('#invoiceNumber').text($('#InvoiceNoSpan').val());
+
+            if ($('#FormAction').val() == 2) {
+                $('#InvoiceNumber').prop('disabled', true);
+            }
+
+            $('#InvoiceNumber').change(function () {
+                var InvNoPar = ('00000' + $('#InvoiceNumber').val()).slice(-5) + $('#invoiceNumber').text();
+                CheckInvoiceNumber(InvNoPar);
+            });
+
+            $('#cboCust').change(function () {
+                CustValue = $(this).val();
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetCustomer", "Customer", new { Area = "GeneralTable" })',
+                    dataType: 'json',
+                    data: { custCode: CustValue },
+                    success: function (result) {
+
+                        $('#txtCustAddr').val(result.Address1);
+                        $('#txtCustPhone').val(result.Phone);
+                        $('#txtCustFax').val(result.Fax);
+                    }
+                });
+            });
+
+            $('#cboCcy').change(function () {
+                CcyValue = $(this).val();
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetCOAForDataSource", "ChartOfAccount", new { Area = "GLTable" })',
+                    dataType: 'json',
+                    data: { ccy: CcyValue, typeAcc: 'AR' },
+                    success: function (respond) {
+                        $('#cboAcc').empty();
+                        $.each(respond, function (i, item) {
+                            $('#cboAcc').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                        });
+                    }
+                });
+
+                CalcEqvHeader();
+            });
+
+            $('#TermOfPayment').change(function () {
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                var date = new Date($('#InvoiceDate').val());
+                date.setDate(date.getDate() + parseInt($('#TermOfPayment').val()));
+
+                $('#DtpDueDate').val(("0" + date.getDate()).slice(-2) + "/" + months[date.getMonth()] + "/" + date.getFullYear());
+            });
+
+            $('#InvoiceDate').change(function () {
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                var date = new Date($('#InvoiceDate').val());
+                date.setDate(date.getDate() + parseInt($('#TermOfPayment').val()));
+
+                $('#DtpDueDate').val(("0" + date.getDate()).slice(-2) + "/" + months[date.getMonth()] + "/" + date.getFullYear());
+
+                var nextInvDate = new Date($('#InvoiceDate').val());
+                if (date.getMonth() < new Date($('#DtpInvTransDate').val()).getMonth()) {
+                    $('#DtpInvTransDate').val($('#InvoiceDate').val());
+                }
+                $('#invoiceNumber').text("/" + (monthRomawi[nextInvDate.getMonth()] + "/" + nextInvDate.getFullYear()));
+                flatpickr("#DtpInvTransDate", {
+                    maxDate: new Date(nextInvDate.getFullYear(), nextInvDate.getMonth() + 1, 0),
+                    shorthand: true,
+                    disableMobile: "true",
+                    dateFormat: "d/M/Y",
+                    altFormat: "F Y"
+                });
+            });
+
+            $('#WHTax').change(function () {
+                if ($('#WHTax').val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetTaxIDValueForDataSource", "Tax", new { Area = "GeneralTable" })',
+                        dataType: 'json',
+                        success: function (respond) {
+                            $('#cboWHTaxPercent').empty();
+                            $('#cboWHTaxPercent').removeAttr('disabled');
+                            $.each(respond, function (i, item) {
+                                $('#cboWHTaxPercent').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                            });
+                        }
+                    });
+                }
+            });
+
+
+
+            $('#WHTaxNo').change(function () {
+                $('#cboWHTaxPercent').empty();
+                $('#cboWHTaxPercent').attr('disabled', 'disabled');
+            });
+
+            $("#btnSave").click(function () {
+                listDetail = [];
+                listDetail.length = 0;
+                var valResult = Validation();
+                var chkTaxStatus = false;
+                var chkWHTaxStatus = false;
+                var errorPPN = 0;
+                if ($("input[name='TaxStatus']:checked").val() == 1) {
+                    chkTaxStatus = true;
+                }
+
+                if ($('#WHTax').val() == 1) {
+                    chkWHTaxStatus = true;
+                }
+
+                if ($('table tbody tr:not(#AddLine)').length > 0) {
+                    $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+
+                        if ($('input[name="Remark"]', this).val() == 'PPN') {
+                            errorPPN++;
+                        }
+                    });
+                }
+
+                if (errorPPN > 0 && chkTaxStatus == true) {
+                    alert("Please Delete PPN First in Invoice Detail, Because PPN will automatically generate if Tax is Yes");
+                    return;
+                }
+
+                if (valResult) {
+                    if ($('#FormAction').val() == '1') {
+                        $.ajax({
+                            type: "POST",
+                            dataType: 'JSON',
+                            url: '@Url.Action("Create", "SalesInvoice", new { Area = "Sales" })',
+                            data: {
+                                "FormAction": $('#FormAction').val(),
+                                "inv": {
+                                    "InvoiceNumber": $('#InvoiceNumber').val(),
+                                    "EquivAmount": $('#EquivAmount').val(),
+                                    "InvoiceDate": $('#InvoiceDate').val(),
+                                    "InvoiceTransDate": moment($('#DtpInvTransDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                    "Cust.CUSTCode": $('#cboCust').val(),
+                                    "TermOfPayment": $('#TermOfPayment').val(),
+                                    "CCy.CurrencyCode": $('#cboCcy').val(),
+                                    "TaxStatus": chkTaxStatus,
+                                    "PayDate": $('#DtpDueDate').val(),
+                                    "Account.Account": $('#cboAcc').val(),
+                                    "WHTax": chkWHTaxStatus,
+                                    "ContractNo": $('#ContractNo').val(),
+                                    "RefNo": $('#RefNo').val(),
+                                    "WHTaxCode": $('#cboWHTaxPercent').val(),
+                                    "Description": $('#Description').val(),
+                                    "TaxNumber.SerialNo": $('#cboTaxNo').val(),
+                                    "TaxNumber.TransType": $('#cboTaxTransType').val(),
+                                    "TaxNumber.JenisFaktur": $('#cboTaxType').val(),
+                                    "InvDetail": listDetail
+                                }
+                            },
+                            success: function (result) {
+
+                                alert(result);
+                                $('#FormAction').val('2');
+                                $('#InvoiceNumber').prop('disabled', true);
+                            },
+                            error: function (status, xhr, msg) {
+                                alert(msg);
+                            }
+                        });
+                    }
+                    else if ($('#FormAction').val() == '2') {
+                        $.ajax({
+                            type: "POST",
+                            dataType: 'JSON',
+                            url: '@Url.Action("Edit", "SalesInvoice", new { Area = "Sales" })',
+                            data: {
+                                "FormAction": $('#FormAction').val(),
+                                "inv": {
+                                    "InvoiceNumber": $('#InvoiceNumber').val() + $('#invoiceNumber').text(),
+                                    "EquivAmount": $('#EquivAmount').val(),
+                                    "InvoiceDate": $('#InvoiceDate').val(),
+                                    "InvoiceTransDate": moment($('#DtpInvTransDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                    "Cust.CUSTCode": $('#cboCust').val(),
+                                    "TermOfPayment": $('#TermOfPayment').val(),
+                                    "CCy.CurrencyCode": $('#cboCcy').val(),
+                                    "TaxStatus": chkTaxStatus,
+                                    "PayDate": $('#DtpDueDate').val(),
+                                    "Account.Account": $('#cboAcc').val(),
+                                    "WHTax": chkWHTaxStatus,
+                                    "ContractNo": $('#ContractNo').val(),
+                                    "RefNo": $('#RefNo').val(),
+                                    "WHTaxCode": $('#cboWHTaxPercent').val(),
+                                    "Description": $('#Description').val(),
+                                    "TaxNumber.SerialNo": $('#cboTaxNo').val(),
+                                    "TaxNumber.TransType": $('#cboTaxTransType').val(),
+                                    "TaxNumber.JenisFaktur": $('#cboTaxType').val(),
+                                    "InvDetail": listDetail
+                                }
+                            },
+                            success: function (result) {
+
+                                alert(result);
+                                $('#FormAction').val('2');
+                                $('#InvoiceNumber').prop('disabled', true);
+                                window.location = '@Url.Action("Edit", "SalesInvoice", new { Area = "Sales" })' + "?invNo=" + $('#InvoiceNumber').val() + $('#invoiceNumber').text();
+                            },
+                            error: function (status, xhr, msg) {
+                                alert(msg);
+                            }
+                        });
+                    }
+                }
+
+                //var datas = {
+                //    "InvoiceNumber": $('#InvoiceNumber').val(),
+                //    "EquivAmount": $('#EquivAmount').val(),
+                //    "InvoiceDate": $('#InvoiceDate').val(),
+                //    "InvoiceTransDate": moment($('#DtpInvTransDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                //    "Cust.CUSTCode": $('#cboCust').val(),
+                //    "TermOfPayment": $('#TermOfPayment').val(),
+                //    "CCy.CurrencyCode": $('#cboCcy').val(),
+                //    "TaxStatus": $('#TaxStatus').val(),
+                //    "PayDate": $('#DtpDueDate').val(),
+                //    "Account.Account": $('#cboAcc').val(),
+                //    "WHTax": $('#WHTax').val(),
+                //    "ContractNo": $('#ContractNo').val(),
+                //    "RefNo": $('#RefNo').val(),
+                //    "WHTaxCode": $('#cboWHTaxPercent').val(),
+                //    "InvDetail": listDetail
+                //};
+            }),
+
+            $("#btnAddNew").click(function () {
+                var answer = confirm("Are you sure want to input new data ?");
+
+                if (answer) {
+                    window.location.href = '@Url.Action("Create", "SalesInvoice", new { Area = "Sales" })';
+                    //$("#SCode").val('');
+                    //$("input#Voucher").val('');
+                    //$('#VBranch_BranchCode').val('');
+                    //$('table tbody').find('tr:not(#AddLine)').remove();
+                }
+            }),
+
+            $('#EquivAmount').keypress(function (event) {
+                return isNumber(event, this)
+            });
+
+            function isNumber(evt, element) {
+                var charCode = (evt.which) ? evt.which : event.keyCode
+                if (
+                    (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                    (charCode < 48 || charCode > 57))
+                    return false;
+                return true;
+            }
+
+            $('#linkNewRow').click(function () {
+                // Validasi apakah ada data yang kosong atau tidak valid
+                errorCount = 0;
+                var errorPPN = 0;
+
+                var ArrSeq = new Array();
+                var ArrSubSeq = new Array();
+
+                if ($('table tbody tr:not(#AddLine)').length > 0) {
+                    $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+
+                        if ($('input[name="Remark"]', this).val() == 'PPN') {
+                            errorPPN++;
+                        }
+
+                        if (
+                            //($('input[name="Counter"]', this).val() == null || $('input[name="Counter"]', this).val() == '') ||
+                            //($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '') ||
+                            //($('input[name="SubAmount"]', this).val() == null || $('input[name="SubAmount"]', this).val() == '' || isNaN(parseFloat($('input[name="SubAmount"]', this).val())) == true || $('input[name="SubAmount"]').val() <= 0) ||
+                            //($('input[name="Amount"]', this).val() == null || $('input[name="Amount"]', this).val() == '' || isNaN(parseFloat($('input[name="Amount"]', this).val())) == true || $('input[name="Amount"]').val() <= 0)) {
+                            ($('input[name="Counter"]', this).val() == null || $('input[name="Counter"]', this).val() == '') ||
+                            //($('input[name="Amount"]', this).val() == null || $('input[name="Amount"]', this).val() == '' || $('input[name="Amount"]', this).val() == '0') ||
+                            ($('input[name="Amount"]', this).val() == null || $('input[name="Amount"]', this).val() == '') ||
+                            ($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '')) {
+                            $(this).addClass('error');
+                            errorCount++;
+
+                        } else {
+                            if (parseInt($('input[name="SubCounter"]', this).val()) == 0) {
+                                ArrSeq.push(parseInt($('input[name="Counter"]', this).val()));
+                            }
+                            if (indexSeqMax > 1) {
+                                if (indexSeqMax == parseInt($('input[name="Counter"]', this).val())) {
+                                    ArrSubSeq.push(parseInt($('input[name="SubCounter"]', this).val()));
+                                }
+                            } else {
+                                ArrSubSeq.push(parseInt($('input[name="SubCounter"]', this).val()));
+                            }
+
+                            //alert(indexSeqMax);
+                            //if (parseInt($('input[name="Counter"]', this).val()) == Math.max.apply(null, ArrSeq)) {
+                            //    ArrSubSeq.push(parseInt($('input[name="SubCounter"]', this).val()));
+                            //}
+                        }
+
+                        //indexSeqAuto = Math.max.apply(null, ArrSeq);
+                        //indexSubSeqAuto = Math.max.apply(null, ArrSubSeq) + 1;
+                    });
+
+                    indexSeqAuto = Math.max.apply(null, ArrSeq);
+                    indexSubSeqAuto = Math.max.apply(null, ArrSubSeq) + 1;
+                } else {
+                    indexSeqAuto = 1;
+                    indexSubSeqAuto = 0;
+                }
+
+                if (errorCount > 0 || errorPPN > 0) {
+                    if (errorPPN > 0) {
+                        alert("Please Delete PPN First in Invoice Detail");
+                    } else {
+                        alert("Please complete some data");
+                    }
+                    return;
+                }
+
+                indexSeqMax = Math.max.apply(null, ArrSeq);
+
+                var template = getTemplate();
+
+                $(this).closest('table tbody').find("tr:last").before(template);
+            });
+
+            CalcEqvHeader();
+
+            //if ($('table tbody tr:not(#AddLine)').length > 0) {
+
+            //    var ArrSeq = new Array();
+            //    var ArrSubSeq = new Array();
+            //    $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+
+            //        if (parseInt($('input[name="SubCounter"]', this).val()) == 0) {
+            //            ArrSeq.push(parseInt($('input[name="Counter"]', this).val()));
+            //        }
+            //        if (indexSeqMax > 1) {
+            //            if (indexSeqMax == parseInt($('input[name="Counter"]', this).val())) {
+            //                ArrSubSeq.push(parseInt($('input[name="SubCounter"]', this).val()));
+            //            }
+            //        } else {
+            //            ArrSubSeq.push(parseInt($('input[name="SubCounter"]', this).val()));
+            //        }
+            //    });
+
+            //    indexSeqAuto = Math.max.apply(null, ArrSeq);
+            //    indexSubSeqAuto = Math.max.apply(null, ArrSubSeq) + 1;
+            //} else {
+            //    indexSeqAuto = 1;
+            //    indexSubSeqAuto = 0;
+            //}
+            if ($("input[name='TaxStatus']:checked").val() == 0) {
+                $('#cboTaxNo').prop('disabled', true);
+                $('#cboTaxTransType').prop('disabled', true);
+                //$('#cboTaxType').prop('disabled', true);
+            } else {
+                $('#cboTaxNo').prop('disabled', false);
+                $('#cboTaxTransType').prop('disabled', false);
+                //$('#cboTaxType').prop('disabled', false);
+            }
+
+            if ($("#ExportStatus").val().toString() == 'True') {
+                $('#cboTaxNo').prop('disabled', true);
+                $('#cboTaxTransType').prop('disabled', true);
+                //$('#cboTaxType').prop('disabled', true);
+            }
+        });
+
+        $('input[type=radio][name=TaxStatus]').change(function () {
+            if ($("input[name='TaxStatus']:checked").val() == 0) {
+                $('#cboTaxNo').prop('disabled', true);
+                $('#cboTaxTransType').prop('disabled', true);
+                $('#cboTaxType').prop('disabled', true);
+            } else {
+                $('#cboTaxNo').prop('disabled', false);
+                $('#cboTaxTransType').prop('disabled', false);
+                $('#cboTaxType').prop('disabled', false);
+            }
+
+            if ($("#ExportStatus").val().toString() == 'True') {
+                $('#cboTaxNo').prop('disabled', true);
+                $('#cboTaxTransType').prop('disabled', true);
+                //$('#cboTaxType').prop('disabled', true);
+            }
+        });
+
+        function GetDueDate() {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var date = new Date($('#InvoiceDate').val());
+            date.setDate(date.getDate() + parseInt($('#TermOfPayment').val()));
+
+            $('#DtpDueDate').val(("0" + date.getDate()).slice(-2) + "/" + months[date.getMonth()] + "/" + date.getFullYear());
+        }
+
+        function CheckInvoiceNumber(invNo) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("CheckInvoiceNo", "SalesInvoice", new { Area = "Sales" })',
+                dataType: 'json',
+                data: { invNo: invNo },
+                success: function (result) {
+                    if (result != '') {
+                        $('#InvoiceNumber').val('');
+                        alert(result)
+                        return false;
+                    }
+                }
+            });
+        }
+
+        function ResetForm() {
+            $('#InvoiceNumber').prop('disabled', false);
+            $('#InvoiceNumber').val('');
+            $('#TermOfPayment').val('');
+            $("#cboCcy").val("").change();
+            $('#cboAcc').empty();
+            $("#ContractNo").val("");
+            $("#RefNo").val("");
+            $("#cboCcy").val("").change();
+            $("#cboCust").val("").change();
+
+            $("#FormAction").val("1");
+            $("#FormSave").val("1");
+
+        }
+
+        function RemoveAllComma(x) {
+            if (x != null && x !== 'undefined') {
+                return x.replaceAll(",", "");
+            }
+        }
+
+        function Validation() {
+            var msg = '';
+
+            if ($("#InvoiceNumber").val() == null || typeof $("#InvoiceNumber").val() === 'undefined') {
+                msg += "Invoice No is required.";
+            }
+
+            var InvNoPar = ('00000' + $('#InvoiceNumber').val()).slice(-5) + $('#invoiceNumber').text();
+
+            if ($("#FormAction").val() == 1) {
+                //if (CheckInvoiceNumber(InvNoPar) == false) {
+                //    return false;
+                //}
+
+            }
+
+            if ($('#cboAcc').val() == '' || $('#cboAcc').val() == null || typeof $('#cboAcc').val() == 'undefined') {
+                msg += "Account is required \r\n";
+            }
+
+            if ($('#cboCust').val() == '' || $('#cboCust').val() == null || typeof $('#cboCust').val() == 'undefined') {
+                msg += "Customer is required \r\n";
+            }
+
+            //if ($('#TransDate').val() == null || $('#TransDate').val() == '' || typeof $('#TransDate').val() === 'undefined') {
+            //    msg += "Trans. date is required \r\n";
+            //}
+
+            //if ($('#VBranch_BranchCode').val() == null || typeof $('#VBranch_BranchCode').val() === 'undefined') {
+            //    msg += "Branch is required \r\n";
+            //}
+
+            // Hitung jumlah row
+            var tableRowCount = $('table tbody').find('tr:not(#AddLine)').length;
+
+            if (tableRowCount == 0) {
+                msg += "Your has not been insert detail data \r\n";
+            }
+            else {
+                //if (CalculateDifferentValue() != 0 || isNaN(CalculateDifferentValue())) {
+                //    msg += "There is different between Debit and Credit Total \r\n";
+                //}
+
+                var errorCount = 0;
+
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    //if (($('input[name="Counter"]', this).val() == null || $('input[name="Counter"]').val() == '') ||
+                    //    ($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '') ||
+                    //    ($('input[name="Remark"]', this).val() == null || $('input[name="Remark"]', this).val() == '') ||
+                    //    ($('input[name="TaxInvoice"]', this).val() == null || $('input[name="TaxInvoice"]', this).val() == '') ||
+                    //    ($('input[name="SubAmount"]', this).val() == null || $('input[name="SubAmount"]', this).val() == '' || isNaN(parseFloat($('input[name="SubAmount"]', this).val())) == true) ||
+                    //    ($('input[name="Amount"]', this).val() == null || $('input[name="Amount"]', this).val() == '' || isNaN(parseFloat($('input[name="Amount"]', this).val())) == true)) {
+                    if (($('input[name="Counter"]', this).val() == null || $('input[name="Counter"]').val() == '') ||
+                        ($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '') ||
+                        ($('input[name="Remark"]', this).val() == null || $('input[name="Remark"]', this).val() == '') ||
+                        //($('input[name="Amount"]', this).val() == null || $('input[name="Amount"]', this).val() == '' || $('input[name="Amount"]', this).val() == '0') ||
+                        ($('input[name="Amount"]', this).val() == null || $('input[name="Amount"]', this).val() == '') ||
+                        ($('input[name="TaxInvoice"]', this).val() == null || $('input[name="TaxInvoice"]', this).val() == '')) {
+                        $(this).addClass('error');
+                        msg += "Something error in Invoice Detail row " + (idx + 1).toString();
+                        errorCount++;
+                    }
+                    else {
+                        var chkInvVal = false;
+                        if ($('input[name="TaxInvoice"]', this).is(":checked")) {
+                            chkInvVal = true;
+                        }
+
+                        listDetail.push({
+                            "Counter": parseInt($('input[name="Counter"]', this).val()),
+                            "SubCounter": parseInt($('input[name="SubCounter"]', this).val()),
+                            "Remark": $('input[name="Remark"]', this).val(),
+                            "TaxInvoice": chkInvVal,
+                            "SubAmount": $('input[name="SubAmount"]', this).val(),
+                            "Amount": parseFloat(RemoveAllComma($('input[name="Amount"]', this).val()))
+                        })
+                    }
+                });
+            }
+
+            if (msg.length > 0 || errorCount > 0) {
+                alert(msg);
+                return false;
+            }
+
+            return true;
+        }
+
+        //Untuk auto subCounter belum selesai
+        function OnCounterChange(e) {
+            var rowIndex = GetIndex(e);
+            var ArrInvDet = new Array();
+            if (parseInt(GetIndex(e)) > 0) {
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    if ($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '' || parseInt($('input[name="SubCounter"]', this).val()) < 0) {
+                        return false;
+                    }
+                    else if (parseInt($('input[name="Counter"]', this).val()) == parseInt($("#txtCounter-" + rowIndex).val())) {
+                        ArrInvDet.push(parseInt($('input[name="SubCounter"]', this).val()));
+                    }
+                });
+            }
+            if (ArrInvDet.length <= 1) {
+                $("#txtSubCounter-" + rowIndex).val(0);
+            } else {
+                $("#txtSubCounter-" + rowIndex).val(Math.max.apply(null, ArrInvDet) + 1);
+            }
+
+            indexSeqMax = $("#txtCounter-" + rowIndex).val();
+        }
+
+        function OnAmountChange(e) {
+            CalcEqvHeader();
+        }
+
+        function CalcEqvHeader() {
+            var totalAmt = 0;
+            var exchRate = 0;
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetMidRateBaseCCY", "ExchangeRate", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { ccy1: $("#cboCcy").val() },
+                success: function (respond) {
+                    exchRate = parseFloat(respond);
+
+                    $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                        totalAmt = totalAmt + parseFloat($('input[name="Amount"]', this).val().replace(/,/g, ''));
+                    });
+
+                    totalAmt = totalAmt * exchRate;
+
+                    $("#EquivAmount").val(totalAmt.toString()
+                              .replace(/[^\d.]/g, "")
+                              .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                              .replace(/\.(\d{2})\d+/, '.$1')
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
+            });
+        }
+
+        function ReplaceSlashDate(datePar) {
+            return datePar.replace(/\//g, "-");
+        }
+
+        function InputNumber(e) {
+            var rowIdx = GetIndex(e);
+
+            $("#" + e.id).keyup(function (event) {
+                if (event.which >= 37 && event.which <= 40) return;
+                $(this).val(function (index, value) {
+                    return value
+                    // Keep only digits and decimal points:
+                    .replace(/[^\d.]/g, "")
+                    // Remove duplicated decimal point, if one exists:
+                    .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                    // Keep only two digits past the decimal point:
+                    .replace(/\.(\d{2})\d+/, '.$1')
+                    // Add thousands separators:
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                });
+            });
+        }
+
+        function RemoveRow(e) {
+
+            var answer = confirm("Are you sure want to delete row ?");
+
+            if (answer) {
+                var rowIndex = GetIndex(e);
+                var counter = parseInt($("#txtCounter-" + (parseInt(rowIndex))).val());
+                $(e).parent().parent().remove();
+                var i = 0;
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    if ($('input[name="Counter"]', this).val() == counter) {
+                        $('input[name="SubCounter"]', this).val(i);
+                        i++;
+                    }
+                });
+            }
+        }
+
+        function GetIndex(e) {
+            var lastIndex = e.id.lastIndexOf("-");
+            var rowIdx = e.id.substr(parseInt(lastIndex) + 1, parseInt(e.id.length) - parseInt(lastIndex) + 1);
+            return rowIdx;
+        }
+
+        function CloseForm(e) {
+            window.location.href = '@Url.Action("Index", "SalesInvoice", new { Area = "Sales" })';
+
+            @*if ($('#hfUrlReferrer').val() != null) {
+                window.location.href = ($('#hfUrlReferrer').val());
+            }
+        else {
+                window.location.href = '@Url.Action("Index", "Voucher", new { Area = "GLTransaction" })';
+        }*@
+        }
+    </script>
+}
+

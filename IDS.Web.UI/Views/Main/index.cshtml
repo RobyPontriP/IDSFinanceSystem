@@ -1,0 +1,341 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>View</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="~/Content/AdminLTE/plugins/fontawesome-free/css/all.min.css">
+    <!-- IonIcons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/Content/AdminLTE/css/adminlte.min.css">
+    <link rel="stylesheet" href="~/Content/Select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.css" />
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+
+</head>
+<body>
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row" id="sortablex">
+                <section class="col-lg-6 connectedSortable">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 id="btnjf1" class="card-title">
+                                <!--  <i class="fas fa-th mr-1" style="color:#4cff00 !important;"></i>-->
+                                Sales Monthly
+                            </h3>
+                            <div class="card-tools">
+                                <ul class="nav nav-pills ml-auto">
+                                    <li class="nav-item">
+                                        <label class="nav-link form-control-sm control-label">Pilih Tahun</label>
+                                    </li>
+                                    <li class="nav-item">
+                                        <select id="txtYearPerbulan" class="form-control form-control-sm select2DDList" style="width:auto;">
+                                            <option>Short</option>
+                                            <option>Medium lenght</option>
+                                            <option>Much muc</option>
+                                        </select>
+                                    </li>
+                                </ul><!-- ul end -->
+                            </div>
+                        </div><!-- /.card-header -->
+                        <div class="card-body">
+                            <div class="tab-content p-0">
+                                <!-- Morris chart - Sales -->
+                                <div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;">
+                                    <div id="pieChartContent1">
+                                        <canvas id="pieChart1" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                                <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
+                                    <canvas id="sales-chart-canvas" height="300" style="height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div><!-- /.card-body -->
+                    </div>
+                </section>
+                <section class="col-lg-6 connectedSortable">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 id="btnjf2" class="card-title">
+                                <!-- <i class="fas fa-th mr-1" style="color:#4cff00 !important;"></i>-->
+                                Sales Yearly
+                            </h3>
+                            <div class="card-tools">
+                                <ul class="nav nav-pills ml-auto">
+                                    <li class="nav-item">
+                                        <label class="nav-link form-control-sm control-label">From</label>
+                                    </li>
+                                    <li class="nav-item">
+                                        <select id="txtYearFrom" class="form-control form-control-sm select2DDList" style="width:auto;">
+                                            <option>Short</option>
+                                            <option>Medium lenght</option>
+                                            <option>Much muc</option>
+                                        </select>
+                                    </li>
+                                    <li class="nav-item">
+                                        <label class="nav-link form-control-sm control-label">To</label>
+                                    </li>
+                                    <li class="nav-item">
+                                        <select id="txtYearTo" class="form-control form-control-sm select2DDList" style="width:auto;">
+                                            <option>Short</option>
+                                            <option>Medium lenght</option>
+                                            <option>Much muc</option>
+                                        </select>
+                                    </li>
+                                </ul><!-- ul end -->
+                            </div>
+                        </div><!-- /.card-header -->
+                        <div class="card-body">
+                            <div class="tab-content p-0">
+                                <!-- Morris chart - Sales -->
+                                <div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;">
+                                    <div id="pieChartContentx">
+                                        <canvas id="pieChartx" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                                <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
+                                    <canvas id="sales-chart-canvas" height="300" style="height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div><!-- /.card-body -->
+                        <!-- <button type="button" class="btn btn-primary" onclick="GetChart()">Primary</button>-->
+                    </div>
+                </section>
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+
+    @section Scripts{
+        <script type="text/javascript" src="~/Content/AdminLTE/plugins/chart.js/Chart.min.js"></script>
+        <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+        <script type="text/javascript" src="~/Scripts/jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+        <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+        <script type="text/javascript" src="~/Scripts/bootstrap.min.js"></script>
+        <script type="text/javascript">
+        $(document).ready(function () {
+            getYear();
+
+            GetDataMountly($('#txtYearPerbulan').val());
+            GetDataFromTo($('#txtYearFrom').val(), $('#txtYearTo').val())
+
+            $(".select2DDList").select2({
+                width:"100%",
+                theme:"classic"
+            });
+
+            $("#select2-txtYearTo-container,#select2-txtYearFrom-container,#select2-txtYearPerbulan-container").addClass("mr-2");
+
+            $("#sortablex").sortable();
+
+            $('#txtYearPerbulan').change(function () {
+                var tahun = $("#txtYearPerbulan").val();
+                GetDataMountly(tahun);
+            });
+
+            $('#txtYearFrom').change(function () {
+                var tahunFrom = $("#txtYearFrom").val();
+                var tahunTo = $("#txtYearTo").val();
+                GetDataFromTo(tahunFrom, tahunTo);
+            });
+
+            $('#txtYearTo').change(function () {
+                var tahunFrom = $("#txtYearFrom").val();
+                var tahunTo = $("#txtYearTo").val();
+                GetDataFromTo(tahunFrom, tahunTo);
+            });
+
+        })// $(document).ready(function ()
+
+
+
+        function GetDataMountly(year) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetChartYear", "YearlyInvoiceCharts", new { Area = "Sales" })',
+                data: JSON.stringify({ "year": year }),
+                dataType: 'JSON',
+                success: function (data) {
+                    var pieChartContent = document.getElementById('pieChartContent1');
+                    pieChartContent.innerHTML = '&nbsp;';
+                    $('#pieChartContent1').append('<canvas id="pieChart1" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>');
+                    var areaChartCanvas = $('#pieChart1').get(0).getContext('2d');
+                    var areaChartData = data;
+
+                    var areaChartOptions = {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        legend: {
+                            display: true
+                        },
+                        scales: {
+                            xAxes: [{
+                                gridLines: {
+                                    display: true,
+                                }
+                            }],
+                            yAxes: [{
+                                gridLines: {
+                                    display: true,
+                                }
+                            }]
+                        }
+                    }
+
+                    // This will get the first returned node in the jQuery collection.
+                    new Chart(areaChartCanvas, {
+                        type: 'line',
+                        data: areaChartData,
+                        options: areaChartOptions
+                    })
+
+                },
+                error: function (respond, xhr, msg) {
+                    console.log(msg);
+                }
+            })
+        }
+
+        function GetChart() {
+            var currentYear = (new Date).getFullYear();
+            console.log(currentYear);
+        }
+
+        function getYear() {
+            $("#txtYearPerbulan,#txtYearFrom,#txtYearTo").empty()
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("getyearfromslsinvh", "YearlyInvoiceCharts", new { Area = "Sales" })',
+                data: JSON.stringify({"optional": "0" }),
+                dataType: 'JSON',
+                success: function (data) {
+                    $.each(data, function (i, item) {
+                        $("#txtYearPerbulan,#txtYearFrom,#txtYearTo").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                    });
+                    var currentYear = (new Date).getFullYear();
+                    $("#txtYearPerbulan,#txtYearFrom,#txtYearTo").val(currentYear);
+                },
+                error: function (respond, xhr, msg) {
+                    console.log(msg);
+                }
+            })
+        }
+
+        function GetDataFromTo(from, to) {
+            if (from>to){
+                NoAccessModal1("momen Today's date is greater than yesterday date");
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetChartYearFromToBarChart", "YearlyInvoiceCharts", new { Area = "Sales" })',
+                data: JSON.stringify({ "yearfrom": from, "yearto": to }),
+                dataType: 'JSON',
+                success: function (data) {
+                    var pieChartContent = document.getElementById('pieChartContentx');
+                    pieChartContent.innerHTML = '&nbsp;';
+                    $('#pieChartContentx').append('<canvas id="pieChartx" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>');
+                    var areaChartCanvas = $('#pieChartx').get(0).getContext('2d');
+                    var areaChartData = data;
+
+                    var areaChartOptions = {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        legend: {
+                            display: true
+                        },
+                        scales: {
+                            xAxes: [{
+                                gridLines: {
+                                    display: true,
+                                }
+                            }],
+                            yAxes: [{
+                                gridLines: {
+                                    display: true,
+                                }
+                            }]
+                        }
+                    }
+
+                    // This will get the first returned node in the jQuery collection.
+                    new Chart(areaChartCanvas, {
+                        type: 'bar',
+                        data: areaChartData,
+                        options: areaChartOptions
+                    })
+
+                },
+                error: function (respond, xhr, msg) {
+                    console.log(msg);
+                }
+            })
+        }
+
+        function NoAccessModal1(msg) {
+            var stringbuilder = "";
+
+            stringbuilder += "<div class='modal fade' id='noaccess' tabindex='-1' role='dialog' aria-labelledby='noaccess' aria-hidden='true'>";
+            stringbuilder += "       <div class='modal-dialog modal-dialog-centered' role='document'>";
+            stringbuilder += "                   <div class='modal-content card'>";
+            stringbuilder += "                          <div class='card-header'>";
+            stringbuilder += "                                 <div id='btncardtitle' class='card-title modal-title'>";
+            stringbuilder += "                                        <table>";
+            stringbuilder += "                                                <tr>";
+            stringbuilder += "                                                        <td style='width:40%'>";
+            stringbuilder += "<img id='imglogo' src='@Url.Content("~/Images/Default/logo.png")' alt='Logo' class='brand-image img-circle elevation-2' style='width: 30%;height: 30%;'>";
+            stringbuilder += "                                                       <td>";
+            stringbuilder += "                                                               <div id='txtcap' style='font-weight: bold;'>Information Message</div>";
+            stringbuilder += "                                                           </td>";
+            stringbuilder += "                                                   </tr>";
+            stringbuilder += "                                          </table>";
+            stringbuilder += "                                  </div>";
+            stringbuilder += "                              <div class='card-tools'>";
+            stringbuilder += "                                      <ul class='nav nav-pills ml-auto'>";
+            stringbuilder += "                                              <li class='nav-item'>";
+            stringbuilder += "                                                      <a class='nav-link' id='closealert' href='#' data-toggle='tab' data-dismiss='modal'>";
+            stringbuilder += "                                                            <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+            stringbuilder += "                                                        </a>";
+            stringbuilder += "                                                 </li>";
+            stringbuilder += "                                         </ul>";
+            stringbuilder += "                                </div>";
+            stringbuilder += "                         </div>";
+            stringbuilder += "                         <div class='card-body modal-body'>";
+            stringbuilder += msg;
+            stringbuilder += "                         </div>";
+            stringbuilder += "                       <div class='modal-footer'>";
+            stringbuilder += "                                <button type='button' id='closealert1' class='btn btn-danger btn-sm' data-dismiss='modal'>Close</button>";
+            stringbuilder += "                        </div>";
+            stringbuilder += "                  </div>";
+            stringbuilder += "        </div>";
+            stringbuilder += " </div>"
+
+            // return stringbuilder;
+            var myElement = document.getElementById("publicAlert");
+            if (!myElement) {
+                let div = document.createElement('div');
+                div.id = 'publicAlert';
+                document.body.appendChild(div);
+            }
+            $("#publicAlert").html(stringbuilder);
+            $("#noaccess").modal('show');
+            $('#closealert1,#closealert').click(function () {
+                $("#noaccess").modal('hide');
+            });
+        }
+        </script>
+    }
+</body>
+</html>

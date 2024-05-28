@@ -1,0 +1,871 @@
+﻿
+@{
+    ViewBag.Title = "Receive";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+    td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_open.png")") no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_close.png")") no-repeat center center;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<h2>@ViewBag.Title</h2>
+
+@section Styles{
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+@{
+    Html.RenderPartial("_ProgressPage");
+}
+
+@Html.Hidden("result", ViewData["MessageError"])
+
+<div class="card" id="firstform">
+    <div class="card-header">
+        <h3 class="card-title">Filter</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-6 mb-2">
+                <div class="form-group row mb-2">
+                    @Html.Label("lblSerialNo", "Serial No.", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-xs-12 col-sm-8">
+                        @Html.TextBox("SerialNo", "", new { @id = "txtSerialNo", @class = "form-control form-control-sm" })
+                    </div>
+                </div>
+                <div class="form-group row mb-0">
+                    @Html.Label("lblReffNo", "Reff. No", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-sm-8 mb-2">
+                        @Html.TextBox("ReffNo", "", new { @id = "txtReffNo", @class = "form-control form-control-sm" })
+                    </div>
+                </div>
+                <div class="form-group row mb-0">
+                    <div class="control-label col-sm-3 col-form-label">
+                        <div class="form-check form-check-inline">
+                            @Html.CheckBox("chkFilterDate", false, new { @id = "chkTransDate", @class = "form-check-input" })
+                            @Html.Label("chkFilterDate", "Filter Date", new { @class = "form-check-label" })
+                        </div>
+                    </div>
+                    <div class="col-sm-4 mb-0">
+                        @Html.TextBox("FromDate", ViewData["FirstDayOfMonth"], new { @id = "txtFromDate", @class = "form-control form-control-sm bg-white", disabled=true })
+                    </div>
+                    <div class="col-sm-4 mb-0">
+                        @Html.TextBox("ToDate", ViewData["CurrDate"], new { @id = "txtToDate", @class = "form-control form-control-sm bg-white", disabled = true })
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 mb-2">
+                <div class="form-group row mb-2">
+                    @Html.Label("Customer", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-xs-12 col-sm-9">
+                        @Html.DropDownList("Customer", (ViewData["CustList"] as SelectList), "-- Select Customer --", new { @id = "cboCustomer", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+                </div>
+                <div class="form-group row mb-0">
+                    @Html.Label("Type", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-sm-9 mb-2">
+                        @Html.DropDownList("Type", (ViewData["TypeList"] as SelectList), "-- Select Type --", new { @id = "cboType", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+                </div>
+
+                @*<div class="col-sm-1">
+                    <a class="btn btn-sm btn-default" onclick="Refresh()" title="Refresh Data">
+                        <i class="fas fa-search"></i>
+                    </a>
+                </div>*@
+
+                <div class="form-group row mb-0">
+                    @Html.Label("Status", new { @class = "control-label col-sm-3 col-form-label" })
+                    <div class="col-sm-9 mb-0">
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButton("rbStatus", 0, true, new { @class = "form-check-input"})
+                            @Html.Label("Unprocessed", new { @class = "form-check-label" })
+                        </div>
+                        <div class="form-check form-check-inline">
+                            @Html.RadioButton("rbStatus", 1, new { @class = "form-check-input" })
+                            @Html.Label("Processed", new { @class = "form-check-label" })
+                        </div>
+                        <div class="form-check form-check-inline mr-4">
+                            @Html.RadioButton("rbStatus", 2, new { @class = "form-check-input" })
+                            @Html.Label("Canceled", new { @class = "form-check-label" })
+                        </div>
+                        <div class="form-check form-check-inline ml-5">
+                            <a class="btn btn-sm btn-default" onclick="Refresh()" title="Refresh Data">
+                                <i class="fas fa-search"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="partialView">
+
+</div>
+
+<div class="row">
+    <div class="col-sm-1">
+        @*@if (true)
+        {
+            <button type="button" onclick="Process()" class="btn btn-outline-info col-sm-12 form-control-sm" id="btnProcess">Process</button>
+        }*@
+        <button type="button" onclick="Process(1)" data-toggle="tooltip" data-placement="top" title="Process Journal Receive" class="btn btn-outline-info col-sm-12 form-control-sm" id="btnProcess">Process</button>
+        <button type="button" onclick="Process(2)" data-toggle="tooltip" data-placement="top" title="Cancel Receive" class="btn btn-outline-info col-sm-12 form-control-sm" id="btnCancel">Cancel</button>
+    </div>
+
+    <div class="col-sm-11 col-md-11 col-11 text-right">
+        <p>
+            @{
+                if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                {
+                    <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input Receive" onclick="LoadCreateNewForm()">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input Receive" onclick="NoAccess()">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                }
+
+                if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                {
+                    <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Receive" onclick="LoadEditForm()">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Receive" onclick="NoAccess()" disabled="disabled">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+
+                if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                {
+                    <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Receive" class="btn btn-sm btn-danger" href="#">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                }
+                else
+                {
+                    <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Receive" class="btn btn-sm btn-danger" href="#">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                }
+            }
+        </p>
+
+    </div>
+</div>
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>Payment No.</th>
+                <th>Reff No.</th>
+                <th>Type</th>
+                <th>Payment To</th>
+                <th>Pay Date</th>
+                <th>Pay Method</th>
+                <th>Cust./Supp.</th>
+                <th>Bank</th>
+                <th>Cheque No.</th>
+                <th>Cheque Date</th>
+                <th>CCY</th>
+                <th>Account</th>
+                <th>Total Paid Amount</th>
+                <th>Best Paid Amount</th>
+                <th>Comment</th>
+                <th>Voucher</th>
+                <th>Flag</th>
+                <th>PPH 23</th>
+                <th>PPH 23 %</th>
+                <th>PPH 23 Account</th>
+                <th>Operator ID</th>
+                <th>Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+
+    <script type="text/javascript">
+        var HOSStatus = $("#HOStatus").val();
+        var result = $("#result").val();
+        var table = null;
+        var rowIndex = null;
+
+        function format(d, rowindex) {
+
+            return '<div class="table-responsive table-responsive-sm p-2 bg-white border" style="width:50%">' +
+                        '<table id="' + rowindex.toString() + '" class="table table-bordered" name="tableDetail" style="width:100%">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Type</th>' +
+                                    '<th>Invoice Number</th>' +
+                                    '<th>Account</th>' +
+                                    '<th>Invoice Amount</th>' +
+                                    '<th>Paid Amount</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                        '</table>'+
+                    '</div>';
+        }
+
+        $(document).ready(function () {
+            
+
+            ShowBtnProcess();
+            $(".select2DDList").select2();
+            flatpickr("#txtFromDate, #txtToDate", {
+                dateFormat: "d/M/Y",
+                disableMobile: true,
+                static: true,
+            });
+
+            if ($('#chkTransDate').is(':checked')) {
+                table = LoadData(1, 0);
+            } else {
+                table = LoadData(0, 0);
+            }
+
+            $('#tableData tbody').on('click', 'td.details-control', function () {
+                var selRow = table.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+                //GetRowChild($("#cboBranchCode").val(), selRow[0]["SCode"], selRow[0]["Voucher"], rowIndex);
+
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(format(row.data(), rowIndex)).show();
+                    LoadDataDetail(selRow[0]["SerialNo"], rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+
+            $("#chkTransDate").change(function () {
+                if ($('#chkTransDate').is(':checked')) {
+                    $('#txtFromDate').prop('disabled', false);
+                    $('#txtToDate').prop('disabled', false);
+                } else {
+                    $('#txtFromDate').prop('disabled', true);
+                    $('#txtToDate').prop('disabled', true);
+                }
+            });
+
+            if ($("#result").val() != "") {
+                alert($("#result").val());
+                $("#result").val('');
+                //modalErrorMessage();
+            }
+        });
+
+        function ShowBtnProcess() {
+            if ($('input[name="rbStatus"]:checked').val() == 2) {
+                $("#btnProcess").hide();
+                $("#btnCancel").hide();
+            } else if ($('input[name="rbStatus"]:checked').val() == 0) {
+                $("#btnProcess").show();
+                $("#btnCancel").hide();
+            } else {
+                $("#btnProcess").hide();
+                $("#btnCancel").show();
+            }
+        }
+
+        $("#txtToDate").change(function () {
+            var dtpTo = new Date($("#txtToDate").val());
+            var dtpFrom = new Date($("#txtFromDate").val());
+            if (dtpTo < dtpFrom) {
+                alert('From Date cannot less then To');
+                $("#txtToDate").val($("#txtFromDate").val());
+                return;
+            }
+        });
+
+        $("#txtFromDate").change(function () {
+            if ($("#txtToDate").val() != '') {
+                var dtpTo = new Date($("#txtToDate").val());
+                var dtpFrom = new Date($("#txtFromDate").val());
+                if (dtpTo < dtpFrom) {
+                    alert('From Date cannot greather then To');
+                    $("#txtToDate").val($("#txtFromDate").val());
+                    return;
+                }
+            }
+        });
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow.length > 0) {
+                var SerialNo = selRow[0]["SerialNo"];
+
+                window.location = '@Url.Action("Edit", "Receive", new { Area = "Sales" })' + "?serialNo=" + SerialNo;
+                @*window.location = '@Url.Action("EditAP", "ProcessARAP", new { Area = "Sales" })' + "?rpP=" + invNo;*@
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var errCount = 0;
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var dataSerialNo = '';
+            //var includePosted = false;
+
+            $.each(selRow, function (index, row) {
+                //if (row["ProcessInv"]) {
+                //    alert('some data has been processed, delete Failed');
+                //    errCount++;
+                //    return false;
+                //}
+                dataSerialNo += row["SerialNo"] +'|';
+                dataCollection += '[' + row["SerialNo"] + ']' + "\n";
+            })
+
+            if (errCount == 0) {
+                var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+                if (answer) {
+                    if (dataCollection.length > 0) {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Delete", "Receive", new { Area = "Sales" })',
+                            data: { "receiveCollection": dataSerialNo },
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                switch (respond) {
+                                    case "NoAccess":
+                                        window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                        break;
+                                    case "Success":
+                                        alert(respond);
+                                        Refresh();
+                                        @*window.location.href = '@Url.Action("index", "Receive", new { Area = "Sales" })'*@
+                                        break;
+                                    default:
+                                        alert(respond);
+                                        Refresh();
+                                        @*window.location.href = '@Url.Action("index", "Receive", new { Area = "Sales" })'*@
+                                        break;
+                                }
+
+                            },
+                            error: function (respond, xhr, msg) {
+                                alert(msg);
+                            }
+                        })
+                        }
+                }
+                else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+
+
+        }
+
+        function LoadData(filterDate, status) {
+            return $('#tableData').DataTable
+         ({
+             destroy: true,
+             "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "110px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [10]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [11]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [12]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [13]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [14]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [15]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [16]
+                }
+             ],
+             "select": {
+                 "style": 'os'
+             },
+             "language":
+             {
+                 "search": "",
+                 "searchPlaceholder": "Search...",
+                 "emptyTable": "No record found.",
+                 "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+             },
+             "processing": "true",
+             "order": [[2, "asc"]],
+             "serverSide": "true",
+             "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+             "pageLength": 10,
+             "ajax":
+             {
+                 "url": '@Url.Action("GetData", "Receive", new { Area = "Sales" })',
+                 "data": {
+                     'serialNo': $('#txtSerialNo').val(),
+                     'reffNo': $('#txtReffNo').val(),
+                     'type': $('#cboType').val(),
+                     'dateFrom': $('#txtFromDate').val(),
+                     'dateTo': $('#txtToDate').val(),
+                     'chkByDate': filterDate,
+                     'cust': $('#cboCustomer').val(),
+                     'flag': $('input[name="rbStatus"]:checked').val(),
+                 },
+                 "type": "POST",
+                 "dataType": "JSON"
+             },
+             "columns": [
+                 {
+                     "className": 'details-control',
+                     "data": null
+                 },
+                 {
+                     "data": null, "name": "chkProcess",
+                     "render": function (data, type, row) {
+                         if (type == 'display') {
+                             return '<input type="checkbox" class="editor-chkprocess" id="chkProcess" name="chkProcess">';
+                         }
+                         return data;
+                     },
+                 },
+                 { "data": "SerialNo", "name": "SerialNo" },
+                 { "data": "ReffNo", "name": "ReffNo" },
+                 { "data": "PaymentType", "name": "PaymentType" },
+                 { "data": "PaymentTo", "name": "PaymentTo" },
+                 {
+                     "data": "PayDate", "name": "PayDate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.PayDate).format('DD/MMM/YYYY');
+                     }
+                 },
+                 { "data": "PaymentMethod", "name": "PaymentMethod" },
+                 { "data": "Customer.CUSTCode", "name": "Customer.CUSTCode" },
+                 { "data": "Bank.BankCode", "name": "Bank.BankCode" },
+                 { "data": "ChequeNo", "name": "ChequeNo" },
+                 {
+                     "data": "ChequeDate", "name": "ChequeDate",
+                     "render": function (data, type, row, meta) {
+                         if (moment(row.ChequeDate).format('DD/MMM/YYYY') == '01/Jan/0001') {
+                             return '';
+                         } else {
+                             return moment(row.ChequeDate).format('DD/MMM/YYYY');
+                         }
+                     }
+                 },
+                 //{
+                 //    "data": "ProcessInv", "name": "ProcessInv",
+                 //    "render": function (data, type, row) {
+                 //        if (type == 'display') {
+                 //            return '<input type="checkbox" disabled class="editor-processinv">';
+                 //        }
+                 //        return data;
+                 //    }
+                 //},
+                 { "data": "Ccy.CurrencyCode", "name": "Ccy.CurrencyCode" },
+                 { "data": "Account.Account", "name": "Account.Account" },
+                 { "data": "TotalAmount", "name": "TotalAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "BaseAmount", "name": "BaseAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "Comment", "name": "Comment" },
+                 { "data": "Voucher", "name": "Voucher" },
+                 { "data": "Flag", "name": "Flag" },
+                 { "data": "PPh23", "name": "PPh23" },
+                 { "data": "PPh23Percent", "name": "PPh23Percent", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                 { "data": "PPh23Account.Account", "name": "PPh23Account.Account" },
+                 { "data": "OperatorID", "name": "OperatorID" },
+                 {
+                     "data": "LastUpdate", "name": "LastUpdate",
+                     "render": function (data, type, row, meta) {
+                         return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                     }
+                 }
+             ]//,
+             //"rowCallback": function (row, data) {
+             //    // Set the checked state of the checkbox in the table
+             //    $('input.editor-processinv', row).prop('checked', data.ProcessInv == 1);
+             //}
+         });
+        }
+
+        function LoadDataDetail(serialNo, rowIndexPar) {
+            return $("#" + rowIndexPar.toString() + "").DataTable
+        ({
+            destroy: true,
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [0]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [4]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                "search": "",
+                "searchPlaceholder": "Search...",
+                "emptyTable": "No record found.",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[0, "asc"]],
+            "serverSide": "true",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            "ajax":
+            {
+                "url": '@Url.Action("GetDataDetail", "Receive", new { Area = "Sales" })',
+                "data": { 'serialNo': serialNo},
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "columns": [
+                { "data": "Type", "name": "Type" },
+                { "data": "SerialNo", "name": "SerialNo" },
+                { "data": "Acc.Account", "name": "Acc.Account" },
+                { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "AlloAmount", "name": "AlloAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+            ]
+        });
+        }
+
+        function Refresh() {
+            if ($('#chkTransDate').is(':checked')) {
+                table = LoadData(1, 0);
+            } else {
+                table = LoadData(0, 0);
+            }
+
+            ShowBtnProcess();
+        }
+
+        //function modalProcess() {
+        //    $('#loadingModal').modal({ backdrop: 'static', keyboard: false })
+        //    $('#loadingModal').modal('show');
+        //    setTimeout(function () {
+        //        $('#loadingModal').modal('hide');
+        //    });
+        //}
+
+        //function Process() {
+            @*var data = table.rows(function (idx, data, node) {
+                // Get all the checkboxes in the row
+                var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                // Keep the rows with checked checkboxes
+                return checkedTargets(cells).length;
+            }).data();
+
+            var dataSerialNo = "";
+            $.each(data, function (index, rowId) {
+                dataSerialNo += rowId["SerialNo"] + ',';
+            })
+
+            function checkedTargets(checkboxes) {
+                return checkboxes.filter(function (index) {
+                    return $(checkboxes[index]).prop('checked');
+                });
+            }
+            modalProcess();
+
+            var url = '@Url.Action("Index", "Receive", new { Area = "Sales" })';
+            var form = $('<form action="' + url + '" method="POST">');
+            form.append('<input type="hidden" name="serialNoList" value="' + dataSerialNo + '" />');
+            form.append('<input type="hidden" name="init" value="' + 1 + '" />');
+            form.append('</form>');
+            $('body').append(form);
+            form.submit();*@
+
+
+        //}
+
+        function Process(init) {
+            var errCount = 0;
+            var strMsgInit = "";
+            if (init == 1) {
+                strMsgInit = "Process";
+            } else {
+                strMsgInit = "Cancel";
+            }
+
+            var form = this;
+            //var selRow = table.rows('.selected').data();
+            var selRow = table.rows(function (idx, data, node) {
+                // Get all the checkboxes in the row
+                var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                // Keep the rows with checked checkboxes
+                return checkedTargets(cells).length;
+            }).data();
+
+            function checkedTargets(checkboxes) {
+                return checkboxes.filter(function (index) {
+                    return $(checkboxes[index]).prop('checked');
+                });
+            }
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to " + strMsgInit);
+                return false;
+            }
+
+            var dataCollection = '';
+            var dataSerialNo = '';
+            //var includePosted = false;
+
+            $.each(selRow, function (index, row) {
+                //if (row["ProcessInv"]) {
+                //    alert('some data has been processed, delete Failed');
+                //    errCount++;
+                //    return false;
+                //}
+                dataSerialNo += row["SerialNo"] +',';
+                dataCollection += '[' + row["SerialNo"] + ']' + "\n";
+            })
+
+            if (errCount == 0) {
+
+                var answer = confirm("You are about to " + strMsgInit + " data:\n" + dataCollection + "\nAre you sure want to " + strMsgInit + " the data ?");
+                
+                if (answer) {
+                    
+                    if (dataCollection.length > 0) {
+                        modalProcess();
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("Process", "Receive", new { Area = "Sales" })',
+                            data: { "serialNoList": dataSerialNo,"init": init},
+                            dataType: 'JSON',
+                            success: function (respond) {
+                                $('#loadingModal').modal('hide');
+                                switch (respond) {
+                                    case "NoAccess":
+                                        window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                        break;
+                                    case "Success":
+                                        alert(respond);
+                                        Refresh();
+                                        @*window.location.href = '@Url.Action("index", "Receive", new { Area = "Sales" })'*@
+                                        break;
+                                    default:
+                                        alert(respond);
+                                        Refresh();
+                                        @*window.location.href = '@Url.Action("index", "Receive", new { Area = "Sales" })'*@
+                                        break;
+                                }
+
+                            },
+                            error: function (respond, xhr, msg) {
+                                $('#loadingModal').modal('hide');
+                                alert(msg);
+                            }
+                        })
+                    }
+                }
+                else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+
+
+        }
+
+        function Cancel() {
+            var data = table.rows(function (idx, data, node) {
+                // Get all the checkboxes in the row
+                var cells = $(node).find("input[type='checkbox'][id='chkProcess']");
+                // Keep the rows with checked checkboxes
+                return checkedTargets(cells).length;
+            }).data();
+
+            var dataSerialNo = "";
+            $.each(data, function (index, rowId) {
+                dataSerialNo += rowId["SerialNo"] + ',';
+            })
+
+            function checkedTargets(checkboxes) {
+                return checkboxes.filter(function (index) {
+                    return $(checkboxes[index]).prop('checked');
+                });
+            }
+            modalProcess();
+
+            var url = '@Url.Action("Index", "Receive", new { Area = "Sales" })';
+            var form = $('<form action="' + url + '" method="POST">');
+            form.append('<input type="hidden" name="serialNoList" value="' + dataSerialNo + '" />');
+            form.append('<input type="hidden" name="init" value="' + 2 + '" />');
+            form.append('</form>');
+            $('body').append(form);
+            form.submit();
+        }
+
+        function LoadCreateNewForm() {
+            document.location = '@Url.Action("Create","Receive", new { Area = "Sales" })';
+        }
+    </script>
+}

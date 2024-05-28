@@ -1,0 +1,291 @@
+﻿@model IDS.Sales.PayableTax
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+                    @Html.Hidden("InvNo", "");
+                    @Html.Hidden("defPeriod", "");
+                    @Html.Hidden("defCust", "");
+                    @Html.Hidden("defTax", "");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+                    @Html.EditorFor(model => model.InvoiceNumber, new { htmlAttributes = new { @class = "form-control form-control-sm", @style = "display:none;" } })
+                    @Html.EditorFor(model => model.SerialNo, new { htmlAttributes = new { @class = "form-control form-control-sm", @style = "display:none;" } })
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.NoBuktiPotong, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.NoBuktiPotong, new { htmlAttributes = new { @class = "form-control form-control-sm",placeholder = "No Bukti Potong" } })
+                            @Html.ValidationMessageFor(model => model.NoBuktiPotong, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.TaxObjectID.JPID, "Jenis Penghasilan", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.TaxObjectID.JPID, (SelectList)ViewData["SelectListTaxObject"],"", new { @id = "cboTaxObject", @class = "form-control select2DDList", @style = "width:100%;" })
+                            @Html.ValidationMessageFor(model => model.TaxObjectID.JPID, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.KomoditiID, "Komoditi", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.KomoditiID, (SelectList)ViewData["SelectListKomoditi"], "", new { @id = "cboKomoditi", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.KomoditiID, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.TextAreaFor(model => model.Description, new { @class = "form-control form-control-sm", @maxlength = 100, @rows = "2", @style = "resize:none" })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.TaxRate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.TaxRate, new { htmlAttributes = new { @class = "form-control form-control-sm", placeholder = "Rate" } })
+                            @Html.ValidationMessageFor(model => model.TaxRate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Amount, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", placeholder = "DPP" } })
+                            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Tarif, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Tarif, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", placeholder = "Tarif" } })
+                            @Html.ValidationMessageFor(model => model.Tarif, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.TarifNonNPWP, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.TarifNonNPWP, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", placeholder = "Tarif Non NPWP" } })
+                            @Html.ValidationMessageFor(model => model.TarifNonNPWP, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.TanggalSetor, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.TanggalSetor, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Tanggal Setor" } })
+                            @Html.ValidationMessageFor(model => model.TanggalSetor, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.TanggalLapor, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.TanggalLapor, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", placeholder = "Tanggal Lapor" } })
+                            @Html.ValidationMessageFor(model => model.TanggalLapor, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>*@
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $(".select2DDList").select2();
+        //alert($("#InvoiceNumber").val());
+        flatpickr('#TanggalSetor', {
+            shorthand: true,
+            disableMobile: "true",
+            dateFormat: "d/M/Y",
+            defaultDate: ["today"],
+            disableMobile: "true",
+        });
+
+        flatpickr('#TanggalLapor', {
+            shorthand: true,
+            disableMobile: "true",
+            dateFormat: "d/M/Y",
+            defaultDate: ["today"],
+            disableMobile: "true",
+        });
+
+        $("#cboTaxObject").select2({
+            dropdownParent: $("#CreateEditForm")
+        });
+
+        $("#btnSave").click(function () {
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Invoice No : " + $("#InvNo").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+            if (answer) {
+                if (!$("form#formCreateEdit").valid()) {
+                    return false;
+                }
+
+                if ($("#FormAction").val() == 1) {
+                    @*$("#cboKomoditi").prop('disabled', 'false');
+                    $("#TaxRate").prop('disabled', 'false');
+                    $("#Tarif").prop('disabled', 'false');
+                    $("#TarifNonNPWP").prop('disabled', 'false');
+                    $("#CreateEditForm").modal('show');
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "PayableTax", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        },
+                        error: function (aa, bb, cc) {
+                            alert(aa);
+                            alert(bb);
+                        }
+                    });*@
+                }
+                else {
+                    $("#cboKomoditi").prop('disabled', 'false');
+                    $("#TaxRate").prop('disabled', 'false');
+                    $("#Tarif").prop('disabled', 'false');
+                    $("#TarifNonNPWP").prop('disabled', 'false');
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "PayableTax", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                    $("#cboKomoditi").prop('disabled', 'true');
+                    $("#TaxRate").prop('disabled', 'true');
+                    $("#Tarif").prop('disabled', 'true');
+                    $("#TarifNonNPWP").prop('disabled', 'true');
+                }
+            }
+            else {
+                return false;
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("index", "PayableTax", new { Area = "Sales" })',
+                    success: function () {
+                        $("#PeriodIndex").val($("#defPeriod").val());
+                        $("#cboCustSupp").val($("#defCust").val());
+                        $("#cboTaxType").val($("#defTax").val());
+
+                        LoadData($("#defCust").val(), $("#defTax").val(), $("#defPeriod").val());
+                    },
+                    error: function (status) {
+                        alert(status);
+                    }
+                });
+            }
+        }),
+
+        //$("#btnAddNew").click(function () {
+        //    if (!$('#Period, #cboCurrency, #cboBranch,#BegBal').val() == "") {
+        //        var answer = confirm("Are you sure want to clear this form ?");
+
+        //        if (answer) {
+        //            $("form#formCreateEdit").trigger("reset");
+        //            $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+        //            //$('#Period').prop('readonly', false);
+        //            $("#FormAction").val("1");
+        //            $("#FormSave").val("1");
+        //            if (HOSStatus == 0) {
+        //                $("#cboBranch").prop('disabled', true);
+        //                $("#cboBranch").val(cboBranch);
+        //            } else {
+        //                $("#cboBranch").prop('disabled', false);
+        //            }
+        //            $("#cboCOA").prop('disabled', false);
+        //            $("#cboCurrency").prop('disabled', false);
+        //            $("#Period").removeAttr('disabled');
+        //        }
+        //        else {
+        //            e.preventDefault();
+        //        }
+        //    }
+        //    else {
+        //        e.preventDefault();
+        //    }
+        //}),
+
+
+        @*$("#cboCurrency").change(function () {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: $(this).val() },
+                success: function (respond) {
+                    $('#cboCOA').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboCOA').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        }),*@
+
+        $('#Amount').keypress(function (event) {
+            return isNumber(event, this)
+        });
+
+        //$('#TL').keypress(function (event) {
+        //    return maxNumber(event, this)
+        //});
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+    });
+
+</script>

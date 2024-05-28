@@ -1,0 +1,268 @@
+﻿html { 
+    /*background: url(http://cdn.magdeleine.co/wp-content/uploads/2014/05/3jPYgeVCTWCMqjtb7Dqi_IMG_8251-1400x933.jpg) no-repeat center center fixed;*/ 
+    /*background: rgb(255,208,125);
+    background: linear-gradient(90deg, rgba(255,208,125,1) 0%, rgba(180,180,255,1) 50%, rgba(0,212,255,1) 100%);*/
+    /*background-color: #FFF;
+    background: transparent url('../Images/Default/login_bg.jpg') top left no-repeat;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    overflow: hidden;*/
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+img{
+    display: block;
+    margin: auto;
+    width: 100%;
+    height: auto;
+}
+
+#test {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: #FFF;
+    background: transparent url('../Images/Default/login_bg.png') top left;
+    background-size: cover;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+    /*-webkit-filter: blur(5px);
+    -moz-filter: blur(5px);
+    -o-filter: blur(5px);
+    -ms-filter: blur(5px);
+    filter: blur(5px);*/
+
+    -webkit-backdrop-filter: blur(4px);
+    -o-backdrop-filter: blur(4px);
+    -moz-backdrop-filter: blur(4px);
+
+    backdrop-filter: blur(4px);
+   
+
+}
+
+#login-button{
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 30px;
+  margin: auto;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(3,3,3,.8);
+  background: radial-gradient(circle, #ffffff 0%, #000000 100% );
+  overflow: hidden;
+  opacity: 0.8;
+  box-shadow: 10px 10px 30px #000;
+}
+
+/* Login container */
+#container{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #2e4992, #001349);
+  box-shadow: 0px 0px 10px 0px #000;
+  display: none;
+  font-family: Arial, Verdana, Tahoma;
+}
+
+.close-btn{
+  position: absolute;
+  cursor: pointer;
+  font-family: 'Open Sans Condensed', sans-serif;
+  line-height: 18px;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  border-radius: 10px;
+  opacity: .2;
+  -webkit-transition: all 2s ease-in-out;
+  -moz-transition: all 2s ease-in-out;
+  -o-transition: all 2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+.close-btn:hover{
+  opacity: .5;
+}
+
+/* Heading */
+h1{
+  font-family: 'Open Sans Condensed', sans-serif;
+  position: relative;
+  margin-top: 0px;
+  text-align: left;
+  margin: 10px 20px;
+  font-size: 40px;
+  color: #FFF;
+  text-shadow: 1px 1px 5px #000;
+}
+
+/* Inputs */
+a, input{
+  font-family: 'Open Sans Condensed', sans-serif;
+  text-decoration: none;
+  position: relative;
+  width: 80%;
+  display: block;
+  margin: 9px auto;
+  font-size: 13px;
+  color: #AAA;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: #FFF;
+  -webkit-transition: all 2s ease-in-out;
+  -moz-transition: all 2s ease-in-out;
+  -o-transition: all 2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+a, input[type="submit"] {
+    color: #FFF;
+    background-color: #00ad1e;
+    border: 1px solid rgba(107,255,3,0.3);
+    width: 100px;
+    margin: 10px 20px 10px auto;
+}
+
+input:focus{
+  outline: none;
+  box-shadow: 3px 3px 10px #333;
+  background: #FFF;
+  color: #555;
+}
+
+/* Placeholders */
+::-webkit-input-placeholder { color: #AAA;  }
+:-moz-placeholder { color: #AAA;  }
+::-moz-placeholder { color: #AAA;  }
+:-ms-input-placeholder { color: #AAA;  }
+
+/* Link */
+a{
+  font-family: 'Open Sans Condensed', sans-serif;
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(107,255,3,0.3);
+}
+
+a:hover{
+  opacity: 0.7;
+}
+
+#remember-container{
+  position: relative;
+  margin: -5px 20px;
+}
+
+.checkbox {
+  position: relative;
+  cursor: pointer;
+	-webkit-appearance: none;
+	padding: 5px;
+	border-radius: 4px;
+  background: rgba(3,3,3,.2);
+	display: inline-block;
+  width: 16px;
+  height: 15px;
+}
+
+.checkbox:checked:active {
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+}
+
+.checkbox:checked {
+    background: rgba(3,3,3,.4);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.5);
+	color: #fff;
+}
+
+.checkbox:checked:after {
+	content: '\2714';
+	font-size: 10px;
+	position: absolute;
+	top: 0px;
+	left: 4px;
+	color: #fff;
+}
+
+#remember{
+  position: absolute;
+  font-size: 12px;
+  font-family: 'Hind', sans-serif;
+  color: #FFF !important;
+  top: 8px;
+  left: 20px;
+}
+
+#forgotten{
+  position: absolute;
+  font-size: 12px;
+  font-family: 'Hind', sans-serif;
+  color: #FFF !important;
+  right: 0px;
+  top: 8px;
+  cursor: pointer;
+  -webkit-transition: all 2s ease-in-out;
+  -moz-transition: all 2s ease-in-out;
+  -o-transition: all 2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+#forgotten:hover{
+  color: #FFF;
+}
+
+#forgotten-container{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  width: 260px;
+  height: 180px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #00630e, #43a955);
+  box-shadow: 1px 1px 50px #000;
+  display: none;
+}
+
+.forgot-btn{
+  background: #00ad1e;
+  color: #FFF;
+}
+
+.login_message {
+    position: relative;
+    margin: 10px 20px;
+    width: 80%;
+    color: #FF0000;
+    font-family: Arial, Verdana, Tahoma !important;
+    font-size: 15px;
+    text-wrap: normal;
+}

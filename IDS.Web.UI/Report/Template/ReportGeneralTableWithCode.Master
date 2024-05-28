@@ -1,0 +1,135 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="ReportGeneralTableWithCode.Master.cs" Inherits="IDS.Web.UI.Report.Template.ReportGeneralTableWithCode" %>
+
+<%@ Register Assembly="CrystalDecisions.Web, Version=13.0.4000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304"
+    Namespace="CrystalDecisions.Web" TagPrefix="CR" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=9,chrome=1" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="~/Images/favicon.ico">
+    <title>@ViewBag.Title - FISCUS Multifinance System</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <!-- Icons -->
+    <link rel="stylesheet" href="<%= ResolveClientUrl("~/Content/Font-Awesome/css/all.min.css") %>">
+    <link rel="stylesheet" href="<%= ResolveClientUrl("~/Content/ionicons.min.css") %>">
+    
+    <asp:ContentPlaceHolder ID="StyleSection" runat="server">        
+    </asp:ContentPlaceHolder>
+
+    <!-- Theme style -->
+    <link rel="stylesheet" href="<%= ResolveClientUrl("~/Content/bootstrap.min.css") %>" type="text/css" />
+    <link rel="stylesheet" href="<%= ResolveClientUrl("~/Content/AdminLTE/css/adminlte.min.css") %>" />   
+
+</head>
+<body class="hold-transition sidebar-mini text-sm">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav dropdown ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-toggle="dropdown" href="#">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <span class="dropdown-item dropdown-header bg-dark">User</span>
+
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i class="far fa-user mr-2"></i>User Profile
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+                        <a runat="server" class="dropdown-item" id="userSignout" onserverclick="userSignout_click">
+                            <i class="fa fa-sign-out"></i>Logout
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="index.html" class="brand-link">
+                <img src="<%= ResolveClientUrl("~/Content/AdminLTE/img/logo.png") %>" alt="Logo" class="brand-image" style="opacity: .8">
+                <span class="brand-text font-weight-light" style="color: black;">FISCUS</span>
+            </a>
+                
+            <div class="sidebar">
+                <div class="form-inline">
+                    <div class="input-group" data-widget="sidebar-search">
+                        <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-sidebar">
+                                <i class="fas fa-search fa-fw"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="mt-2">
+                    <p runat="server" id="rawMenu"></p>
+                </nav>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="content pt-2 pb-2">
+                <div class="container-fluid">
+                    <form id="form1" runat="server">
+                        <div>
+                            <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">        
+                            </asp:ContentPlaceHolder>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2021 <a href="http://intidatasolution.com">Intidata</a>.</strong>
+            All rights reserved.
+            <div class="float-right d-none d-sm-inline-block">
+                &nbsp;
+            </div>
+        </footer>
+    </div>
+
+    
+    <script type="text/javascript" src="<%= ResolveClientUrl("~/Scripts/jquery-3.6.0.min.js") %> "></script>
+    <script type="text/javascript" src="<%= ResolveClientUrl("~/Scripts/bootstrap.bundle.min.js") %>"></script>
+    <script src="<%= ResolveClientUrl("~/Content/AdminLTE/js/adminlte.js") %>"></script>
+    <!-- OPTIONAL SCRIPTS -->
+    <!-- AdminLTE for demo purposes -->
+    <script src="<%= ResolveClientUrl("~/Content/AdminLTE/js/demo.js") %>"></script>
+    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+    <script src="<%= ResolveClientUrl("~/Content/AdminLTE/js/pages/dashboard3.js") %>"></script>
+
+    <%--<script type="text/javascript" src="<%= ResolveClientUrl("~/Scripts/jquery.validate.min.js") %>"></script>
+    <script type="text/javascript" src="<%= ResolveClientUrl("~/Scripts/jquery.validate.unobtrusive.min.js") %>"></script>--%>
+    <%--<script type="text/javascript" src="<%= ResolveClientUrl("~/Scripts/jquery.unobtrusive-ajax.min.js") %>"></script>--%>
+    <script type="text/javascript" src="<%= ResolveClientUrl("~/Scripts/GeneralScript.js") %>"></script>
+
+
+    <asp:ContentPlaceHolder ID="ScriptSection" runat="server">        
+    </asp:ContentPlaceHolder>
+</body>
+</html>

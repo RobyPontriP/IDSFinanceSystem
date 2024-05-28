@@ -1,0 +1,274 @@
+﻿@model IDS.GLTable.Project
+
+@section Styles {
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.ProjectCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.ProjectCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 15, name = "ProjectCode", placeholder = "Project Code" } })
+                            @Html.ValidationMessageFor(model => model.ProjectCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Group, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Group, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 6, name = "Group", placeholder = "Group" } })
+                            @Html.ValidationMessageFor(model => model.Group, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.ProjectName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.ProjectName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, name = "ProjectName", placeholder = "Project Name" } })
+                            @Html.ValidationMessageFor(model => model.ProjectName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.BranchProject.BranchName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.BranchProject.BranchCode, (SelectList)ViewData["SelectListBranch"], "", new { @id = "cboBranch", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.BranchProject.BranchCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.BegDate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.BegDate, new { htmlAttributes = new { @class = "form-control form-control-sm datepicker bg-white" } })
+                            @Html.ValidationMessageFor(model => model.BegDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.EndDate, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @class = "form-control form-control-sm datepicker bg-white" } })
+                            @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Leader, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Leader, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, name = "Leader", placeholder = "Leader" } })
+                            @Html.ValidationMessageFor(model => model.Leader, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 500, name = "Description", placeholder = "Description" } })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+        //$.validator.addMethod('date',
+        //    function (value, element) {
+        //        return true;
+        //    });
+
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var dateNow = new Date().getDate() + '-' + months[new Date().getMonth()] + '-' + new Date().getFullYear();
+
+        flatpickr("#BegDate", {
+            //dateFormat: "Y-m-d",
+            dateFormat: "d/M/Y",
+            disableMobile: "true",
+            static: true,
+        });
+
+        flatpickr("#EndDate", {
+            //dateFormat: "Y-m-d",
+            dateFormat: "d/M/Y",
+            disableMobile: "true",
+            static: true,
+        });
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var CompareBegDate = new Date($("#BegDate").val().split("/").reverse().join("/"));
+            var CompareEndDate = new Date($("#EndDate").val().split("/").reverse().join("/"));
+
+            if (CompareBegDate > CompareEndDate) {
+                alert('Begining date cannot greater than End Date')
+                $("#EndDate").val($("#BegDate").val());
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Project Code : " + $("#ProjectCode").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "Project", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        },
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "Project", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            } else {
+                return false;
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "Project", new { Area = "GLTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#ProjectCode, #Group, #ProjectName, #cboBranch').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#ProjectCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    $("#EndDate").val(dateNow);
+                    $("#BegDate").val(dateNow);
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+
+        $('input.inputnumber').keyup(function (event) {
+            if (event.which >= 37 && event.which <= 40) return;
+            $(this).val(function (index, value) {
+                return value
+                  // Keep only digits and decimal points:
+                  .replace(/[^\d.]/g, "")
+                  // Remove duplicated decimal point, if one exists:
+                  .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                  // Keep only two digits past the decimal point:
+                  .replace(/\.(\d{2})\d+/, '.$1')
+                  // Add thousands separators:
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            });
+        });
+
+        $('#BegDate').change(function () {
+            var CompareBegDate = new Date($("#BegDate").val().split("/").reverse().join("/"));
+            var CompareEndDate = new Date($("#EndDate").val().split("/").reverse().join("/"));
+
+
+
+            if (CompareBegDate > CompareEndDate) {
+                alert('Begining date cannot greater than End Date')
+                $("#BegDate").val($("#EndDate").val());
+            }
+
+        });
+
+        $('#EndDate').change(function () {
+            var CompareBegDate = new Date($("#BegDate").val().split("/").reverse().join("/"));
+            var CompareEndDate = new Date($("#EndDate").val().split("/").reverse().join("/"));
+
+            if (CompareBegDate > CompareEndDate) {
+                alert('End Date date cannot less than Beginning Date')
+                $("#EndDate").val($("#BegDate").val());
+            }
+
+        });
+
+    });
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

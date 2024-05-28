@@ -1,0 +1,666 @@
+﻿@model IEnumerable<IDS.GLTransaction.CashBankH>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Cash/Bank Transaction";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/Responsive-2.2.9/css/responsive.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+
+    <style type="text/css">
+    td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_open.png")") no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url("@Url.Content("~/Images/Default/details_close.png")") no-repeat center center;
+    }
+
+    .fontSizeCustom {
+        width: 20px;
+    }
+    </style>
+}
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-1 col-sm-3">
+        <label for="PeriodIndex" class="col-sm-2 col-form-label col-form-label-sm">Period</label>
+        <div class="col-sm-9">
+            @Html.TextBox("Period", "", new { @id = "PeriodIndex", @class = "form-control form-control-sm bg-white col-sm-6" })
+        </div>
+    </div>
+
+    <div class="row mb-1 col-sm-2">
+        <button type="button" onclick="LoadRptCB()" data-toggle="tooltip" data-placement="top" title="To View Cash/Bank Report" class="btn btn-outline-info form-control-sm col-sm-8" id="btnCBRpt">View Report</button>
+    </div>
+
+    <div class="row mb-1 justify-content-between col-sm-7">
+        <div class="col-sm-12 col-md-12 col-12 text-right">
+            <div class="text-right">
+                <p>
+                    @{
+
+                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input Sales Invoice (CASI)" onclick="LoadCreateNewForm()">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input Sales Invoice (CASI)" onclick="NoAccess()">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                        <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Approval List" onclick="LoadApprovalList()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                        if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                        {
+                            <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Sales Invoice (CASI)" onclick="LoadEditForm()">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Sales Invoice (CASI)" onclick="NoAccess()" disabled="disabled">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        }
+
+                        if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                        {
+                            <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Sales Invoice (CASI)" class="btn btn-sm btn-danger" href="#">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Sales Invoice (CASI)" class="btn btn-sm btn-danger" href="#">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        }
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Cash/Bank Number</th>
+                <th>Cash/Bank Date</th>
+                <th>Supplier Name</th>
+                <th>Description</th>
+                <th>Created By</th>
+                <th>Approval 1</th>
+                <th>Approval 2</th>
+                <th>Approval 3</th>
+                <th>Processed By</th>
+                <th>Amount</th>
+                <th>Transfer</th>
+                <th>Cash</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralScript.js"></script>
+
+    <script type="text/javascript">
+        var rowIndex = null;
+        var table = null;
+
+        function format(d, rowindex) {
+
+            return '<div class="table-responsive table-responsive-sm p-2 bg-white border" style="width:80%">' +
+                        '<table id="' + rowindex.toString() + '" class="table table-bordered" name="tableDetail" style="width:100%">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th>Counter</th>' +
+                                    '<th>Sub Counter</th>' +
+                                    '<th>Type</th>' +
+                                    '<th>Description</th>' +
+                                    '<th>Amount</th>' +
+                                '</tr>' +
+                            '</thead>' +
+                        '</table>' +
+                    '</div>';
+        }
+
+        Refresh();
+
+        $(document).ready(function () {
+            flatpickr("#PeriodIndex", {
+                shorthand: true,
+                dateFormat: "M-Y",
+                defaultDate: ["today"],
+                plugins: [new monthSelectPlugin({
+                    shorthand: true, //defaults to false
+                    dateFormat: "M Y"
+                })],
+            });
+
+            $('#PeriodIndex').change(function () {
+                Refresh();
+            });
+
+            Refresh();
+
+            $('#tableData tbody').on('click', 'td.details-control', function () {
+                var selRow = table.rows(this).data();
+
+                rowIndex = $(this).closest("tr").index();
+
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    row.child(format(row.data(), rowIndex)).show();
+                    LoadDataDetail(selRow[0]["CashBankNumber"], rowIndex);
+                    tr.addClass('shown');
+                }
+            });
+        });
+
+        //function Refresh() {
+        //    table = LoadData();
+        //}
+
+        function Refresh() {
+            //modalProcess();
+            //$('#loadingModal').modal('show');
+            table = LoadDTH(httpGet('POST', '@Url.Action("GetDataApprovalList", "CashBank", new { Area = "GLTransaction" })', JSON.stringify({ 'period': $('#PeriodIndex').val() })));
+            //$('#loadingModal').modal('hide');
+        }
+
+        //function LoadDTH(dataJS) {
+        //    return $('#tableData').DataTable
+        // ({
+        //     //destroy: true,
+        //     "bDestroy": true,
+        //     "columnDefs": [
+        //        {
+        //            "className": 'details-control',
+        //            "targets": 'no-sort',
+        //            "orderable": false,
+        //        },
+        //        {
+        //            "data": null,
+        //            "width": "20px",
+        //            "defaultContent": '',
+        //            "orderable": false,
+        //            "targets": [0]
+        //        },
+        //        {
+        //            "width": "110px",
+        //            "orderable": true,
+        //            "targets": [1]
+        //        },
+        //        {
+        //            "width": "70px",
+        //            "orderable": true,
+        //            "targets": [2]
+        //        },
+        //        {
+        //            "width": "80px",
+        //            "orderable": true,
+        //            "targets": [3]
+        //        },
+        //        {
+        //            "width": "20px",
+        //            "orderable": true,
+        //            "targets": [4]
+        //        },
+        //        {
+        //            "width": "70px",
+        //            "orderable": true,
+        //            "targets": [5]
+        //        },
+        //        {
+        //            "width": "70px",
+        //            "orderable": true,
+        //            "targets": [6]
+        //        },
+        //        {
+        //            "width": "120px",
+        //            "orderable": true,
+        //            "targets": [7]
+        //        },
+        //        {
+        //            "width": "70px",
+        //            "orderable": true,
+        //            "targets": [8]
+        //        },
+        //        {
+        //            "width": "120px",
+        //            "orderable": true,
+        //            "targets": [9]
+        //        }
+        //     ],
+        //     "select": {
+        //         "style": 'os'
+        //     },
+        //     "language":
+        //     {
+        //         "search": "",
+        //         "searchPlaceholder": "Search...",
+        //         "emptyTable": "No record found.",
+        //         "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+        //     },
+        //     "processing": "true",
+        //     "order": [[0, "asc"]],
+        //     //"serverSide": "false",
+        //     "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+        //     "pageLength": 10,
+        //     data: JSON.parse(dataJS),
+        //     "columns": [
+        //         {
+        //             "className": 'details-control',
+        //             "data": null
+        //         },
+        //         { "data": "CashBankNumber", "name": "CashBankNumber" },
+        //         {
+        //             "data": "CBDate", "name": "CBDate",
+        //             "render": function (data, type, row, meta) {
+        //                 return moment(row.CBDate).format('DD/MMM/YYYY');
+        //             }
+        //         },
+        //         { "data": "Branch.BranchCode", "name": "Branch.BranchCode" },
+        //         { "data": "Supplier.SupCode", "name": "Supplier.SupCode" },
+        //         { "data": "Ccy.CurrencyCode", "name": "Ccy.CurrencyCode" },
+        //         { "data": "Account.Account", "name": "Account.Account" },
+        //         { "data": "PaidAmount", "name": "PaidAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+        //         { "data": "OperatorID", "name": "OperatorID" },
+        //         {
+        //             "data": "LastUpdate", "name": "LastUpdate",
+        //             "render": function (data, type, row, meta) {
+        //                 return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+        //             }
+        //         }
+        //     ]
+        // });
+        //}
+
+        function LoadDTH(dataJS) {
+            return $('#tableData').DataTable({
+                "bDestroy": true,
+                data: JSON.parse(dataJS),
+                "columns": [
+                     {
+                        "className": 'details-control',
+                        "data": null
+                     },
+                     { "data": "CashBankNumber", "name": "CashBankNumber" },
+                     {
+                         "data": "CBDate", "name": "CBDate",
+                         "render": function (data, type, row, meta) {
+                             return moment(row.CBDate).format('DD/MMM/YYYY');
+                         }
+                     },
+                     { "data": "Supplier.SupName", "name": "Supplier.SupName" },
+                     { "data": "Description", "name": "Description" },
+                     { "data": "EntryUser", "name": "EntryUser" },
+                     { "data": "Approval1", "name": "Approval1" },
+                     { "data": "Approval2", "name": "Approval2" },
+                     { "data": "Approval3", "name": "Approval3" },
+                     { "data": "ProcessedBy", "name": "ProcessedBy" },
+                     { "data": "CBAmount", "name": "CBAmount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                     {
+                         "data": "Type", "name": "Type",
+                         "render": function (data, type, row) {
+                             if (type == 'display') {
+                                 return '<input type="checkbox" disabled class="editor-bank">';
+                             }
+                             return data;
+                         }
+                     },
+                     {
+                         "data": "Type", "name": "Type",
+                         "render": function (data, type, row) {
+                             if (type == 'display') {
+                                 return '<input type="checkbox" disabled class="editor-cash">';
+                             }
+                             return data;
+                         }
+                     }
+
+                ],
+                "rowCallback": function (row, data) {
+                    // Set the checked state of the checkbox in the table
+                    $('input.editor-bank', row).prop('checked', data.Type == 1);
+                    $('input.editor-cash', row).prop('checked', data.Type == 0);
+                },
+                "order": [[1, "asc"]],
+                "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "className": 'details-control',
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "targets": [0]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "280px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "className": "text-right",
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "70px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+            });
+        }
+
+        function LoadDataDetail(cbNo, rowIndexPar) {
+            return $("#" + rowIndexPar.toString() + "").DataTable
+        ({
+            destroy: true,
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [0]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "80px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    //"width": "300px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "150px",
+                    "orderable": true,
+                    "className": "text-right",
+                    "targets": [4]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                "search": "",
+                "searchPlaceholder": "Search...",
+                "emptyTable": "No record found.",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[0, "asc"]],
+            "serverSide": "true",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            "ajax":
+            {
+                "url": '@Url.Action("GetDataDetail", "CashBank", new { Area = "GLTransaction" })',
+                "data": { 'cbNo': cbNo },
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "columns": [
+                { "data": "Counter", "name": "Counter" },
+                { "data": "SubCounter", "name": "SubCounter" },
+                {
+                    "data": "Type", "name": "Type",
+                    "render": function (data, type, row) {
+                        if (row.Type == 1) {
+                            return 'Invoice';
+                        } else if (row.Type == 2) {
+                            return 'PPN';
+                        } else if (row.Type == 3) {
+                            return 'PPh21';
+                        } else if (row.Type == 4) {
+                            return 'PPh23';
+                        } else if (row.Type == 5) {
+                            return 'PPh 4 Ayat 2';
+                        } else if (row.Type == 6) {
+                            return 'Bank Charges';
+                        } else {
+                            return '';
+                        }
+
+                        //switch ((row.Type)) {
+                        //    case 1:
+                        //        return 'Invoice';
+                        //        break;
+                        //    case 2:
+                        //        // code block
+                        //        break;
+                        //    default:
+                        //        return '';
+                        //        // code block
+                        //}
+
+
+                    }
+                },
+                { "data": "Remark", "name": "Remark" },
+                { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+            ]
+        });
+        }
+
+        function LoadCreateNewForm() {
+            document.location = '@Url.Action("Create","CashBank", new { Area = "GLTransaction" })';
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow.length > 0) {
+                var cbNo = selRow[0]["CashBankNumber"];
+
+                window.location = '@Url.Action("Edit", "CashBank", new { Area = "GLTransaction" })' + "?cbNo=" + cbNo;
+                }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var dataCB = '';
+
+            //var includePosted = false;
+
+            $.each(selRow, function (index, row) {
+                //if (Boolean(row["PostedStatus"]) == true) {
+                //    includePosted = true;
+                //}InvoiceTotal
+                dataCB += row["CashBankNumber"] + ',';
+                dataCollection += '[' + row["CashBankNumber"] + '][' + row["Supplier"]["SupCode"] + ']' + "\n";
+            })
+
+            //if (includePosted) {
+            //    alert("One or more selected voucher are posted and can not be delete. Delete process canceled by system.");
+            //    return false;
+            //}
+
+            var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+            if (answer) {
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "CashBank", new { Area = "GLTransaction" })',
+                        data: { "cbList": dataCB },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    alert(respond);
+                                    Refresh();
+                                    break;
+                                default:
+                                    alert(respond);
+                                    Refresh();
+                                    break;
+                            }
+
+                        },
+                        error: function (respond, xhr, msg) {
+                            alert(msg);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+
+        }
+
+        function LoadRptInvoice() {
+            var tableC = $('#tableData').DataTable();
+
+            if (!tableC.data().count()) {
+                alert('Please choose data');
+                return;
+            }
+
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var invNoVal = selRow[0]["InvoiceNumber"];
+
+            var url = '@Url.Action("RedirectToAspx", "Invoice",new { invNo = "XXX" })';
+            url = url.replace("XXX", invNoVal);
+            window.location = url;
+        }
+
+        function LoadRptCB() {
+            var tableC = $('#tableData').DataTable();
+
+            if (!tableC.data().count()) {
+                alert('Please choose data');
+                return;
+            }
+
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var cbNoVal = selRow[0]["CashBankNumber"];
+            var amtVal = selRow[0]["CBAmount"];
+            //alert(selRow[0]["CBAmount"]);
+            @*var url = '@Url.Action("RedirectToRptCB", "CashBank",new { cbNo = cbNoVal,amt = "ZZZ" })';*@
+            @*var url = httpGet('POST', '@Url.Action("RedirectToRptCB", "CashBank", new { Area = "GLTransaction" })', JSON.stringify({ 'cbNo': cbNoVal, 'amt': amtVal }));*@
+            //url = url.replace("XXX", cbNoVal);
+            //url = url.replace("ZZZ", amtVal);
+            //window.location = url;
+            window.location = '@Url.Action("RedirectToRptCB", "CashBank", new { Area = "GLTransaction" })' + "?cbNo=" + cbNoVal + "&amt=" + amtVal;
+        }
+    </script>
+}
+
+
+
+

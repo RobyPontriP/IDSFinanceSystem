@@ -1,0 +1,243 @@
+﻿<link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+<link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+<link rel="stylesheet" type="text/css" href="~/Content/Select2/css/select2.min.css" />
+
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <section class="col-lg-12 connectedSortable">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="btnjf1" class="card-title">
+                            <i class="fas fa-user mr-1" style="color:#4cff00 !important;"></i>
+                            @ViewBag.Title
+                        </h3>
+                        <div class="card-tools">
+
+                            <ul class="nav nav-pills ml-auto" id="sortablex">
+                                <li class="nav-item mr-1">
+                                    <a class="btn btn-sm btn-primary" href="#" data-toggle="tab" onclick="MenuListNew()">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </li>
+                                <li class="nav-item mr-1">
+                                    <a class="btn btn-sm btn-info" data-toggle="tab" href="#" onclick="MenuListEdit()">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </li>
+                                <li class="nav-item mr-1">
+                                    <a onclick="MenuListDelete()" class="btn btn-sm btn-danger" data-toggle="tab" href="#">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </li>
+                                <li class="nav-item mr-1">
+                                    <a onclick="RefreshMenuList()" class="btn btn-sm btn-info" href="#">
+                                        <i class="fas fa-sync"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div><!-- /.card-header -->
+                    <div class="card-body">
+                        <div class="tab-content p-0">
+                            <div id="classgrid1" class="row mb-1">
+                                <div class="table-responsive table-responsive-sm p-2 bg-white border">
+                                    <table id="tblMenuMaster" class="table table-bordered table-hover w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>Menu Code</th>
+                                                <th>Menu Group</th>
+                                                <th>Form Name</th>
+                                                <th>Projaect Name</th>
+                                                <th>Akses</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.card-body -->
+                </div>
+            </section>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+
+<script src="~/Scripts/moment.min.js"></script>
+<script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+<script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+<script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+<script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+<script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        GetTDataWebMenuMaster();
+
+    })
+
+
+    function GetTDataWebMenuMaster() {
+        $.ajax({
+            url: '@Url.Action("RefreshMenuList", "MenuList", new { Area = "Maintenance" })',
+            type: 'POST',
+            data: JSON.stringify({ 'optional': 10 }),
+            dataType: 'json',
+            success: function (data) {
+                GetListUser(data);
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+    }
+
+    function RefreshMenuList() {
+      GetTDataWebMenuMaster();
+    }
+
+    function MenuListNew() {
+         MenuListNewCreateNewForm("New", "Save", "");
+
+    }
+
+    function MenuListEdit() {
+        MenuListNewCreateNewForm("Edit", "Save", "");
+    }
+
+    function MenuListDelete() {
+        MenuListNewCreateNewForm("Delete", "Delete","");
+    }
+
+    function GetListUser(lsData) {
+        $('#tblMenuMaster').DataTable({
+            "bDestroy": true,
+            data: lsData,
+            "columns": [
+                { "data": "MenuCode" },
+                { "data": "GroupCode" },
+                { "data": "FrmName" },
+                { "data": "ProjectName" },
+                { "data": "Akses" }
+            ],
+            "select": {
+                "style": 'single'
+            }
+        });
+    }
+
+    function MenuListNewCreateNewForm(judul,save,projectname) {
+        var b = '';
+        b += "<div class='modal fade' id='listmenuinsert' tabindex='-1' role='dialog' aria-labelledby='boxinsert' aria-hidden='true'>";
+        b += "   <div class='modal-dialog modal-dialog-centered' role='document'>";
+        b += "           <div class='modal-content card'>";
+        b += "              <div class='card-header'>";
+        b += "                  <div id='btnjf1' class='card-title modal-title'>";
+        b += "                      <table>";
+        b += "                          <tr>";
+        b += "                             <td><img src='@Url.Content("~/Content/AdminLTE/img/logo.png")' alt='AdminLTE Logo' class='brand-image img-circle elevation-3' style='width: 23%;height: 23%;'></td>";
+        b += "                             <td>";
+        b += "                                 <div id='txtcaption' style='font-weight: bold;'>"+judul+"</div>";
+        b += "                             </td>";
+        b += "                         </tr>";
+        b += "                     </table>";
+        b += "                 </div>";
+        b += "                <div class='card-tools'>";
+        b += "                     <ul class='nav nav-pills ml-auto'>";
+        b += "                         <li class='nav-item'>";
+        b += "                             <a class='nav-link' href='#' data-toggle='tab' data-dismiss='modal' id='menulistclose2'>";
+        b += "                                <i class='fas fa-times' aria-hidden='true' style='color:#aa0101 !important;'></i>";
+        b += "                            </a>";
+        b += "                         </li>";
+        b += "                     </ul>";
+        b += "                </div>";
+        b += "            </div>";
+        b += "           <div class='card-body modal-body'>";
+        b += "                <!-- Mulai-->";
+        b += "                <div class='row mb-2'>";
+        b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+        b += "                        <label for='txtcode' class='col-sm-4 col-form-label col-form-label-sm'>Code</label>";
+        b += "                        <div class='col-sm-8'>";
+        b += "                            <input type='text' class='form-control form-control-sm' id='txtcode' required>";
+        b += "                        </div>";
+        b += "                    </div>";
+
+        b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+        b += "                        <label for='txtweburl' class='col-sm-4 col-form-label col-form-label-sm'>Web URL</label>";
+        b += "                        <div class='col-sm-8'>";
+        b += "                            <input type='text' class='form-control form-control-sm' id='txtweburl' required>";
+        b += "                         </div>";
+        b += "                      </div>";
+
+        b += "                    <div class='row pb-0 col-sm-12 mb-1'>";
+        b += "                        <label for='cboprojectname' class='col-sm-4 col-form-label col-form-label-sm'>Project Name</label>";
+        b += "                        <div class='col-sm-8'>";
+        b += "                              <select name='cboprojectname' id='cboprojectname' class='form-control form-control-sm ncelek'></select>";
+        b += "                        </div>";
+        b += "                    </div>";
+        b += "";
+
+        b += "<div class='row'><div id='txtresult' class='text-center text-danger'></div></div>";
+        b += "                  </div>";
+        b += "                   <!-- selesai -->";
+        b += "               </div>";
+        b += "               <div class='modal-footer'>";
+        b += "                   <button type='button' class='btn btn-danger btn-sm' data-dismiss='modal' id='menulistclose1'>Close</button>";
+        b += "                   <button id='btnsaveswmenuu' type='button' class='btn btn-primary btn-sm'>"+save+"</button>";
+        b += "              </div>";
+        b += "         </div>";
+        b += "   </div>";
+        b += "</div>";
+        // return stringbuilder;
+        var myElement = document.getElementById("swmenuu");
+        if (!myElement) {
+            let div = document.createElement('div');
+            div.id = 'swmenuu';
+            document.body.appendChild(div);
+        }
+        $("#swmenuu").html(b);
+        $("#listmenuinsert").modal('show');
+
+        $.ajax({
+            url: '@Url.Action("GetMenuListForDataSource", "MenuList", new { Area = "Maintenance" })',
+            type: 'POST',
+            data: JSON.stringify({ 'optional': 10 }),
+            dataType: 'json',
+            success: function (data) {
+                $("#cboprojectname").empty();
+                $.each(data, function (i, item) {
+                    $("#cboprojectname").append('<option value = "' + item["Value"] + '">' + item["Text"] + '</option>');
+                });
+                $('#cboprojectname').val(projectname);
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+
+
+
+        $('#menulistclose1,#menulistclose2').click(function () {
+            $("#listmenuinsert").modal('hide');
+        });
+
+        $('#btnsaveswmenuu').click(function () {
+            switch (judul.toLowerCase()) {
+                case "new":
+                    console.log("New");
+                    break;
+                case "edit":
+                    console.log("edit");
+                    break;
+                case "delete":
+                    console.log("delete");
+                    break;
+            }
+        });
+    }
+
+</script>
+

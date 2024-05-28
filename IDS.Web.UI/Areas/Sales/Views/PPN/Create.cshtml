@@ -1,0 +1,190 @@
+﻿@model IDS.Sales.TaxNumber
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.SerialNo,"Tax No. From", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.SerialNo, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 19, placeholder = "Tax No. From", @id = "txtTaxNoFrom", onkeypress = "return isNumber(event)" } })
+                            @Html.ValidationMessageFor(model => model.SerialNo, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.Label("lblTaxNoTo","Tax No. To", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="input-group col-sm-9">
+                            @*<span class="input-group-text" id="basic-addon3">asdasd</span>
+                            @Html.Editor("txtTaxNoTo", new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 30, placeholder = "Tax No. To", @id = "txtTaxNoTo", aria_describeby = "basic-addon3" } })*@
+                            <span class="input-group-text text-sm form-control-sm" style="text-align:left;" id="spanTaxNoTo"></span>
+                            @*@Html.TextBox("txtTaxNoTo", 0, htmlAttributes: new { @class = "form-control form-control-sm col-sm-12", @id = "txtTaxNoTo", @maxlength = 19, aria_describeby = "spanTaxNoTo",onkeypress = "return isNumber(event)" })*@
+                            @Html.EditorFor(model => model.TaxNoTo, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 8, placeholder = "Tax No. To", @id = "txtTaxNoTo", aria_describeby = "spanTaxNoTo", onkeypress = "return isNumber(event)" } })
+                            
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#txtTaxNoFrom").mask('000-00.00000000');
+        //$("#txtTaxNoTo").mask('000-00.00000000');
+
+        $("#btnSave").click(function () {
+            if(!$("form#formCreateEdit").valid())
+            {
+                return false;
+            }
+
+            if ($("#txtTaxNoFrom").val() == '' || $("#txtTaxNoFrom").val() == null) {
+                alert('Please Input Tax No. From')
+                return false;
+            }
+
+            if ($("#txtTaxNoTo").val() == '' || $("#txtTaxNoTo").val() == null) {
+                alert('Please Input Tax No. To')
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Tax Number : " + $("#txtTaxNoFrom").val() + " ?");
+            }
+
+            var answer = confirm(confirmText);
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "PPN", new { Area = "Sales" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "Brand", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            $('#loadingModal').modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "Brand", new { Area = "GeneralTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#BrandID, #BrandName').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#BrandID').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+    });
+
+    $('#txtTaxNoFrom').keyup(function () {
+        //InputNumber(this);
+        $('#txtTaxNoTo').val($('#txtTaxNoFrom').val().substring(7));
+        $('#spanTaxNoTo').text($('#txtTaxNoFrom').val().substring(0, 7));
+    });
+
+    $('#txtTaxNoFrom').keyup(function () {
+        //InputNumber(this);
+        $('#txtTaxNoTo').val($('#txtTaxNoFrom').val().substring(7));
+        $('#spanTaxNoTo').text($('#txtTaxNoFrom').val().substring(0, 7));
+    });
+
+    $('#txtTaxNoTo').change(function () {
+        CheckTaxTo();
+    });
+
+    function CheckTaxTo() {
+        if (parseInt($('#txtTaxNoTo').val()) < parseInt($('#txtTaxNoFrom').val().substring(7))) {
+            alert('Tax No. From Cannot Greate Then Tax No. To')
+            $('#txtTaxNoTo').val($('#txtTaxNoFrom').val().substring(7));
+            //return false;
+        } else {
+            //return true;
+        }
+    }
+
+    function isNumber(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    //$('#CreateEditForm').on('hidden.bs.modal', function (e) {
+    //    $('#loadingModal').modal('hide');
+    //})
+
+    
+
+</script>

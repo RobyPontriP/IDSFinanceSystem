@@ -1,0 +1,479 @@
+﻿
+@{
+    ViewBag.Title = "Accounting Process";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+@Html.Hidden("result", ViewData["result"])
+@Html.Hidden("MessageError", ViewData["MessageError"])
+@Html.Hidden("dtpValue", ViewData["dtpValue"])
+@Html.Hidden("HOStatus", ViewData["HOStatus"])
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-3">
+        <label for="cboBranchIndex" class="col-sm-1 col-form-label col-form-label-sm">Branch</label>
+        <div class="col-sm-10">
+            @Html.DropDownList("Branch Name", (SelectList)ViewData["SelectListBranch"], new { @id = "cboBranchIndex", @class = "form-control form-control-sm" })
+        </div>
+    </div>
+
+    <div class="row mb-2 justify-content-between col-sm-2">
+        <label for="PeriodIndex" class="col-sm-1 col-form-label col-form-label-sm">Period</label>
+        <div class="col-sm-9">
+            <input class="form-control form-control-sm bg-white datepicker text-box single-line flatpickr-input valid active" data-val="true" id="PeriodIndex" name="Period" type="text" aria-describedby="Mont-error" aria-invalid="false">
+        </div>
+    </div>
+
+    <div class="row mb-2 justify-content-between col-sm-1">
+        <div class="col-sm-10">
+            <button class="btn btn-sm btn-primary" type="button" onclick="Process()">
+                Process
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-2 col-sm-5" id="chkDataProcess">
+    <ul style="list-style:none;">
+        <li>
+            <div class="form-check form-check-inline col-sm-12 text-right">
+                @*//@onchange = "chkCheckedProcess(this)"*@
+                @Html.CheckBox("chkAutoJournal", false, htmlAttributes: new { @class = "form-check-input", name = "chkAutoJournal", @value = 1 })
+                @Html.Label("chkAutoJournal", "Automatic Journal from Standing Order", new { @class = "form-check-label", id = "lblAutoJournal", name = "chkAutoJournal" })
+                <label hidden class="form-check-label col-sm-4 text-rigth" style="font-weight:bold; font-size:14px; color:green;" for="chkAutoJournal" id="reschkAutoJournal">
+                    Done *
+                </label>
+            </div>
+        </li>
+
+        <li>
+            <div class="form-check form-check-inline col-sm-12 text-right">
+                @Html.CheckBox("chkPostTrans", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @value = 2 })
+                @Html.Label("chkPostTrans", "Post Transaction", new { @class = "form-check-label", id = "lblPostTrans", name = "chkPostTrans" })
+                <label hidden class="form-check-label col-sm-7 ml-2" style="font-weight:bold; font-size:14px; color:green;" for="chkPostTrans" id="reschkPostTrans">
+                    Done *
+                </label>
+            </div>
+        </li>
+
+        <li>
+            <div class="form-check form-check-inline col-sm-12 text-right">
+                @Html.CheckBox("chkCalcAndPost", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @value = 3 })
+                @Html.Label("chkCalcAndPost", "Calculate and Post Revaluation Transactions", new { @class = "form-check-label", id = "lblCalcAndPost", name = "chkCalcAndPost" })
+                <label hidden class="form-check-label col-sm-3 ml-2" style="font-weight:bold; font-size:14px; color:green;" for="chkCalcAndRev" id="reschkCalcAndPost">
+                    Done *
+                </label>
+            </div>
+        </li>
+
+        <li>
+            <div class="form-check form-check-inline col-sm-12 text-right">
+                @Html.CheckBox("chkCalcAndUpdate", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @value = 4 })
+                @Html.Label("chkCalcAndUpdate", "Calculate and Update Control Account", new { @class = "form-check-label", id = "lblCalcAndUpdate", name = "chkCalcAndUpdate" })
+                <label hidden class="form-check-label col-sm-4 ml-2" style="font-weight:bold; font-size:14px; color:green;" for="chkCalcAndUpdate" id="reschkCalcAndUpdate">
+                    Done *
+                </label>
+            </div>
+        </li>
+
+        <li>
+            <div class="form-check form-check-inline col-sm-12 text-right">
+                @Html.CheckBox("chkCalcAndPostPL", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @value = 5 })
+                @Html.Label("chkCalcAndPostPL", "Calculate and Post P/L Transactions", new { @class = "form-check-label", id = "lblCalcAndPostPL", name = "chkCalcAndPostPL" })
+                <label hidden class="form-check-label col-sm-4 ml-3" style="font-weight:bold; font-size:14px; color:green;" for="chkCalcAndPostPL" id="reschkCalcAndPostPL">
+                    Done *
+                </label>
+            </div>
+        </li>
+
+        <li>
+            <div class="form-check form-check-inline col-sm-12 text-right">
+                @Html.CheckBox("chkEndOfPer", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @value = 6 })
+                @Html.Label("chkEndOfPer", "End of Period", new { @class = "form-check-label", id = "lblEndOfPer", name = "chkEndOfPer" })
+                <label hidden class="form-check-label col-sm-7 ml-4" style="font-weight:bold; font-size:14px; color:green;" for="chkEndOfPer" id="reschkEndOfPer">
+                      Done *
+                </label>
+            </div>
+        </li>
+
+        <li>
+            <div class="form-check form-check-inline col-sm-12">
+                @Html.CheckBox("chkMonthClos", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @onchange = "chkMonthCloseChange(this)", @value = 7 })
+                @Html.Label("chkMonthClos", "Monthly Closing", new { @class = "form-check-label", id = "lblMonthClos", name = "chkMonthClos" })
+
+                <div hidden id="rbDivCloseStatus" class="form-check form-check-inline col-sm-4 ml-1 border-left border border-info">
+                    @Html.Label("lblCloseStatus", "Open", new { @class = "form-check-label ml-1" })
+                    @Html.RadioButton("rbCloseStatus", 0, new { @class = "align-middle ml-2 mr-2" })
+
+                    @Html.Label("lblCloseStatus", "Close", new { @class = "form-check-label ml-2 align-middle mr-1" })
+                    @Html.RadioButton("rbCloseStatus", 9, new { @class = "align-middle ml-2 mr-3" })
+                </div>
+
+                <div class="form-check form-check-inline col-sm-3 ml-3 text-right">
+                    @*@Html.Label("lblCloseStatus", "Close", new { @class = "form-check-label ml-2 align-middle mr-1" })*@
+                    <label hidden class="form-check-label" style="font-weight:bold; font-size:14px; color:green;" for="chkMonthClos" id="reschkMonthClos">
+                        Done *
+                    </label>
+                </div>
+            </div>
+        </li>
+
+        <li>
+            <div class="row mb-0 col-sm-12">
+                <div class="form-check form-check-inline col-sm-12 text-right">
+                    @Html.CheckBox("chkBegYear", false, htmlAttributes: new { @class = "form-check-input", name = "chkProcess", @value = 8 })
+                    @Html.Label("chkBegYear", "Beginning of Year", new { @class = "form-check-label", id = "lblBegYear", name = "chkBegYear" })
+                    <label hidden class="form-check-label col-sm-7 ml-3" style="font-weight:bold; font-size:14px; color:green;" for="chkBegYear" id="reschkBegYear">
+                        Done *
+                    </label>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center" role="document">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="row">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="row">
+                <strong>Process...</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="errorMessageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content" style="height:300px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorMessageModal">Error Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="modalClose()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="divErrorMessage">
+                <textarea class="form-control" style="height:100%; resize:none" id="txtErrorMessage"></textarea>
+            </div>
+            @*<div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+
+
+
+    <script type="text/javascript">
+        var HOSStatus = $("#HOStatus").val();
+        var result = $("#result").val();
+
+        var arrrsltProcess = new Array();
+
+        var cboBranch = $("#cboBranchIndex").val();
+        var PeriodValue = $("#PeriodIndex").val();
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+          ];
+
+        $(document).ready(function () {
+            PeriodValue = $("#dtpValue").val();
+            $("#txtErrorMessage").prop("readonly", true);
+
+            flatpickr("#PeriodIndex", {
+                shorthand: true,
+                dateFormat: "d-M-Y",
+                disableMobile: true,
+                defaultDate: [PeriodValue],
+                static: true,
+            });
+
+            $("#PeriodIndex").val(PeriodValue);
+
+            if (result != "") {
+                result = result.slice(0, -1);
+                arrrsltProcess = result.split(',');
+                for (var i = 0; i < arrrsltProcess.length; i++) {
+                    var strTest = arrrsltProcess[i];
+                    ResultProcess(strTest.charAt(0), strTest.charAt(2));
+                }
+                $("#PeriodIndex").val(PeriodValue);
+
+                modalErrorMessage();
+            }
+
+            if (HOSStatus == 0) {
+                $("#cboBranchIndex").prop('disabled', 'true');
+            }
+        });
+
+
+
+        $('#cboBranchIndex').change(function () {
+            cboBranch = $(this).val();
+        });
+
+        $('#PeriodIndex').change(function () {
+            PeriodValue = $(this).val();
+            GetClosingStatus();
+        });
+
+        function modalProcess() {
+            $('#loadingModal').modal({ backdrop: 'static', keyboard: false })
+            $('#loadingModal').modal('show');
+            setTimeout(function () {
+                $('#loadingModal').modal('hide');
+            });
+        }
+
+        function modalErrorMessage() {
+            $('#txtErrorMessage').val($('#MessageError').val());
+
+            if ($('#MessageError').val() != "") {
+                $('#errorMessageModal').modal('show');
+            }
+        }
+
+        function modalClose() {
+            $('#errorMessageModal').modal('hide');
+        }
+
+        function chkMonthCloseChange(e) {
+            if ($('#chkMonthClos').is(":checked")) {
+                GetClosingStatus();
+                document.getElementById("rbDivCloseStatus").hidden = false;
+
+            } else {
+                document.getElementById("rbDivCloseStatus").hidden = true;
+            }
+        }
+
+        function GetClosingStatus() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetClosingStatus", "Process", new { Area = "GLProcess" })',
+                dataType: 'json',
+                data: { period: $("#PeriodIndex").val(), branch: $("#cboBranchIndex").val() },
+                success: function (respond) {
+                    if (respond == true) {
+                        $("input[name=rbCloseStatus][value=" + 9 + "]").prop('checked', true);
+                    } else {
+                        $("input[name=rbCloseStatus][value=" + 0 + "]").prop('checked', true);
+                    }
+                }
+            });
+        }
+
+        function Process() {
+            var arrChkVal = new Array();
+
+            var chkdData = "Are you sure want to Process Data : \n";
+            var checkedVal = 0;
+
+            $('#chkDataProcess input:checked').each(function () {
+                if ($(this).is(':checked')) { checkedVal += 1 }
+
+                arrChkVal.push($(this).val());
+            });
+
+            if (checkedVal == 0) {
+                alert('Please choose the data you want to process');
+                return;
+            }
+
+            for (var i = 0; i < arrChkVal.length; i++) {
+
+                switch (parseInt(arrChkVal[i])) {
+                    case 1:
+                        chkdData = chkdData + "✓ " + $('#lblAutoJournal').text() + "\n";
+                        break;
+                    case 2:
+                        chkdData = chkdData + "✓ " + $('#lblPostTrans').text() + "\n";
+                        break;
+                    case 3:
+                        chkdData = chkdData + "✓ " + $('#lblCalcAndPost').text() + "\n";
+                        break;
+                    case 4:
+                        chkdData = chkdData + "✓ " + $('#lblCalcAndUpdate').text() + "\n";
+                        break;
+                    case 5:
+                        chkdData = chkdData + "✓ " + $('#lblCalcAndPostPL').text() + "\n";
+                        break;
+                    case 6:
+                        chkdData = chkdData + "✓ " + $('#lblEndOfPer').text() + "\n";
+                        break;
+                    case 7:
+                        chkdData = chkdData + "✓ " + $('#lblMonthClos').text() + "\n";
+                        closeStatusShow = 1;
+                        break;
+                    case 8:
+                        chkdData = chkdData + "✓ " + $('#lblBegYear').text() + "\n";
+                        break;
+                    default:
+
+                }
+            }
+
+            var answer = confirm(chkdData + " at Period " + $('#PeriodIndex').val() + " ?");
+
+            if (answer) {
+
+
+
+
+                modalProcess();
+
+                var url = '@Url.Action("Index", "Process", new { Area = "GLProcess" })';
+
+                var form = $('<form action="' + url + '" method="POST">');
+                form.append('<input type="hidden" name="dtpPeriod" value="' + $("#PeriodIndex").val() + '" />');
+                form.append('<input type="hidden" name="chkToProcess" value="' + arrChkVal + '" />');
+                form.append('<input type="hidden" name="branch" value="' + cboBranch + '" />');
+                form.append('</form>');
+                $('body').append(form);
+                form.submit();
+                PeriodValue = $("#PeriodIndex").val();
+            } else {
+                return false;
+            }
+
+
+        }
+
+        function ResultProcess(chkChecked, processResult) {
+            switch (chkChecked) {
+                case '1':
+                    if (processResult == 1) {
+                        $('#reschkAutoJournal').text('Done *');
+                        document.getElementById("reschkAutoJournal").style.color = "green";
+                    }
+                    else {
+                        $('#reschkAutoJournal').text('Failed *');
+                        document.getElementById("reschkAutoJournal").style.color = "red";
+                    }
+                    document.getElementById("reschkAutoJournal").hidden = false;
+                    //$("#chkAutoJournal").attr('checked', true);
+                    break;
+
+                case '2':
+                    if (processResult == 1) {
+                        $('#reschkPostTrans').text('Done *');
+                        document.getElementById("reschkPostTrans").style.color = "green";
+                    }
+                    else {
+                        $('#reschkPostTrans').text('Failed *');
+                        document.getElementById("reschkPostTrans").style.color = "red";
+                    }
+                    document.getElementById("reschkPostTrans").hidden = false;
+                    break;
+
+                case '3':
+                    if (processResult == 1) {
+                        $('#reschkCalcAndPost').text('Done *');
+                        document.getElementById("reschkCalcAndPost").style.color = "green";
+                    }
+                    else {
+                        $('#reschkCalcAndPost').text('Failed *');
+                        document.getElementById("reschkCalcAndPost").style.color = "red";
+                    }
+                    document.getElementById("reschkCalcAndPost").hidden = false;
+                    break;
+
+                case '4':
+                    if (processResult == 1) {
+                        $('#reschkCalcAndUpdate').text('Done *');
+                        document.getElementById("reschkCalcAndUpdate").style.color = "green";
+                    }
+                    else {
+                        $('#reschkCalcAndUpdate').text('Failed *');
+                        document.getElementById("reschkCalcAndUpdate").style.color = "red";
+                    }
+                    document.getElementById("reschkCalcAndUpdate").hidden = false;
+                    break;
+
+                case '5':
+                    if (processResult == 1) {
+                        $('#reschkCalcAndPostPL').text('Done *');
+                        document.getElementById("reschkCalcAndPostPL").style.color = "green";
+                    }
+                    else {
+                        $('#reschkCalcAndPostPL').text('Failed *');
+                        document.getElementById("reschkCalcAndPostPL").style.color = "red";
+                    }
+                    document.getElementById("reschkCalcAndPostPL").hidden = false;
+                    break;
+
+                case '6':
+                    if (processResult == 1) {
+                        $('#reschkEndOfPer').text('Done *');
+                        document.getElementById("reschkEndOfPer").style.color = "green";
+                    }
+                    else {
+                        $('#reschkEndOfPer').text('Failed *');
+                        document.getElementById("reschkEndOfPer").style.color = "red";
+                    }
+                    document.getElementById("reschkEndOfPer").hidden = false;
+                    break;
+
+                case '7':
+                    if (processResult == 1) {
+                        $('#reschkMonthClos').text('Done *');
+                        document.getElementById("reschkMonthClos").style.color = "green";
+                    }
+                    else {
+                        $('#reschkMonthClos').text('Failed *');
+                        document.getElementById("reschkMonthClos").style.color = "red";
+                    }
+                    GetClosingStatus();
+                    document.getElementById("rbDivCloseStatus").hidden = false;
+                    document.getElementById("reschkMonthClos").hidden = false;
+                    break;
+
+                case '8':
+                    if (processResult == 1) {
+                        $('#reschkBegYear').text('Done *');
+                        document.getElementById("reschkBegYear").style.color = "green";
+                    }
+                    else {
+                        $('#reschkBegYear').text('Failed *');
+                        document.getElementById("reschkBegYear").style.color = "red";
+                    }
+                    document.getElementById("reschkBegYear").hidden = false;
+                    break;
+            }
+            result = "";
+            arrChkVal = new Array();
+        }
+
+    </script>
+}
+

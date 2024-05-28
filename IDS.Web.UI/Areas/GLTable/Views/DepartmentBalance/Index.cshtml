@@ -1,0 +1,586 @@
+﻿@model IEnumerable<IDS.GLTable.DepartmentBalance>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Department Balance";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+}
+
+@{
+    Html.RenderPartial("_ProgressPage");
+}
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="row">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-2">
+    <div class="row mb-0 col-sm-4">
+        <label for="cboBranchIndex" class="col-sm-1 col-form-label col-form-label-sm">Branch</label>
+        <div class="col-sm-10 ml-3">
+            @Html.DropDownList("Branch Name", (SelectList)ViewData["SelectListBranch"], new { @id = "cboBranchIndex", @class = "form-control select2DDList" })
+        </div>
+    </div>
+
+    <div class="row mb-0 justify-content-between col-sm-2">
+        <label for="cboDeptIndex" class="col-sm-2 col-form-label col-form-label-sm">Department</label>
+        <div class="col-sm-7">
+            @Html.DropDownList("Dept", (SelectList)ViewData["SelectListDept"], " ", new { @id = "cboDeptIndex", @class = "form-control select2DDList" })
+        </div>
+    </div>
+
+    <div class="row mb-0 justify-content-between col-sm-2">
+        <label for="PeriodIndex" class="col-sm-1 col-form-label col-form-label-sm">Period</label>
+        <div class="col-sm-8">
+            <input class="form-control form-control-sm bg-white datepicker text-box single-line flatpickr-input valid active" data-val="true" id="PeriodIndex" name="Period" type="text" aria-describedby="Mont-error" aria-invalid="false">
+        </div>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 col-sm-4">
+        <label for="cboCcyIndex" class="col-sm-1 col-form-label col-form-label-sm">Ccy</label>
+        <div class="col-sm-3 ml-2">
+            @Html.DropDownList("CCY", (SelectList)ViewData["SelectListCcy"], " ", new { @id = "cboCcyIndex", @class = "form-control select2DDList", @style = "display:none;" })
+        </div>
+
+        <label for="cboAccIndex" class="col-sm-1 col-form-label col-form-label-sm">Account</label>
+        <div class="col-sm-6 ml-3">
+            @Html.DropDownList("Account", (SelectList)ViewData["SelectListAcc"], " ", new { @id = "cboAccIndex", @class = "form-control select2DDList" })
+        </div>
+    </div>
+
+    <div class="row mb-2 col-sm-8">
+        <div class="col-sm-12 col-md-12 col-12">
+            <div class="text-right">
+                <p>
+                    @{
+                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" onclick="LoadCreateNewForm()">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="#" class="btn btn-sm btn-primary" onclick="NoAccess()">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        }
+
+                        if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                        {
+                            <a class="btn btn-sm btn-info" onclick="LoadEditForm()">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-info" onclick="NoAccess()" disabled="disabled">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        }
+
+                        if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                        {
+                            <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        }
+
+                        <a onclick="Refresh()" class="btn btn-sm btn-success" href="#">
+                            <i class="fas fa-sync"></i>
+                        </a>
+                        @*<a class="btn btn-sm btn-info" onclick="LoadTreeGridForm()">
+                                <i class="fas fa-edit"></i>
+                            </a>*@
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Hidden("HOStatus", Convert.ToInt32(ViewData["HOStatus"]))
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="align-middle">Dept</th>
+                <th class="align-middle">Account No</th>
+                <th class="align-middle">Ccy</th>
+                <th class="align-middle">BegBal</th>
+                <th class="align-middle">Debit</th>
+                <th class="align-middle">Credit</th>
+                <th class="align-middle">EndBal</th>
+                <th class="align-middle">Budget</th>
+                <th class="align-middle">Operator ID</th>
+                <th class="align-middle">Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+
+    <script type="text/javascript">
+        var HOSStatus = $("#HOStatus").val();
+        var cboBranch = $("#cboBranchIndex").val();
+        var PeriodValue = $("#PeriodIndex").val();
+        var DeptValue = $("#cboDeptIndex").val();
+        //var CcyValue = $("#cboCcyIndex").val();
+        //var AccValue = $("#cboAccIndex").val();
+        var CcyValue = $("#cboCcyIndex").val();
+        var AccValue = $("#cboAccIndex").val();
+        var table = null;
+
+        $(document).ready(function () {
+            $(".select2DDList").select2();
+
+            flatpickr("#PeriodIndex", {
+                shorthand: true,
+                dateFormat: "M-Y",
+                altFormat: "F Y",
+                defaultDate: ["today"],
+                disableMobile: "true",
+                plugins: [new monthSelectPlugin({
+                    shorthand: true, //defaults to false
+                    dateFormat: "M Y", //defaults to "F Y"
+                })],
+            });
+
+            if (HOSStatus == 0) {
+                $("#cboBranchIndex").prop('disabled', 'true');
+            }
+            LoadData(PeriodValue, cboBranch, DeptValue, CcyValue, AccValue);
+        });
+
+        function LoadCreateNewForm() {
+            modalProcess();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Create", "DepartmentBalance", new { Area = "GLTable" })',
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (result) {
+                    $('#loadingModal').modal('hide');
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    //$("form#formCreateEdit")[0].reset();
+                    $("#modalTitle").html("Create Data");
+                    $("#CreateEditForm").modal('show');
+                    if (HOSStatus == 0) {
+                        $("#cboBranch").prop('disabled', 'true');
+                    }
+
+                    $("#cboBranch").val($("#cboBranchIndex").val());
+                    $("#Period").val($("#PeriodIndex").val());
+                    //$("#cboBranch").prop('disabled', 'true');
+                },
+                error: function (status) {
+                    $('#loadingModal').modal('hide');
+                    alert('');
+                }
+            });
+        }
+
+        function LoadTreeGridForm() {
+            window.location.href = '@Url.Action("IndexTreeGridDepartmentBalance", "DepartmentBalance", new { Area = "GLTable" })'
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var data = null;
+            var dataDept = null;
+
+            if (selRow.length > 0) {
+                data = selRow[0]["COADepartmentBalance"]["Account"];
+                dataCurrency = selRow[0]["CurrencyDepartmentBalance"]["CurrencyCode"];
+                dataPeriod = selRow[0]["Period"];
+                dataDept = selRow[0]["Code"];
+
+                modalProcess();
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Edit", "DepartmentBalance", new { Area = "GLTable" })',
+                    data: {
+                        'branchCode': cboBranch,
+                        'deptCode': dataDept,
+                        'period': dataPeriod,
+                        'ccy': dataCurrency,
+                        'acc': data
+                    },
+                    dataType: 'html',
+                    success: function (result) {
+                        $('#loadingModal').modal('hide');
+                        $('#PartialSection').empty();
+                        $("#PartialSection").html(result);
+                        $("#modalTitle").html("Edit Data");
+                        //if (HOSStatus == 0) {
+                        //    $("#cboBranch").prop('disabled', 'true');
+                        //}
+                        $("#cboBranch").val(cboBranch);
+                        $("#Period").val($("#PeriodIndex").val());
+                        $("#cboCOA").val(data);
+                        $("#cboCurrency").val(dataCurrency);
+                        CalcEndBal();
+                        $("#Period").attr('disabled', 'disabled');
+                        $("#cboCcy").prop('disabled', 'true');
+                        $("#cboCOA").prop('disabled', 'true');
+                        $("#cboDept").prop('disabled', 'true');
+                        $("#cboBranch").prop('disabled', 'true');
+                        $("#cboCurrency").prop('disabled', 'true');
+                        $('#EndBal').attr('readonly', true);
+                        if (parseInt(selRow[0]["BegBal"]) > 0) {
+                            $("#BegBal").attr('disabled', 'disabled');
+                        }
+                        $("#CreateEditForm").modal('show');
+                    },
+                    error: function (status) {
+                        $('#loadingModal').modal('hide');
+                        alert('');
+                    }
+                });
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            if (parseInt(selRow[0]["BegBal"]) != 0 || parseInt(selRow[0]["Debit"]) != 0 || parseInt(selRow[0]["Credit"]) != 0) {
+                alert("This data already has a transaction that cannot be deleted");
+                return false;
+            }
+
+            var dataCollection = '';
+            var data = '';
+            //var dataDept = $('#cboDeptIndex').val();
+            var dataCurrency = '';
+            var dataPeriod = '';
+
+            $.each(selRow, function (index, row) {
+                dataCollection += '[' + row["Code"] + '] - ' + row["COADepartmentBalance"]["Account"] + " - " + row["Period"] + " - " + cboBranch + "\n";
+            })
+            var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+            if (answer) {
+                $.each(selRow, function (index, row) {
+                    data += row["COADepartmentBalance"]["Account"] + ',';
+                    dataDept = row["Code"];
+                    dataCurrency += row["CurrencyDepartmentBalance"]["CurrencyCode"] + ',';
+                    dataPeriod += row["Period"] + ',';
+                })
+
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "DepartmentBalance", new { Area = "GLTable" })',
+                        data: {
+                            'periodsList': dataPeriod,
+                            'branchCode': cboBranch,
+                            'code': dataDept,
+                            'coasList': data,
+                            'currenciesList': dataCurrency,
+                        },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    alert(respond);
+                                    LoadData($("#PeriodIndex").val(), cboBranch, '', '', '');
+                                    break;
+                                default:
+                                    alert(respond);
+                                    LoadData($("#PeriodIndex").val(), cboBranch, '', '', '');
+                                    break;
+                            }
+
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+
+        }
+
+        function Refresh() {
+            //alert(PeriodValue+ cboBranch+DeptValue+CcyValue+AccValue);
+            //console.log($('#returnval').val());
+            //if (ConfirmsModal(msg)) {
+            //    console.log("true if");
+            //} else {
+            //    console.log("false else");
+            //}
+            //var pieChartContent = document.getElementById('classgrid1');
+            //pieChartContent.innerHTML = '&nbsp;';
+            //$('#classgrid1').append("<div class='table-responsive table-responsive-sm p-2 bg-white border'>        <table id='tableData' class='table table-bordered table-hover w-100'>            <thead>            <tr>                <th></th>                <th class='align-middle'>Department Code</th>                <th class='align-middle'>Department Name</th>                <th class='align-middle'>Updated By</th>                <th class='align-middle'>Updated Date</th>            </tr>            </thead>        </table>    </div>");
+            LoadData($("#PeriodIndex").val(), cboBranch, DeptValue, CcyValue, AccValue);
+        }
+
+        $('#cboCcyIndex').change(function () {
+            var CCY = $('#cboCcyIndex').val();
+            //$('#cboToCCY').hide();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: CCY },
+                success: function (respond) {
+                    $('#cboAccIndex').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboAccIndex').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+
+        function LoadData(PeriodValue, cboBranchValue, cboDeptPar, cboCcyPar, cboAccPar) {
+            //alert(PeriodValue + cboBranchValue, cboDeptPar, cboCcyPar, cboAccPar)
+            table = LoadDT(httpGet('POST', '@Url.Action("GetData", "DepartmentBalance", new { Area = "GLTable" })', JSON.stringify({ "period": PeriodValue, 'branchCode': cboBranchValue, 'dept': cboDeptPar, 'ccy': cboCcyPar, 'acc': cboAccPar })));
+            @*$('#tableData').DataTable
+        ({
+            destroy: true,
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "className": "select-checkbox",
+                    "checkboxes": {
+                        "selectRow": true
+                    },
+                    "targets": [0]
+                },
+                {
+                    "width": "10",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "130px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                "search": "",
+                "searchPlaceholder": "Search...",
+                "emptyTable": "No record found.",
+                "decimal": ",",
+                "thousands": ".",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[1, "asc"]],
+            "serverSide": "true",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            "ajax":
+            {
+                "url": '@Url.Action("GetData", "DepartmentBalance", new { Area = "GLTable" })',
+                "data": { 'period': PeriodValue, 'branchCode': cboBranchValue, 'dept': cboDeptPar, 'ccy': cboCcyPar, 'acc': cboAccPar },
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "columns": [
+                { "data": null },
+                { "data": "Code", "name": "Code" },
+                { "data": "COADepartmentBalance.Account", "name": "COADepartmentBalance.Account" },
+                { "data": "CurrencyDepartmentBalance.CurrencyCode", "name": "CurrencyDepartmentBalance.CurrencyCode" },
+                { "data": "BegBal", "name": "BegBal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Debit", "name": "Debit", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Credit", "name": "Credit", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "EndBal", "name": "EndBal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Budget", "name": "Budget", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "OperatorID", "name": "OperatorID" },
+                {
+                    "data": "LastUpdate", "name": "LastUpdate",
+                    "render": function (data, type, row, meta) {
+                        return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                    }
+                }
+            ]
+        });*@
+        }
+
+        function LoadDT(dataJS) {
+            return $('#tableData').DataTable({
+                "bDestroy": true,
+                data: JSON.parse(dataJS),
+                "columns": [
+                { "data": null },
+                { "data": "Code", "name": "Code" },
+                { "data": "COADepartmentBalance.Account", "name": "COADepartmentBalance.Account" },
+                { "data": "CurrencyDepartmentBalance.CurrencyCode", "name": "CurrencyDepartmentBalance.CurrencyCode" },
+                { "data": "BegBal", "name": "BegBal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Debit", "name": "Debit", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Credit", "name": "Credit", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "EndBal", "name": "EndBal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Budget", "name": "Budget", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "OperatorID", "name": "OperatorID" },
+                {
+                    "data": "LastUpdate", "name": "LastUpdate",
+                    "render": function (data, type, row, meta) {
+                        return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                    }
+                }
+                ],
+                "order": [[1, "asc"]],
+                "processing": "true",
+                "lengthMenu": [[1, 10, 25, 50, -1], [1, 10, 25, 50, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "className": "select-checkbox",
+                    "checkboxes": {
+                        "selectRow": true
+                    },
+                    "targets": [0]
+                },
+                {
+                    "width": "10",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "130px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+            });
+        }
+
+        $('#cboBranchIndex').change(function () {
+            cboBranch = $(this).val();
+            //LoadData(PeriodValue, cboBranch, DeptValue, CcyValue, AccValue);
+        });
+
+        $('#PeriodIndex').change(function () {
+            PeriodValue = $(this).val();
+            //LoadData(PeriodValue, cboBranch, DeptValue, CcyValue, AccValue);
+        });
+
+        $('#cboDeptIndex').change(function () {
+            DeptValue = $(this).val();
+            //LoadData(PeriodValue, cboBranch, DeptValue, CcyValue, AccValue);
+        });
+
+        $('#cboCcyIndex').change(function () {
+            CcyValue = $(this).val();
+            //LoadData(PeriodValue, cboBranch, DeptValue, CcyValue, AccValue);
+        });
+
+        $('#cboAccIndex').change(function () {
+            AccValue = $(this).val();
+            //LoadData(PeriodValue, cboBranch, DeptValue, CcyValue, AccValue);
+        });
+
+    </script>
+}

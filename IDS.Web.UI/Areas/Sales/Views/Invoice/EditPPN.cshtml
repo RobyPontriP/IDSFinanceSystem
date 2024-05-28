@@ -1,0 +1,159 @@
+﻿@model IDS.Sales.Invoice
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.InvoiceNumber, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.InvoiceNumber, new { htmlAttributes = new { @class = "form-control form-control-sm", @readonly = true } })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.TaxNumber.SerialNo, "Tax Number", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @if (Convert.ToBoolean(ViewData["ExportStatus"]))
+                            {
+                                @Html.DropDownListFor(model => model.TaxNumber.SerialNo, (SelectList)ViewData["SelectListTaxNo"], new { @id = "cboTaxNo", @class = "form-control select2DDList", disabled = true })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(model => model.TaxNumber.SerialNo, (SelectList)ViewData["SelectListTaxNo"], new { @id = "cboTaxNo", @class = "form-control select2DDList" })
+                            }
+
+                            @Html.ValidationMessageFor(model => model.TaxNumber.SerialNo, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.TaxNumber.TransType, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @if (Convert.ToBoolean(ViewData["ExportStatus"]))
+                            {
+                                @Html.DropDownListFor(model => model.TaxNumber.TransType, (SelectList)ViewData["SelectListTaxTransType"], new { @id = "cboTaxTransType", @class = "form-control select2DDList", disabled = true })
+                            }else
+	                        {
+	                            @Html.DropDownListFor(model => model.TaxNumber.TransType, (SelectList)ViewData["SelectListTaxTransType"], new { @id = "cboTaxTransType", @class = "form-control select2DDList" })
+                            }
+                            
+                            @Html.ValidationMessageFor(model => model.TaxNumber.TransType, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.TaxNumber.JenisFaktur, "Type", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @*@if (Convert.ToBoolean(ViewData["ExportStatus"]))
+                            {
+                                @Html.DropDownListFor(model => model.TaxNumber.JenisFaktur, (SelectList)ViewData["SelectListTaxType"], new { @id = "cboTaxType", @class = "form-control select2DDList", disabled = true })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(model => model.TaxNumber.JenisFaktur, (SelectList)ViewData["SelectListTaxType"], new { @id = "cboTaxType", @class = "form-control select2DDList" })
+                            }*@
+                            @Html.DropDownListFor(model => model.TaxNumber.JenisFaktur, (SelectList)ViewData["SelectListTaxType"], new { @id = "cboTaxType", @class = "form-control select2DDList" })
+                            
+                            @Html.ValidationMessageFor(model => model.TaxNumber.JenisFaktur, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                    {
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-secondary" title="Input New City" id="btnAddNew">Add New</button>*@
+                <button type="button" class="btn btn-primary" title="Save City" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" title="Close This Form" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+            $("#cboTaxTransType").prop("disabled", false);
+            $("#cboTaxNo").prop("disabled", false);
+            //modalProcess();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("EditPPN", "Invoice", new { Area = "Sales" })',
+                processData: false,
+                data: $("#formCreateEdit").serialize(),
+                success: function (respond) {
+                    $("#cboTaxTransType").prop("disabled", true);
+                    $("#cboTaxNo").prop("disabled", true);
+                    alert(respond);
+                },
+                error: function (a, b, c) {
+                    $("#cboTaxTransType").prop("disabled", true);
+                    $("#cboTaxNo").prop("disabled", true);
+                }
+            });
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            $('#loadingModal').modal('hide');
+            @*if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "City", new { Area = "GeneralTable" })';
+            }*@
+        })
+    });
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

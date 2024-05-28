@@ -1,0 +1,678 @@
+﻿@model IDS.GLTransaction.BankStatement
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Bank Reconciliation";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css" type="text/css">
+    <link rel="stylesheet" href="~/Content/Select2/css/select2.min.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/flatpickr/flatpickr.min.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/JQuery_UI/jquery-ui.min.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/flatpickr/plugins/monthSelect/style.css" type="text/css" />
+}
+
+
+
+@*@using (Html.BeginForm("UploadFile", "GLReconcile", FormMethod.Post, new { @id = "formList", enctype = "multipart/form-data" }))*@
+@using (Html.BeginForm("Matching", "GLReconcile", FormMethod.Post, new { @id = "formList" }))
+{
+    @Html.AntiForgeryToken()
+
+    @*@Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))*@
+    @Html.Hidden("FormSave", "0");
+
+
+    <div class="row sticky-top bg-body align-middle align-middle" style="background: #f4f6f9 !important;">
+        <div class="col-sm-6 col-md-6 col-6 align-middle">
+            <h4>@ViewBag.Title</h4>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-6 align-middle">
+            <div class="text-right">
+                <p>
+                    @{
+                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                        {
+                            <input type="submit" class="btn btn-primary" id="btnSaveMatch" value="Save" onclick="return SaveData(this);" />
+                        }
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group row">
+                @Html.Label("Branch :", htmlAttributes: new { @class = "col-form-label-sm col-sm-2 mb-0" })
+                <div class="col-sm-10">
+                    @Html.DropDownList("Branch", (ViewData["BranchList"] as SelectList), new { @class = "form-control form-control-sm select2DDList", @maxlength = 15, @style = "width: 100%;" })
+                </div>
+            </div>
+            <div class="row mb-0">
+                <div class="col-sm-6 ml-0 mr-0">
+                    <div class="form-group row">
+                        @Html.Label("Period :", htmlAttributes: new { @class = "col-form-label-sm col-sm-4 mb-0" })
+                        <div class="col-sm-8">
+                            @Html.TextBox("Period", ViewData["Period"], new { @class = "form-control form-control-sm" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 ml-0 mr-0">
+                    <div class="form-group row">
+                        @Html.Label("Status :", htmlAttributes: new { @class = "col-form-label-sm col-sm-4 mb-0" })
+                        <div class="col-sm-8">
+                            @Html.DropDownList("Status", (ViewData["Status"] as SelectList), new { @class = "form-control form-control-sm", @id = "cboStatus" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group row">
+                @Html.Label("Currency :", htmlAttributes: new { @class = "col-form-label-sm col-sm-2 mb-0" })
+                <div class="col-sm-10">
+                    @Html.DropDownList("Currency", (ViewData["CCyList"] as SelectList), new { @class = "form-control form-control-sm" })
+                </div>
+            </div>
+            <div class="form-group row">
+                @Html.Label("Account :", htmlAttributes: new { @class = "col-form-label-sm col-sm-2 mb-0" })
+                <div class="col-sm-10">
+                    @Html.DropDownList("Account", (ViewData["AccList"] as SelectList), new { @class = "form-control form-control-sm" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div style="display: none;">
+        <div class="row">
+            <div class="col-12 col-sm-3">
+                <div class="info-box p-1 h-auto bg-light" style="min-height: inherit !important;">
+                    <div class="info-box-content">
+                        <span class="info-box-text text-left text-muted">Beginning Balance</span>
+                        <span id="tranDBeg" class="info-box-number text-left mb-0">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-3">
+                <div class="info-box p-1 h-auto bg-light" style="min-height: inherit !important;">
+                    <div class="info-box-content">
+                        <span class="info-box-text text-left text-muted">Ending Balance</span>
+                        <span id="tranDEnd" class="info-box-number text-muted text-left mb-0">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-3">
+                <div class="info-box p-1 h-auto bg-light" style="min-height: inherit !important;">
+                    <div class="info-box-content">
+                        <span class="info-box-text text-left text-muted">Initial Balance</span>
+                        <span id="bBeg" class="info-box-number text-left mb-0">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-3">
+                <div class="info-box p-1 h-auto bg-light" style="min-height: inherit !important;">
+                    <div class="info-box-content">
+                        <span class="info-box-text text-left text-muted">Final Balance</span>
+                        <span id="bEnd" class="info-box-number text-left mb-0">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.Hidden("HO", Convert.ToInt32(ViewData["HO"]))
+
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <p>
+                                    @{
+                                        if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                                        {
+                                            <a href="#" class="btn btn-sm btn-primary" onclick="LoadCreateNewForm()">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="#" class="btn btn-sm btn-primary" onclick="NoAccess()">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                        }
+
+                                        if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                                        {
+                                            <a class="btn btn-sm btn-info" onclick="LoadEditForm()">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-sm btn-info" onclick="NoAccess()" disabled="disabled">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+
+                                        if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                                        {
+                                            <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a onclick="NoAccess()" class="btn btn-sm btn-danger" href="#">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                    }
+                                </p>
+
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex justify-content-between">
+                                    @Html.TextBox("File", "", new { Type = "file", @style = "border: 1px solid #CCC; width: 100%; padding: 3px 2px; margin-right: 5px;" })
+                                    @*<a id="uploadFile" class="btn btn-sm btn-info" onclick="uploadFile()">
+                                            <i class="fas fa-upload"></i>
+                                        </a>*@
+                                    @*@formaction = "@Url.Action('UploadFile')", @formmethod = "POST"*@
+
+                                    <input type="submit" id="uploadFile" value="Upload" class="btn btn-sm btn-info" formaction="@Url.Action("UploadFile")" formmethod="POST" formenctype="multipart/form-data" alt="Upload" />
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <ul id="sortable" class="list-group"></ul>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <ul id="sortable2" class="list-group"></ul>
+                            </div>
+                        </div>
+                                        }
+
+<div id="PartialSection">
+
+</div>
+
+
+
+
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+        //if ($("#<%=Period %>").val() != '') {
+        //    curDate = $("#<%=Period %>").val();
+        //}
+
+        flatpickr("#Period", {
+            dateFormat: "M/Y",
+            altFormat: "F Y",
+            static: true,
+            plugins: [new monthSelectPlugin({
+                shorthand: true, //defaults to false
+                dateFormat: "M Y", //defaults to "F Y"
+                altFormat: "F Y"
+            })],
+            disableMobile: true,
+        });
+
+        $("#Period, #Account, #Currency, #cboStatus, #Branch").change(function () {
+            refreshData();
+        });
+
+        $("#sortable, #sortable2").sortable({
+            items: "li:not(.itemDisabled)",
+            placeholder: "ui-state-highlight"
+        });
+        $("#sortable, #sortable2").disableSelection();
+
+        if ('@ViewData["RefreshData"]' != null) {
+            refreshData();
+        };
+
+        $('#uploadFile').click(function () {
+            uploadFile();
+        });
+
+        //console.log(@ViewData["Msg"]);
+        if ('@ViewData["Msg"]' != null && '@ViewData["Msg"]' != '' ) {
+            alert('@ViewData["Msg"]');
+        }
+    });
+
+    function refreshData() {
+        GetGLMD($('#Branch').val(), $('#Period').val(), $('#Account').val(), $('#Currency').val(), $('#cboStatus').val());
+        GetBankStatement($('#Branch').val(), $('#Period').val(), $('#Account').val(), $('#Currency').val(), $('#cboStatus').val());
+    }
+
+    function SaveData(e) {
+        var answer = confirm("Are you sure want to save data ?");
+
+        if (answer == true) {
+            $('#formList').submit();
+            e.preventDefault();
+        }
+        else {
+            return false;
+        }
+    }
+
+    function LoadCreateNewForm() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("Create", "GLReconcile", new { Area = "GLTransaction" })',
+            contentType: 'application/html; charset=utf-8',
+            dataType: 'html',
+            success: function (result) {
+                $('#PartialSection').empty();
+                $("#PartialSection").html(result);
+                //$("form#formList")[0].reset();
+                $("#modalTitle").html("Create Data");
+                $("#CreateEditForm").modal('show');
+                $("#cboAccNo").val($("#Account").val());
+                $("#cboAccNo").prop('disabled', true);
+            },
+            error: function (status) {
+                alert('');
+            }
+        });
+    }
+
+    function LoadEditForm() {
+        var form = this;
+        var selData = $('input[name="ctrNo"]:checked').first().val();
+
+        if (selData != null && selData != 'undefined') {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Edit", "GLReconcile", new { Area = "GLTransaction" })',
+                data: {
+                    'ctrNo': selData,
+                    "branch": $('#Branch').val(),
+                },
+                dataType: 'html',
+                success: function (result) {
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    $("#modalTitle").html("Edit Data");
+                    $("#txtCounter").attr('readonly', 'true');
+                    $("#CreateEditForm").modal('show');
+                },
+                error: function (status) {
+                    alert('');
+                }
+            });
+        }
+        else {
+            alert("Please select data to be edit");
+        }
+    }
+
+    function Delete() {
+        var form = this;
+        var selRow = $('input[name="ctrNo"]:checked');
+
+        if (selRow == null || selRow.length == 0) {
+            alert("Please select the data you want to delete");
+            return false;
+        }
+
+        var dataCollection = '';
+        var data = '';
+
+        $.each(selRow, function (index, row) {
+            data += row["value"] + ';' + $('#Branch').val() + ',';
+            dataCollection += '[' + row["value"] + '] - ' + $('#Branch').val() + "\n";
+        })
+
+        var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+        if (answer) {
+            if (dataCollection.length > 0) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete", "GLReconcile", new { Area = "GLTransaction" })',
+                    data: { "data": data },
+                    dataType: 'JSON',
+                    success: function (respond) {
+                        switch (respond) {
+                            case "No Access":
+                                window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                break;
+                            case "Success":
+                                alert(respond);
+                                refreshData(); // belum dipakai
+                                break;
+                            default:
+                                alert(respond);
+                                refreshData(); // belum dipakai
+                                break;
+                        }
+
+                    },
+                    error: function (respond) {
+                        alert(respond);
+                    }
+                })
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    //function refreshCheckboxEvent() {
+    //    $("ul#sortable").on("click", "li", function () {
+    //        liIndex = $(this).index();
+    //    });
+
+    //    $('ul#sortable > li > div > input[type="checkbox"]').on("change", function () {
+    //        var checkboxID = $(this).attr("id");
+    //        itemCheckedChanged(liIndex, checkboxID);
+    //    });
+
+    //    alert(liIndex);
+    //    if (parseFloat(liIndex) > -1) {
+    //        alert(liIndex);
+    //        // Check Bank Statement item exists
+    //        var t = $("ul#sortable2").children("li").eq(liIndex);
+    //        console.log(t);
+    //    }
+    //}
+
+    //function itemCheckedChanged(liIndex, checkId) {
+    //    if ($("#" + checkId).is(':checked')) {
+    //        $("#sortable").children("li").eq(liIndex).addClass("itemDisabled");
+
+    //        var item = $("#sortable2").children("li");
+    //        var itemBank = $("#sortable2").children("li").eq(liIndex);
+
+    //        itemBank.addClass("itemDisabled");
+
+    //        // Move item to top
+    //        $('ul#sortable li.itemDisabled').prependTo($('ul#sortable'));
+    //        $('ul#sortable2 li.itemDisabled').prependTo($('ul#sortable2'));
+
+    //        // Reload item
+    //        $("#sortable, #sortable2").sortable({
+    //            cancel: ".itemDisabled",
+    //            placeholder: "ui-state-highlight"
+    //        });
+    //        $("#sortable, #sortable2").disableSelection();
+    //    }
+    //    else {
+    //        $("#sortable").children("li").eq(liIndex).removeClass("itemDisabled");
+    //        var item = $("#sortable2").children("li");
+    //        var itemBank = $("#sortable2").children("li").eq(liIndex);
+
+    //        itemBank.removeClass("itemDisabled");
+
+    //        $('ul#sortable li.itemDisabled').prependTo($('ul#sortable'));
+    //        $('ul#sortable2 li.itemDisabled').prependTo($('ul#sortable2'));
+
+    //        $("#sortable, #sortable2").sortable({
+    //            cancel: ".itemDisabled",
+    //            placeholder: "ui-state-highlight"
+    //        });
+    //        $("#sortable, #sortable2").disableSelection();
+    //    }
+    //}
+
+    function GetGLMD(branch, period, accNo, ccy, match) {
+        if(match == "2" || match == "")
+        {
+            match = null;
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetVoucherForBankStatementList", "Voucher", new { Area = "GLTransaction" })',
+            contentType: 'application/html; charset=utf-8',
+            dataType: 'json',
+            data: {
+                "branchCode": branch,
+                "period": period,
+                "accNo": accNo,
+                "ccy": ccy,
+                "status": match
+            },
+            success: function (result) {
+                if (result !== null && typeof result === 'object') {
+                    $('#sortable').children().remove();
+
+                    $.each(result, function (k, v) {
+                        $('#sortable').append('<li id="liItem-' + k + '" class="list-group-item list-group-item-action p-2" style="height: 76px;">' +
+                            '<div class="d-flex w-100 justify-content-between">' +
+                            '<p class="mb-1 mr-auto text-bold">' + result[k].SourceCode + ' ' + result[k].Voucher + '</h5>' +
+                            '<p class="mb-1 mr-1 ml-1"><span class="text-bold">Trans Date: </span>' + moment.utc(result[k].TransDate).format('DD/MMM/YYYY') + '</p>' +
+                            '<p class="mb-1 mr-1 ml-1"><span class="text-bold">Amount: </span>' + result[k].CCy + ' ' + result[k].Amount.toLocaleString('en') + '</p>' +
+                            '<input type="checkbox" id="' + (result[k].Account + result[k].SourceCode + result[k].Voucher + result[k].BranchCode + result[k].Counter) + '" value="' + (result[k].Account + result[k].SourceCode + result[k].Voucher + result[k].BranchCode + result[k].Counter) + '" name="transD" ' + ((result[k].MatchStatus == true) ? 'checked' : '') + ' />' +
+                            '</div>' +
+                            '<div class="d-flex w-100 justify-content-between">' +
+                            '<p class="mb-1">' + result[k].Descrip + '</p>' +
+
+                            '</div>' +
+                            '</li>');
+                    });
+
+                    //refreshCheckboxEvent();
+                }
+                else {
+                    $('#sortable').children().remove();
+                }
+            },
+            error: function (xhr, msg, err) {
+                alert(xhr.responseText);
+            }
+        });
+    }
+
+    function GetBankStatement(branch, period, accNo, ccy, status) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("getBankStatement", "GLReconcile", new { Area = "GLTransaction" })',
+            contentType: 'application/html; charset=utf-8',
+            dataType: 'json',
+            data: {
+                "branchCode": branch,
+                "period": period,
+                "accNo": accNo,
+                "ccy": ccy,
+                "status": status,
+            },
+            success: function (result) {
+                if (result !== null && typeof result === 'object') {
+                    $('#sortable2').children().remove();
+
+                    $.each(result, function (k, v) {
+                        $('#sortable2').append('<li id="' + k + '" class="list-group-item list-group-item-action p-2" style="height: 76px;">' +
+                            '<div class="d-flex w-100 justify-content-between">' +
+                            '<input type="checkbox" id="' + (result[k].Counter + result[k].BranchCode) + '" value="' + (result[k].Counter + result[k].BranchCode) + '" name="bankStatItem" style="margin-right: 5px;" ' + ((result[k].MatchStatus == 1) ? 'checked' : '') + ' />' +
+                            '<p class="mb-1 mr-1 ml-1" name="amountsection"><span class="text-bold">Amount: </span>' + '<span>' + result[k].Currency +'</span>' + ' ' + '<span name="Amount">' + result[k].AmountBank.toLocaleString('en') + '</span></p>' +
+                            '<p class="mb-1 mr-auto"><span class="text-bold">Trans Date: </span>' + moment.utc(result[k].TransDate).format('DD/MMM/YYYY') + '</p>' +
+                            '<input type="checkbox" id="' + (result[k].Counter) + '" value="' + (result[k].Counter) + '" data-branch="' + result[k].BranchCode + '" data-amount="' + result[k].AmountBank.toLocaleString('en') + '" data-transDate="' + moment.utc(result[k].TransDate).format('DD/MMM/YYYY') + '" name="ctrNo" style="margin-left:5px;" />' +
+                            '</div>' +
+                            '<p class="mb-1">' + result[k].Remark + '</p>' +
+                            '</li>');
+                    });
+                }
+                else {
+                    $('#sortable2').children().remove();
+                }
+            },
+            error: function (xhr, msg, err) {
+                alert(xhr.responseText);
+            }
+        });
+    }
+
+
+
+    function GetGLMDBalance(branch, period, accNo, ccy) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetMonthlyBalanceAmount", "MonthlyBalance", new { Area = "GLTable" })',
+            contentType: 'application/html; charset=utf-8',
+            dataType: 'json',
+            data: {
+                "branch": $('#Branch').val(),
+                "period": $('#Period').val(),
+                "accNo": $('#Account').val(),
+                "ccy": $('#Currency').val(),
+                "status": $('#Status').val(),
+            },
+            success: function (result) {
+                if (result != null && result != 'undefined' && result.includes('|')) {
+                    var amount = result.split('|');
+
+                    $('span#tranDBeg').text(amount[0]);
+                    $('span#tranDEnd').text(amount[1]);
+                }
+                else {
+                    $('span#tranDBeg').text(0);
+                    $('span#tranDEnd').text(0);
+                }
+            },
+            error: function (xhr, msg, err) {
+                alert(xhr.responseText);
+            }
+        });
+    }
+
+    function GetBankStatementBalance(branch, period, accNo, ccy) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetBankStatementBalance", "GLReconcile", new { Area = "GLTransaction" })',
+            contentType: 'application/html; charset=utf-8',
+            dataType: 'json',
+            data: {
+                "branch": $('#Branch').val(),
+                "period": $('#Period').val(),
+                "accNo": $('#Account').val(),
+                "ccy": $('#Currency').val(),
+                "status": $('Status').val(),
+            },
+            success: function (result) {
+                if (result != null && result != 'undefined' && result.includes('|')) {
+                    var amount = result.split('|');
+
+                    $('span#bBeg').text(amount[0]);
+                    $('span#bEnd').text(amount[1]);
+                }
+                else {
+                    $('span#bBeg').text(0);
+                    $('span#bEnd').text(0);
+                }
+            },
+            error: function (xhr, msg, err) {
+                alert(xhr.responseText);
+            }
+        });
+    }
+
+    function uploadFile() {
+        debugger;
+        var files = $('#File').get(0).files;
+        var fileData = new FormData();
+
+        var uploadValidateMsg = '';
+
+        if (typeof ($('#Branch')) === 'undefined' && $('#Branch').val() == null || $('#Branch').val() == "") {
+            uploadValidateMsg += '- Please select branch' + "\n\r";
+        }
+
+        if (typeof $('#Period') === 'undefined' || $('#Period').val() == null || $('#Period').val() == "") {
+            uploadValidateMsg += '- Please select period' + "\n\r";
+        }
+
+        if (typeof $('#Account') === 'undefined' || $('#Account').val() == null || $('#Account').val() == "") {
+            uploadValidateMsg += '- Please select account' + "\n\r";
+        }
+
+        if (typeof $('#Currency') === 'undefined' || $('#Currency').val() == null || $('#Currency').val() == "") {
+            uploadValidateMsg += '- Please select period' + "\n\r";
+        }
+
+        if (typeof $('#cboStatus') === 'undefined' || $('#cboStatus').val() == null || $('#cboStatus').val() == "") {
+            uploadValidateMsg += '- Please select status' + "\n\r";
+        }
+
+        if (uploadValidateMsg != '') {
+            uploadValidateMsg = "Please input required data: " + "\n\r" + uploadValidateMsg;
+            return false;
+        }
+
+
+        fileData.append('branch', $('#Branch').val());
+        fileData.append('period', $('#Period').val());
+        fileData.append('accNo', $('#Account').val());
+        fileData.append('ccy', $('#Currency').val());
+        fileData.append('status', $('Status').val());
+
+        for (var i = 0; i < files.length; i++) {
+            fileData.append("fileInput", files[i]);
+        }
+
+
+
+        @*$.ajax({
+            type: "POST",
+            url: '@Url.Action("UploadFile", "GLReconcile", new { Area = "GLTransaction" })',
+            contentType: false,
+            processData: false,
+            dataType: "json",
+            data: fileData,
+            success: function (result) {
+                alert(result);
+                refreshData();
+            },
+            error: function (xhr, msg, err) {
+                alert(xhr.responseText);
+            }
+        });*@
+    }
+
+    //function validateMatch() {
+    //    var total = 0;
+
+    //    $('input[name=bankStatItem]:checked').each(function (index, obj) {
+    //        //console.log($('#' + $('#obj').attr('id')).parent().find('p[name=Amount]').innerText);
+    //        var amount = parseFloat(RemoveAllComma(this.parent().find('p[name="Amount"]').innerText));
+    //        total = total + amount;
+    //    });
+
+    //    console.log(total);
+
+    //    return false;
+    //}
+
+    //function getBankStatementCheckedTotal() {
+
+    //}
+    </script>
+
+
+}

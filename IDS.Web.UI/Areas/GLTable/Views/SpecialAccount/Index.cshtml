@@ -1,0 +1,469 @@
+﻿@model IEnumerable<IDS.GLTable.SpecialAccount>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Special Account List";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+}
+
+@{
+    Html.RenderPartial("_ProgressPage");
+}
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="row">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="col-sm-6 col-md-6 col-6">
+        <div class="text-right">
+            <p>
+                @{
+                    if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" title="Input Special Account" onclick="LoadCreateNewForm()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" title="Input Special Account" onclick="NoAccess()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+
+                    if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                    {
+                        <a class="btn btn-sm btn-info" title="Edit Special Account" onclick="LoadEditForm()">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-sm btn-info" title="Edit Special Account" onclick="NoAccess()" disabled="disabled">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+
+                    if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                    {
+                        <a onclick="Delete()" title="Delete Special Account" class="btn btn-sm btn-danger" href="#">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a onclick="Delete()" title="Delete Special Account" class="btn btn-sm btn-danger" href="#">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-2">
+
+    <div class="row mb-2 justify-content-between col-sm-5">
+        <label for="cboTypeACC" class="col-sm-3 col-form-label col-form-label-sm">Special Account : </label>
+        <div class="col-sm-9">
+            @Html.DropDownList("Type Acc", (SelectList)ViewData["SelectListTypeAcc"], new { @id = "cboTypeACC", @class = "form-control select2DDList" })
+        </div>
+    </div>
+</div>
+
+
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="align-middle">ID</th>
+                <th class="align-middle">Account Type</th>
+                <th class="align-middle">From CCY</th>
+                <th class="align-middle">From Account</th>
+                <th class="align-middle">To Currency</th>
+                <th class="align-middle">To Account</th>
+                <th class="align-middle">Operator ID</th>
+                <th class="align-middle">Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    @*<script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>*@
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+
+    <script type="text/javascript">
+        var cboTypeAccVAR = $("#cboTypeACC").val();
+        var table = null;
+
+        $(document).ready(function () {
+            LoadData(cboTypeAccVAR);
+
+            $(".select2DDList").select2();
+        });
+
+        function LoadData(typeacc) {
+            table = LoadDT(httpGet('POST', '@Url.Action("GetDataWithTypeAcc", "SpecialAccount", new { Area = "GLTable" })', JSON.stringify({ "typeAcc": typeacc })));
+        }
+
+        function LoadDT(dataJS) {
+            return $('#tableData').DataTable({
+                "bDestroy": true,
+                data: JSON.parse(dataJS),
+                "columns": [
+                { "data": null },
+                { "data": "ID", "name": "ID" },
+                { "data": "TypeACC", "name": "TypeACC" },
+                { "data": "FromCCY", "name": "FromCCY" },
+                { "data": "FromACC", "name": "FromACC" },
+                { "data": "ToCCY", "name": "ToCCY" },
+                { "data": "ToACC", "name": "ToACC" },
+                { "data": "OperatorID", "name": "OperatorID" },
+                {
+                    "data": "LastUpdate", "name": "LastUpdate",
+                    "render": function (data, type, row, meta) {
+                        return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                    }
+                }
+                ],
+                "order": [[1, "asc"]],
+                "lengthMenu": [[1, 10, 25, 50, -1], [1, 10, 25, 50, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "className": "select-checkbox",
+                    "checkboxes": {
+                        "selectRow": true
+                    },
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "visible": false,
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+            });
+        }
+
+        function LoadCreateNewForm() {
+            data = $("#cboTypeACC").val();
+            modalProcess();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Create", "SpecialAccount", new { Area = "GLTable" })',
+                data: {
+                    'typeACC': data
+                },
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (result) {
+                    $('#loadingModal').modal('hide');
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    $("#modalTitle").html("Create Data Account Type " + data);
+                    $("#CreateEditForm").modal('show');
+                    $("#TypeACC").val(data);
+                },
+                error: function (status) {
+                    alert('');
+                }
+            });
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var data = null;
+            var dataTypeACC = null;
+
+            if (selRow.length > 0) {
+                data = selRow[0]["ID"];
+                dataBegDate = selRow[0]["BegDate"];
+                dataTypeACC = $("#cboTypeACC").val();
+
+                modalProcess();
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Edit", "SpecialAccount", new { Area = "GLTable" })',
+                    data: {
+                        'specialAccID': data,
+                        'typeACC': dataTypeACC
+                    },
+                    dataType: 'html',
+                    success: function (result) {
+                        $('#loadingModal').modal('hide');
+                        $('#PartialSection').empty();
+                        $("#PartialSection").html(result);
+                        $("#modalTitle").html("Edit Data");
+                        $("#ID").attr('readonly', 'true');
+                        $("#CreateEditForm").modal('show');
+                    },
+                    error: function (status) {
+                        alert('');
+                    }
+                });
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var dataCollectionMessage = '';
+            var dataCollection = '';
+
+            $.each(selRow, function (index, rowId) {
+                dataCollectionMessage += '[' + rowId["TypeACC"] + ']' + '\n';
+            })
+
+            if (selRow.length > 0) {
+                var answer = confirm("You are about to delete data:\n" + dataCollectionMessage + " \nAre you sure want to delete the data ?");
+            } else {
+                alert('Please select the data you want to delete');
+            }
+
+            if (answer) {
+                $.each(selRow, function (index, rowId) {
+                    dataCollection += rowId["ID"] + ',';
+                })
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "SpecialAccount", new { Area = "GLTable" })',
+                        data: {
+                            "specialAccountsIDList": dataCollection
+
+                        },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    alert(respond);
+                                    $.ajax({
+                                        type: "POST",
+                                        url: '@Url.Action("index", "SpecialAccount", new { Area = "GLTable" })',
+                                        success: function () {
+                                            LoadData($("#cboTypeACC").val());
+                                        },
+                                        error: function (status) {
+                                            alert(status);
+                                        }
+                                    });
+                                    break;
+                                default:
+                                    alert(respond);
+                                    $.ajax({
+                                        type: "POST",
+                                        url: '@Url.Action("index", "SpecialAccount", new { Area = "GLTable" })',
+                                        success: function () {
+                                            LoadData($("#cboTypeACC").val());
+                                        },
+                                        error: function (status) {
+                                            alert(status);
+                                        }
+                                    });
+                                    break;
+                            }
+
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+        }
+
+        @*function LoadData(cboTypeAccValue) {
+            $('#tableData').DataTable
+        ({
+            destroy: true,
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "className": "select-checkbox",
+                    "checkboxes": {
+                        "selectRow": true
+                    },
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "visible": false,
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                "search": "",
+                "searchPlaceholder": "Search...",
+                "emptyTable": "No record found.",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[1, "asc"]],
+            "serverSide": "true",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            "ajax":
+            {
+                "url": '@Url.Action("GetDataWithTypeAcc", "SpecialAccount", new { Area = "GLTable" })',
+                "data": { 'typeAcc': cboTypeAccValue },
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "columns": [
+                { "data": null },
+                { "data": "ID", "name": "ID" },
+                { "data": "TypeACC", "name": "TypeACC" },
+                { "data": "FromCCY", "name": "FromCCY" },
+                { "data": "FromACC", "name": "FromACC" },
+                { "data": "ToCCY", "name": "ToCCY" },
+                { "data": "ToACC", "name": "ToACC" },
+                { "data": "OperatorID", "name": "OperatorID" },
+                {
+                    "data": "LastUpdate", "name": "LastUpdate",
+                    "render": function (data, type, row, meta) {
+                        return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                    }
+                }
+            ]
+        });
+        }*@
+
+        $('#cboTypeACC').change(function () {
+            var SelectedValue = $(this).val();
+            cboTypeAccVAR = SelectedValue;
+            LoadData(SelectedValue);
+        });
+    </script>
+}

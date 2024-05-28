@@ -1,0 +1,425 @@
+﻿@model IEnumerable<IDS.Sales.TaxNumber>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Tax Number List";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <link href="~/Content/modalloading.css" rel="stylesheet" />
+}
+
+@*@{
+    Html.RenderPartial("_ProgressPage");
+}*@
+
+<div class="row mb-0">
+    <div class="row mb-1 col-sm-2">
+        <label for="PeriodIndex" class="col-sm-2 col-form-label col-form-label-sm">Year</label>
+        <div class="col-sm-9">
+            @Html.TextBox("Year", "", new { @id = "Year", @class = "form-control form-control-sm bg-white col-sm-6" })
+        </div>
+    </div>
+
+    @*<div class="row mb-1 col-sm-4">
+        <label for="cboCustCode" class="col-sm-4 col-form-label col-form-label-sm">Customer Code</label>
+        <div class="col-sm-8">
+            @Html.DropDownList("Customer Code", (SelectList)ViewData["SelectListCustCode"], "", new { @id = "cboCustCode", @class = "form-control select2DDList", @style = "width:100%;" })
+        </div>
+    </div>*@
+
+    <div class="row mb-1 justify-content-between col-sm-10">
+        <div class="col-sm-12 col-md-12 col-12 text-right">
+            <div class="text-right">
+
+                <p>
+                    @{
+                    if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input Sales Invoice (CASI)" onclick="LoadCreateNewForm()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input Sales Invoice (CASI)" onclick="NoAccess()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+
+                    @*if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                    {
+                        <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Sales Invoice (CASI)" onclick="LoadEditForm()">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Sales Invoice (CASI)" onclick="NoAccess()" disabled="disabled">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        }
+
+                        if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                        {
+                            <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Sales Invoice (CASI)" class="btn btn-sm btn-danger" href="#">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Sales Invoice (CASI)" class="btn btn-sm btn-danger" href="#">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        }*@
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Tax Serial Number</th>
+                <th>Invoice No</th>
+                <th>Customer</th>
+                <th>Tax Type</th>
+                <th>Tax Trans. Type</th>
+                <th>Is Used</th>
+                <th>Export Status</th>
+                <th>Is Cancel</th>
+                <th>Operator ID</th>
+                <th>Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+<div class="modal">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center" role="document">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="row">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            </div>
+            @*<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>*@
+            <div class="row">
+                <strong>Please Wait...</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.mask.min.js"></script>
+    <script src="~/Scripts/jquery.mask.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+
+    <script type="text/javascript">
+        var table = null;
+        $body = $("body");
+
+        $(document).on({
+            ajaxStart: function () { $body.addClass("loading"); },
+            ajaxStop: function () { $body.removeClass("loading"); }
+        });
+
+        $(document).ready(function () {
+            LoadData();
+        });
+
+        flatpickr("#Year", {
+            shorthand: true,
+            dateFormat: "Y",
+            defaultDate: ["today"],
+            plugins: [new monthSelectPlugin({
+                shorthand: true, //defaults to false
+                dateFormat: "Y"
+            })],
+        });
+
+        function LoadData() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetData", "PPN", new { Area = "Sales" })',
+                dataType: 'json',
+                data: { year: $("#Year").val() },
+                success: function (respond) {
+                    table = LoadDT(respond);
+                },
+                error: function (a, b, c) {
+                    alert('Somthing is wrong, please contact your administrator')
+                }
+            });
+        }
+
+        function LoadDT(dataJS) {
+            return $('#tableData').DataTable({
+                "bDestroy": true,
+                data: JSON.parse(dataJS),
+                "columns": [
+                    { "data": null },
+                    { "data": "SerialNo", "name": "SerialNo" },
+                    { "data": "DocumentNo", "name": "DocumentNo" },
+                    { "data": "CustName", "name": "CustName" },
+                    { "data": "JenisFaktur", "name": "JenisFaktur" },
+                    {
+                        "data": "TransType", "name": "TransType",
+                        "render": function (data, type, row) {
+                            if (data == '0') {
+                                return '';
+                            }
+                            else if (data == '01') {
+                                return '01 - Kepada Pihak Yang Bukan Pemungut Pajak';
+                            }
+                            else if (data == '02') {
+                                return '02 - Kepada Pemungut Bendaharawan';
+                            }
+                            else if (data == '03') {
+                                return '03 - Kepada Pemungut Selain Bendaharawan';
+                            }
+                            else if (data == '04') {
+                                return '04 - DPP Nilai Lain';
+                            }
+                            else if (data == '06') {
+                                return '06 - Penyerahan Lainnya';
+                            }
+                            else if (data == '07') {
+                                return '07 - Penyerahan yang PPN-nya Tidak Dipungut';
+                            }
+                            else if (data == '08') {
+                                return '08 - Penyerahan yang PPN-nya Dibebaskan';
+                            }
+                            else if (data == '09') {
+                                return '09 - Penyerahan Aktiva (Pasal 16D UU PPN)';
+                            } else {
+                                return '';
+                            }
+                        }
+                    },
+                    {
+                        "data": "IsUsed", "name": "IsUsed",
+                        "render": function (data, type, row) {
+                            if (type == 'display') {
+                                return '<input type="checkbox" onclick="return false;" class="editor-isused">';
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "ExportStatus", "name": "ExportStatus",
+                        "render": function (data, type, row) {
+                            if (type == 'display') {
+                                return '<input type="checkbox" onclick="return false;" class="editor-exportstatus">';
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "Cancel", "name": "Cancel",
+                        "render": function (data, type, row) {
+                            if (type == 'display') {
+                                return '<input type="checkbox" onclick="return false;" class="editor-cancel">';
+                            }
+                            return data;
+                        }
+                    },
+                    { "data": "OperatorID", "name": "OperatorID" },
+                    {
+                        "data": "LastUpdate", "name": "LastUpdate",
+                        "render": function (data, type, row, meta) {
+                            return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                        }
+                    }
+                ],
+                "order": [[1, "asc"]],
+                "lengthMenu": [[1, 10, 25, 50, -1], [1, 10, 25, 50, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "className": "select-checkbox",
+                    "checkboxes": {
+                        "selectRow": true
+                    },
+                    "targets": [0]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [4]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+                "rowCallback": function (row, data) {
+                    // Set the checked state of the checkbox in the table
+                    $('input.editor-isused', row).prop('checked', data.IsUsed == true);
+                    $('input.editor-cancel', row).prop('checked', data.Cancel == true);
+                    $('input.editor-exportstatus', row).prop('checked', data.ExportStatus == true);
+                }
+            });
+        }
+
+        function LoadCreateNewForm() {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Create", "PPN", new { Area = "Sales" })',
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (result) {
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    //$("form#formCreateEdit")[0].reset();
+                    $("#modalTitle").html("Create Data");
+                    $("#CreateEditForm").modal('show');
+                },
+                error: function (status) {
+                    alert('');
+                }
+            });
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+            var data = null;
+
+            if (selRow.length > 0) {
+                data = selRow[0]["BrandID"];
+                modalProcess();
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Edit", "Brand", new { Area = "GeneralTable" })',
+                    data: {
+                        'BrandID': data
+                    },
+                    dataType: 'html',
+                    success: function (result) {
+                        //$('#loadingModal').modal('hide');
+                        $('#PartialSection').empty();
+                        $("#PartialSection").html(result);
+                        $("#modalTitle").html("Edit Data");
+                        $("#BrandID").attr('readonly', 'true');
+                        $("#CreateEditForm").modal('show');
+                    },
+                    error: function (status) {
+                        //$('#loadingModal').modal('hide');
+                        alert('');
+                    }
+                });
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var data = '';
+
+            $.each(selRow, function (index, row) {
+                data += row["BrandID"] + ',';
+                dataCollection += '[' + row["BrandID"] + '] - ' + row["BrandName"] + "\n";
+            })
+
+            var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+            if (answer) {
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "Brand", new { Area = "GeneralTable" })',
+                        data: { "brandsIdList": data },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            $('#PartialSection').empty();
+                            $('#PartialSection').html(respond);
+
+
+                            //$('#deleteMsg').modal('show');
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    LoadData();
+                                    alert(respond);
+                                    @*window.location.href = '@Url.Action("index", "Brand", new { Area = "GeneralTable" })'*@
+                                    break;
+                                default:
+                                    LoadData();
+                                    alert(respond);
+                                    @*window.location.href = '@Url.Action("index", "Brand", new { Area = "GeneralTable" })'*@
+                                    break;
+                            }
+
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+
+        }
+
+        $('#Year').change(function () {
+            LoadData();
+        });
+    </script>
+}
+
+

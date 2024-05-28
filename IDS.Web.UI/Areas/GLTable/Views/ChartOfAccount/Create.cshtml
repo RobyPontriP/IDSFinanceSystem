@@ -1,0 +1,282 @@
+﻿@model IDS.GLTable.ChartOfAccount
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Account, htmlAttributes: new { @class = "control-label col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Account, new { htmlAttributes = new { @id = "AccountNo", @class = "form-control form-control-sm", @maxlength = 10 } })
+                            @Html.ValidationMessageFor(model => model.Account, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.AccountName, htmlAttributes: new { @class = "control-label col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.AccountName, new { htmlAttributes = new { @id = "AccountName", @class = "form-control form-control-sm", @maxlength = 200 } })
+                            @Html.ValidationMessageFor(model => model.AccountName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CCy.CurrencyCode, new { @class = "control-label col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.CCy.CurrencyCode, ViewData["CCyList"] as SelectList, new { @id="CCy", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.CCy.CurrencyCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.AccountGroup, new { @class = "control-label col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @*@Html.DropDownListFor(model => model.AccountGroup, ViewData["AccGroupList"] as SelectList, new { @id = "AccGroup", @class = "form-control form-control-sm" })*@
+                            @Html.EnumDropDownListFor(model => model.AccountGroup, new { @id = "AccGroup", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.AccountGroup, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Level, htmlAttributes: new { @class = "control-label col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @*@Html.EditorFor(model => model.Level, new { htmlAttributes = new { @id = "AccountLevel", @class = "form-control form-control-sm", @maxlength=1 } })*@
+                            @Html.TextBoxFor(model => model.Level, new { @id = "AccountLevel", @class = "form-control form-control-sm", @maxlength = 1 })
+                            @Html.ValidationMessageFor(model => model.Level, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.AccountTotalDetail, "Total  / Detail", new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-6">
+                            @Html.Label("Total", new { @class = "col-sm-2" })
+                            @Html.RadioButtonFor(model => model.AccountTotalDetail, true, new { @checked = "checked" })
+
+                            @Html.Label("Detail", new { @class = "col-sm-2 ml-4 mr-1" })
+                            @Html.RadioButtonFor(model => model.AccountTotalDetail, false)
+                            @*<div class="checkbox">
+                                    @Html.EditorFor(model => model.AccountTotalDetail, new { @id = "ChkAccountTotal" })
+                                    @Html.ValidationMessageFor(model => model.AccountTotalDetail, "", new { @class = "text-danger" })
+                                </div>*@
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row pb-0">
+                        @Html.LabelFor(model => model.ProtectAccount, htmlAttributes: new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-9">
+                            <div class="checkbox">
+                                @Html.EditorFor(model => model.ProtectAccount, new { @id = "chkProtectAcc" })
+                                @Html.ValidationMessageFor(model => model.ProtectAccount, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row pb-0">
+                        @Html.LabelFor(model => model.CashAccount, htmlAttributes: new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-9">
+                            <div class="checkbox">
+                                @Html.EditorFor(model => model.CashAccount, new { @id="chkCashAccount" })
+                                @Html.ValidationMessageFor(model => model.CashAccount, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                    {
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSave").click(function () {
+            if(!$("form#formCreateEdit").valid())
+            {
+                return false;
+            }
+
+            var confirmText = "";
+
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Chart of Account : [" + $("#AccountNo").val() + "] - " + $("#CCy").val() + " ?");
+            }
+        
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "ChartOfAccount", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $("#CCy").prop('disabled', false);
+                    $("#AccountNo").prop('disabled', false);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "ChartOfAccount", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            $("#CCy").prop('disabled', true);
+                            $("#AccountNo").prop('disabled', true);
+                            alert(respond);
+                        }
+                    });
+                }
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "", new { Area = "GLTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#AccountNo, #CCy').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+
+
+                    $('#AccountNo').prop('disabled', false);
+                    $('#CCy').prop('disabled', false);
+
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $("#AccountNo").change(function () {
+            ValidateAccGroup($("#AccountNo").val());
+            //if ($("#AccountNo").val().charAt(0) == '1') {
+            //    alert('can only choose an Asset Group if the Header Account No is 1');
+            //    $("#AccGroup").val(1);
+            //}
+        }),
+
+        $("#AccGroup").change(function () {
+            ValidateAccGroup($("#AccountNo").val());
+            //if ($("#AccountNo").val().charAt(0) == '1') {
+            //    alert('can only choose an Asset Group if the Header Account No is 1');
+            //    $("#AccGroup").val(1);
+            //}
+        }),
+
+        $('#AccountNo').keypress(function (event) {
+            return isNumber(event,this);
+        });
+
+        //$('#AccountLevel').keypress(function (event) {
+        //    if ($(this).val() > 9) {
+        //        return false;
+        //    } else {
+        //        true
+        //    }
+        //});
+
+        $('#AccountLevel').keyup(function (event) {
+            if ($(this).val() > 9) {
+                $(this).val('');
+            }
+
+            if ($(this).val() <= 0) {
+                $(this).val('');
+                return;
+            }
+        });
+
+    });
+
+    function ValidateAccGroup(accNo) {
+        if (accNo.charAt(0) == '1' && $("#AccGroup").val() != 1) {
+            alert('can only choose an Asset Group if the Header Account No is 1');
+            $("#AccGroup").val(1);
+        }
+    }
+
+    function isNumber(evt, element) {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (
+            (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+            (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

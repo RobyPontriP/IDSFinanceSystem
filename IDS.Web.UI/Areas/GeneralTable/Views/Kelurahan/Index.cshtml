@@ -1,0 +1,327 @@
+﻿@model IEnumerable<IDS.GeneralTable.Kelurahan>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Kelurahan List";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    @*<link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/jquery.dataTables.css">*@
+}
+
+<div class="row">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="col-sm-6 col-md-6 col-6">
+        <div class="text-right">
+            <p>
+                @{
+                    if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" onclick="LoadCreateNewForm()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" onclick="NoAccess()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+
+                    if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                    {
+                        <a class="btn btn-sm btn-info" onclick="LoadEditForm()">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-sm btn-info" onclick="NoAccess()" disabled="disabled">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+
+                    if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                    {
+                        <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="align-middle">ID</th>
+                <th class="align-middle">Kelurahan Name</th>
+                <th class="align-middle">Zip Code</th>
+                <th class="align-middle">Country</th>
+                <th class="align-middle">City</th>
+                <th class="align-middle">Kecamatan</th>
+                <th class="align-middle">Operator ID</th>
+                <th class="align-middle">Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+
+    <script type="text/javascript">
+        var table = $('#tableData').DataTable
+        ({
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "data": null,
+                    "width": "20px",
+                    "defaultContent": '',
+                    "orderable": false,
+                    "className": "select-checkbox",
+                    "checkboxes": {
+                        "selectRow": true
+                    },
+                    "targets": [0]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "190px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "190px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "190px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [8]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                "search": "",
+                "searchPlaceholder": "Search...",
+                "emptyTable": "No record found.",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[1, "asc"]],
+            "serverSide": "true",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            "ajax":
+            {
+                "url": '@Url.Action("GetData", "Kelurahan", new { Area = "GeneralTable" })',
+                "type": "POST",
+                "dataType": "JSON"
+            },
+            "columns": [
+                { "data": null},
+                { "data": "KelurahanCode", "name": "KelurahanCode" },
+                { "data": "KelurahanName", "name": "KelurahanName" },
+                { "data": "ZipCode", "name": "ZipCode" },
+                { "data": "CountryKelurahan.CountryName", "name": "CountryKelurahan.CountryName" },
+                { "data": "CityKelurahan.CityName", "name": "CityKelurahan.CityName" },
+                { "data": "KecamatanKelurahan.KecamatanName", "name": "KecamatanKelurahan.KecamatanName" },
+                { "data": "OperatorID", "name": "OperatorID" },
+                {
+                    "data": "LastUpdate", "name": "LastUpdate",
+                    "render": function (data, type, row, meta) {
+                        return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                    }
+                }
+            ]
+        });
+
+        function LoadCreateNewForm() {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Create", "Kelurahan", new { Area = "GeneralTable" })',
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (result) {
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    //$("form#formCreateEdit")[0].reset();
+                    $("#modalTitle").html("Create Data");
+                    $("#CreateEditForm").modal('show');
+                    $("#cboCountry").prop('disabled', false);
+                    $("#cboCity").prop('disabled', false);
+                    $("#cboKecamatan").prop('disabled', false);
+                },
+                error: function (status) {
+                    alert('');
+                }
+            });
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+            var data = null;
+            var dataCountry = null;
+            var dataCity = null;
+            var dataKecamatan = null;
+
+            if (selRow.length > 0) {
+                data = selRow[0]["KelurahanCode"];
+                dataCountry = selRow[0]["CountryKelurahan"]["CountryCode"];
+                dataCity = selRow[0]["CityKelurahan"]["CityCode"];
+                dataKecamatan = selRow[0]["KecamatanKelurahan"]["KecamatanCode"];
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Edit", "Kelurahan", new { Area = "GeneralTable" })',
+                    data: {
+                        'KelurahanCode': data,
+                        'CountryCode': dataCountry,
+                        'CityCode': dataCity,
+                        'KecamatanCode': dataKecamatan
+                    },
+                    dataType: 'html',
+                    success: function (result) {
+                        $('#PartialSection').empty();
+                        $("#PartialSection").html(result);
+                        $("#modalTitle").html("Edit Data");
+                        $("#KelurahanCode").attr('readonly', 'true');
+                        $("#CreateEditForm").modal('show');
+                        $("#cboCountry").prop('disabled', true);
+                        $("#cboCity").prop('disabled', true);
+                        $("#cboKecamatan").prop('disabled', true);
+                    },
+                    error: function (status) {
+                        alert('');
+                    }
+                });
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+            var dataCollectionMessage = '';
+            var dataCollection = '';
+            var dataCollectionCountry = '';
+            var dataCollectionCity = '';
+            var dataCollectionKecamatan = '';
+
+            $.each(selRow, function (index, rowId) {
+                //dataCollectionMessage += rowId["KelurahanCode"] + " Country " + rowId["CountryKelurahan"]["CountryName"] + " City " + rowId["CityKelurahan"]["CityName"] + " Kecamatan " + rowId["KecamatanKelurahan"]["KecamatanName"] + ' | ';
+                dataCollectionMessage += '[' + rowId["KelurahanCode"] + ' - '+rowId["KelurahanName"]+'] - ' + " [Country " + rowId["CountryKelurahan"]["CountryName"]+" ] "+"[City " + rowId["CityKelurahan"]["CityName"]+"] "+"[Kecamatan " + rowId["KecamatanKelurahan"]["KecamatanName"] + "]\n";
+            })
+
+            if (selRow.length > 0) {
+                var answer = confirm("You are about to delete data:\n" + dataCollectionMessage + "\nAre you sure want to delete the data ?");
+            } else {
+                alert('Please select the data you want to delete');
+            }
+
+            if (answer) {
+                $.each(selRow, function (index, rowId) {
+                    dataCollection += rowId["KelurahanCode"] + ',';
+                    dataCollectionCountry += rowId["CountryKelurahan"]["CountryCode"] + ',';
+                    dataCollectionCity += rowId["CityKelurahan"]["CityCode"] + ',';
+                    dataCollectionKecamatan += rowId["KecamatanKelurahan"]["KecamatanCode"] + ',';
+                })
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "Kelurahan", new { Area = "GeneralTable" })',
+                        data: { "kelurahansCodeList": dataCollection,
+                                "countryCodeList": dataCollectionCountry,
+                                "cityCodeList": dataCollectionCity,
+                                "kecamatansCodeList": dataCollectionKecamatan
+
+                        },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    alert(respond);
+                                    window.location.href = '@Url.Action("index", "Kelurahan", new { Area = "GeneralTable" })'
+                                    break;
+                                default:
+                                    alert(respond);
+                                    window.location.href = '@Url.Action("index", "Kelurahan", new { Area = "GeneralTable" })'
+                                    break;
+                            }
+
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+
+        }
+    </script>
+}

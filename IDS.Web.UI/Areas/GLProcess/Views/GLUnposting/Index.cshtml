@@ -1,0 +1,244 @@
+﻿
+@{
+    ViewBag.Title = "Unposting Journal";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+
+}
+
+@Html.Hidden("result", ViewData["result"])
+@Html.Hidden("MessageError", ViewData["MessageError"])
+@Html.Hidden("dtpValue", ViewData["dtpValue"])
+@Html.Hidden("HOStatus", ViewData["HOStatus"])
+
+<div class="row mb-2">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewBag.Title</h4>
+    </div>
+</div>
+
+<div class="row mb-0">
+    <div class="row mb-2 justify-content-between col-sm-3">
+        <label for="cboBranchIndex" class="col-sm-1 col-form-label col-form-label-sm">Branch</label>
+        <div class="col-sm-10">
+            @Html.DropDownList("Branch Name", (SelectList)ViewData["SelectListBranch"], new { @id = "cboBranchIndex", @class = "form-control form-control-sm" })
+        </div>
+    </div>
+
+    <div class="row mb-2 justify-content-between col-sm-2">
+        <label for="PeriodIndex" class="col-sm-1 col-form-label col-form-label-sm">Period</label>
+        <div class="col-sm-7">
+            <input class="form-control form-control-sm bg-white datepicker text-box single-line flatpickr-input valid active" data-val="true" id="PeriodIndex" name="Period" type="text" aria-describedby="Mont-error" aria-invalid="false">
+        </div>
+    </div>
+
+    <div class="row mb-2 justify-content-between col-sm-1">
+        <div class="col-sm-10">
+            <button class="btn btn-sm btn-primary" type="button" onclick="Process()">
+                Unpost
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="row mb-2 col-sm-6 justify-content-between" id="chkDataProcess">
+</div>
+
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center" role="document">
+        <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="row">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="row">
+                <strong>Process...</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="errorMessageModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content" style="height:300px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorMessageModal">Error Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="modalClose()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="divErrorMessage">
+                <textarea class="form-control" style="height:100%; resize:none" id="txtErrorMessage"></textarea>
+            </div>
+            @*<div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div id="myModal" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="icon-box">
+                </div>
+                <h4 class="modal-title w-100">Awesome!</h4>
+            </div>
+            <div class="modal-body">
+                <p class="text-center">Your booking has been confirmed. Check your email for detials.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success btn-block" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>     
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+
+
+    <script type="text/javascript">
+        var HOSStatus = $("#HOStatus").val();
+        var result = $("#result").val();
+
+        var arrChkVal = new Array();
+        var arrrsltProcess = new Array();
+
+        var cboBranch = $("#cboBranchIndex").val();
+
+        var PeriodValue = monthNames[new Date().getMonth()] + " " + new Date().getFullYear();
+
+        if ($("#dtpValue").val() != '') {
+            PeriodValue = $("#dtpValue").val();
+        }
+
+        $(document).ready(function () {
+            result = $("#result").val();
+            if ($("#PeriodIndex").val() != '') {
+                PeriodValue = $("#PeriodIndex").val();
+            }
+
+            $("#txtErrorMessage").prop("readonly", true);
+
+            flatpickr("#PeriodIndex", {
+                //shorthand: true,
+                dateFormat: "M/Y",
+                altFormat: "F Y",
+                defaultDate: [PeriodValue],
+                static: true,
+                plugins: [new monthSelectPlugin({
+                    shorthand: true, //defaults to false
+                    dateFormat: "M Y", //defaults to "F Y"
+                    altFormat: "F Y",
+                    disableMobile: true
+                })],
+            });
+
+            $("#PeriodIndex").val(PeriodValue);
+
+            if (result != "") {
+                result = result.slice(0, -1);
+                arrrsltProcess = result.split(',');
+                for (var i = 0; i < arrrsltProcess.length; i++) {
+                    var strTest = arrrsltProcess[i];
+                    ResultProcess(strTest.charAt(0), strTest.charAt(2));
+                }
+                $("#PeriodIndex").val(PeriodValue);
+
+                modalErrorMessage();
+            }
+
+            if (HOSStatus == 0) {
+                $("#cboBranchIndex").prop('disabled', 'true');
+            }
+
+            //if ($("#result").val() != "") {
+            //    alert($("#result").val());
+            //    myOnloadFunc();
+            //}
+            
+        });
+
+        $('#cboBranchIndex').change(function () {
+            cboBranch = $(this).val();
+        });
+
+        $('#PeriodIndex').change(function () {
+            PeriodValue = $(this).val();
+        });
+
+        if ($("#result").val() != "") {
+            alert($("#result").val());
+            //myOnloadFunc();
+        }
+
+        function modalProcess() {
+            $('#loadingModal').modal({ backdrop: 'static', keyboard: false })
+            $('#loadingModal').modal('show');
+            setTimeout(function () {
+                $('#loadingModal').modal('hide');
+            });
+        }
+
+        function modalErrorMessage() {
+            $('#txtErrorMessage').val($('#MessageError').val());
+
+            if ($('#MessageError').val() != "") {
+                $('#errorMessageModal').modal('show');
+            }
+        }
+
+        function modalClose() {
+            $('#errorMessageModal').modal('hide');
+        }
+
+        function chkCheckedProcess(e) {
+        }
+
+        function Process() {
+            var answer = confirm("Are you sure want to Unposting Journal at Period "+$('#PeriodIndex').val()+" ?");
+
+            if (answer) {
+                modalProcess();
+
+                var url = '@Url.Action("Index", "GLUnposting", new { Area = "GLProcess" })';
+
+                var form = $('<form action="' + url + '" method="POST">');
+                form.append('<input type="hidden" name="dtpPeriod" value="' + $("#PeriodIndex").val() + '" />');
+                form.append('<input type="hidden" name="branch" value="' + cboBranch + '" />');
+                form.append('</form>');
+                $('body').append(form);
+                form.submit();
+                PeriodValue = $("#PeriodIndex").val();
+            } else {
+                return false;
+            }
+        }
+
+        function myOnloadFunc() {
+            $('#myModal').modal('show');
+        }
+
+    </script>
+}
+
+
+

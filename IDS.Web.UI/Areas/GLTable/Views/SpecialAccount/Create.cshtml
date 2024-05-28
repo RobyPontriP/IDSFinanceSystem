@@ -1,0 +1,333 @@
+﻿@model IDS.GLTable.SpecialAccount
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+                    @Html.HiddenFor(model => model.TypeACC);
+                    @Html.HiddenFor(model => model.ID);
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    if (ViewData["TypeAccParam"].ToString() == "RE" || ViewData["TypeAccParam"].ToString() == "BY")
+                    {
+                        if (ViewData["TypeAccParam"].ToString() == "RE")
+                        {
+                            ViewData["LabelCCY"] = "PL Currency";
+                            ViewData["LabelACC"] = "PL Account Number";
+                        }
+                        else
+                        {
+                            ViewData["LabelCCY"] = "Currency From";
+                            ViewData["LabelACC"] = "Account Number From";
+                        }
+                    }
+
+                    if (ViewData["TypeAccParam"].ToString() == "PL")
+                    {
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.FromACC, "Profit / Lost Type", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                            <div class="col-md-9">
+                                @Html.DropDownListFor(model => model.FromACC, (SelectList)ViewData["SelectListProfitOrLostType"], "", new { @id = "cboProfitOrLostType", @class = "form-control select2DDList" })
+                                @Html.ValidationMessageFor(model => model.FromACC, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+
+                    if (ViewData["TypeAccParam"].ToString() != "PL")
+                    {
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.FromCCY, ViewData["LabelCCY"].ToString(), htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                            <div class="col-md-9">
+                                @Html.DropDownListFor(model => model.FromCCY, (SelectList)ViewData["SelectListCCYFrom"], "", new { @id = "cboFromCCY", @class = "form-control select2DDList" })
+                                @Html.ValidationMessageFor(model => model.FromCCY, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            @Html.LabelFor(model => model.FromACC, ViewData["LabelACC"].ToString(), htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                            <div class="col-md-9">
+                                @Html.DropDownListFor(model => model.FromACC, (SelectList)ViewData["SelectListACCFrom"], "", new { @id = "cboFromACC", @class = "form-control select2DDList" })
+                                @Html.ValidationMessageFor(model => model.FromACC, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+
+                    if (ViewData["TypeAccParam"].ToString() == "RE" || ViewData["TypeAccParam"].ToString() == "BY" || ViewData["TypeAccParam"].ToString() == "PL")
+                    {
+                        //20220402
+                        if (ViewData["TypeAccParam"].ToString() == "PL")
+                        {
+                            <div class="form-group row">
+                                @Html.LabelFor(model => model.ToCCY, "Currency", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.ToCCY, (SelectList)ViewData["SelectListCCYTo"], "", new { @id = "cboToCCY", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.ToCCY, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(model => model.ToACC, "Account Number", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.ToACC, (SelectList)ViewData["SelectListACCTo"], "", new { @id = "cboToACC", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.ToACC, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        }
+                        else if(ViewData["TypeAccParam"].ToString() == "RE")
+                        {
+                            <div class="form-group row">
+                                @Html.LabelFor(model => model.ToCCY, "RE Currency", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.ToCCY, (SelectList)ViewData["SelectListCCYTo"], "", new { @id = "cboToCCY", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.ToCCY, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(model => model.ToACC, "RE Account Number", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.ToACC, (SelectList)ViewData["SelectListACCTo"], "", new { @id = "cboToACC", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.ToACC, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group row">
+                                @Html.LabelFor(model => model.ToCCY, "Currency To", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.ToCCY, (SelectList)ViewData["SelectListCCYTo"], "", new { @id = "cboToCCY", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.ToCCY, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                @Html.LabelFor(model => model.ToACC, "Account Number To", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                                <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.ToACC, (SelectList)ViewData["SelectListACCTo"], "", new { @id = "cboToACC", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.ToACC, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        }
+
+                    }
+
+                    if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                    {
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" title="Input New Special Account" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" title="Save Special Account" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" title="Close This Form" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+
+        if ($('#TypeACC').val() == "PL") {
+            $("#cboProfitOrLostType").rules("add", "required")
+        }
+
+        if ($('#TypeACC').val() == "AR" || $('#TypeACC').val() == "AP" || $('#TypeACC').val() == "DL" || $('#TypeACC').val() == "KS" || $('#TypeACC').val() == "BN"
+            || $('#TypeACC').val() == "RE" || $('#TypeACC').val() == "BY") {
+            $("#cboFromCCY").rules("add", "required")
+            $("#cboFromACC").rules("add", "required")
+        }
+
+        if ($('#TypeACC').val() == "RE" || $('#TypeACC').val() == "BY" || $('#TypeACC').val() == "PL") {
+            $("#cboToCCY").rules("add", "required")
+            $("#cboToACC").rules("add", "required")
+        }
+
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Account Type : " + $("#TypeACC").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "SpecialAccount", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData($("#cboTypeACC").val());
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "SpecialAccount", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData($("#cboTypeACC").val());
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            } else {
+                return false;
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            var TypeAcc = $('#TypeACC').val();
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*$.ajax({
+                    type: "POST",
+                    url: '@Url.Action("index", "SpecialAccount", new { Area = "GLTable" })',
+                    success: function () {
+                        if (TypeAcc != "") {
+                            $("#cboTypeACC").val(TypeAcc);
+                        }
+                        LoadData(TypeAcc);
+                    },
+                    error: function (status) {
+                        alert(status);
+                    }
+                });*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#cboProfitOrLostType, #cboFromCCY, #cboToCCY, #cboFromACC, #cboToACC').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    $('#cboFromACC').empty();
+                    $('#cboToACC').empty();
+
+                    $("#cboProfitOrLostType").val('').change();
+                    $("#cboFromCCY").val('').change();
+                    $("#cboToCCY").val('').change();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+
+        $('input.inputnumber').keyup(function (event) {
+            if (event.which >= 37 && event.which <= 40) return;
+            $(this).val(function (index, value) {
+                return value
+                  // Keep only digits and decimal points:
+                  .replace(/[^\d.]/g, "")
+                  // Remove duplicated decimal point, if one exists:
+                  .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                  // Keep only two digits past the decimal point:
+                  .replace(/\.(\d{2})\d+/, '.$1')
+                  // Add thousands separators:
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            });
+        });
+
+        $('#cboFromCCY').change(function () {
+            var fromCCY = $('#cboFromCCY').val();
+            //$('#cboToCCY').hide();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: fromCCY },
+                success: function (respond) {
+                    $('#cboFromACC').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboFromACC').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+
+        $('#cboToCCY').change(function () {
+            var toCCY = $('#cboToCCY').val();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: toCCY },
+                success: function (respond) {
+                    $('#cboToACC').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboToACC').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+    });
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

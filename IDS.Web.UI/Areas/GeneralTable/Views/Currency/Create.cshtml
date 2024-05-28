@@ -1,0 +1,346 @@
+﻿@model IDS.GeneralTable.Currency
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" data-keyboard="false" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.CurrencyCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.CurrencyCode, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 3, name = "CurrencyCode", placeholder = "Currency Code" } })
+                            @Html.ValidationMessageFor(model => model.CurrencyCode, "", new { @id = "valCurrencyCode", @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CurrencyName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.CurrencyName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 20, name = "CurrencyName", placeholder = "Currency Name" } })
+                            @Html.ValidationMessageFor(model => model.CurrencyName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CountryCurrency.CountryName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "Country.CountryCode" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.CountryCurrency.CountryCode, (SelectList)ViewData["SelectListCountry"], "", new { @id = "cboCountry", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.CountryCurrency.CountryCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @*@Html.LabelFor(model => model.MultiplyDivided, htmlAttributes: new { @class = "col-form-label-sm col-sm-2 align-text-top", name = "MultiplyDivided" })
+                        <div class="col-md-1 align-text-bottom" style= "vertical-align:text-bottom">
+                            <input style="text-align:center; vertical-align:middle" type="checkbox" id="MultiplyDivided" data-val="false" name="MultiplyDivided" />
+                        </div>*@
+                        @Html.Label("Multiply", new { @class = "col-sm-2" })
+                        <label class="col-sm-1">@Html.RadioButtonFor(model => model.MultiplyDivided, true, new { @checked = "checked" })</label>
+
+                        @Html.Label("Divided", new { @class = "col-sm-2 ml-5" })
+                        <label class="col-sm-1">@Html.RadioButtonFor(model => model.MultiplyDivided, false) </label>
+
+                        @*<label class="col-sm-4">@Html.DropDownListFor(model => model.CopyFromTable, (SelectList)ViewData["SelectListFromTable"], " ", new { @id = "cboFromTable", @class = "form-control select2DDList" })</label>
+                        @Html.ValidationMessageFor(model => model.FromTable, "", new { @class = "text-danger" })*@
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.DecimalPlaces, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-2 mr-4">
+                            @Html.EditorFor(model => model.DecimalPlaces, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "DecimalPlaces", placeholder = "Decimal Places" } })
+                            @Html.ValidationMessageFor(model => model.DecimalPlaces, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.RoundingUp, htmlAttributes: new { @class = "col-form-label-sm col-sm-2 align-text-top", name = "RoundingUp" })
+                        <div class="col-md-1 align-text-bottom mr-5" style="vertical-align:text-bottom">
+                            <input style="text-align:center; vertical-align:middle" type="checkbox" id="RoundingUp" data-val="false" name="RoundingUp" />
+                        </div>
+
+                        
+                    </div>
+
+                    @*<div class="form-group row">
+                        @Html.LabelFor(model => model.DecimalPlaces, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.DecimalPlaces, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "DecimalPlaces", placeholder = "Decimal Places" } })
+                            @Html.ValidationMessageFor(model => model.DecimalPlaces, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+
+                    @*<div class="form-group row">
+                        @Html.LabelFor(model => model.RoundingUp, htmlAttributes: new { @class = "col-form-label-sm col-sm-3 align-text-top", name = "RoundingUp" })
+                        <div class="col-md-9 align-text-bottom" style="vertical-align:text-bottom">
+                            <input style="text-align:center; vertical-align:middle" type="checkbox" id="RoundingUp" data-val="false" name="RoundingUp" />
+                        </div>
+                    </div>*@
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Rounding, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-2 mr-4">
+                            @Html.EditorFor(model => model.Rounding, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "Rounding", placeholder = "Rounding" } })
+                            @Html.ValidationMessageFor(model => model.Rounding, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.VarianceLimit, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+
+                        <div class="input-group col-sm-3">
+                            @Html.EditorFor(model => model.VarianceLimit, new { htmlAttributes = new { @class = "form-control form-control-sm inputnumber text-right", aria_describeby = "varianceLimit" } })
+                            <span class="input-group-text text-sm form-control-sm" id="varianceLimit">%</span>
+                            @Html.ValidationMessageFor(model => model.VarianceLimit, "", new { @class = "text-danger" })
+                        </div>
+                        
+                    </div>
+
+                    <div class="form-group row">
+                        
+                        
+                    </div>
+
+                    if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                    {
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" title="Input New Currency" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" title="Save Currency" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" title="Close This Form" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#loadingModal').modal('hide');
+        $(".select2DDList").select2();
+        $("#btnSave").click(function () {
+
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+            
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Currency Code : " + $("#CurrencyCode").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                //if (!$("form#formCreateEdit").valid()) {
+                //    return false;
+                //}
+                if ($('#MultiplyDivided').is(":checked")) {
+                    $("#MultiplyDivided").val(true);
+                }
+                if ($('#RoundingUp').is(":checked")) {
+                    $("#RoundingUp").val(true);
+                }
+
+                
+
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "Currency", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "Currency", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            } else {
+                return false;
+            }
+            
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "Currency", new { Area = "GeneralTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#CurrencyCode, #CurrencyName, #cboCountry').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#CurrencyCode').prop('readonly', false);
+                    
+                    $("#DecimalPlaces").val(0);
+                    $("#Rounding").val(0);
+                    $("#VarianceLimit").val(0);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    $(".select2DDList").select2();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+
+        //$('input.inputnumber').keyup(function (event) {
+        //    if (event.which >= 37 && event.which <= 40) return;
+        //    $(this).val(function (index, value) {
+        //        return value
+        //          // Keep only digits and decimal points:
+        //          .replace(/[^\d.]/g, "")
+        //          // Remove duplicated decimal point, if one exists:
+        //          .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+        //          // Keep only two digits past the decimal point:
+        //          .replace(/\.(\d{2})\d+/, '.$1')
+        //          // Add thousands separators:
+        //          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        //    });
+        //});
+
+        
+    });
+
+    $("#VarianceLimit").on('keyup keydown', function () {
+        if (isNaN(($(this).val()))) {
+            $(this).val($(this).val().substring(0, ($(this).val().length - 1)));
+        }
+        if ($(this).val().length > 3 && $(this).val().indexOf('.') == -1) {
+            $(this).val($(this).val().substring(0, 3));
+        }
+        if ($(this).val().indexOf('.') !== -1 && $(this).val().length > 5) {
+            $(this).val($(this).val().substring(0, 5));
+        }
+        if (($(this).val().indexOf('.') !== -1)) {
+            var decimal = $(this).val().split('.');
+            if (decimal[1].length > 2) {
+                $(this).val($(this).val().substring(0, ($(this).val().length - 1)));
+            }
+        }
+    });
+
+    $("#DecimalPlaces").on('keyup keydown', function () {
+        if (isNaN(($(this).val()))) {
+            $(this).val($(this).val().substring(0, ($(this).val().length - 1)));
+        }
+        if ($(this).val().length > 2 && $(this).val().indexOf('.') == -1) {
+            $(this).val($(this).val().substring(0, 2));
+        }
+        if ($(this).val().indexOf('.') !== -1 && $(this).val().length > 5) {
+            $(this).val($(this).val().substring(0, 5));
+        }
+        if (($(this).val().indexOf('.') !== -1)) {
+            var decimal = $(this).val().split('.');
+            if (decimal[1].length > 2) {
+                $(this).val($(this).val().substring(0, ($(this).val().length - 1)));
+            }
+        }
+    });
+
+    $("#Rounding").on('keyup keydown', function () {
+        if (isNaN(($(this).val()))) {
+            $(this).val($(this).val().substring(0, ($(this).val().length - 1)));
+        }
+        if ($(this).val().length > 5 && $(this).val().indexOf('.') == -1) {
+            $(this).val($(this).val().substring(0, 5));
+        }
+        if ($(this).val().indexOf('.') !== -1 && $(this).val().length > 5) {
+            $(this).val($(this).val().substring(0, 5));
+        }
+        if (($(this).val().indexOf('.') !== -1)) {
+            var decimal = $(this).val().split('.');
+            if (decimal[1].length > 2) {
+                $(this).val($(this).val().substring(0, ($(this).val().length - 1)));
+            }
+        }
+    });
+
+    $('#VarianceLimit').keyup(function (event) {
+        InputNumber(this);
+    });
+
+    function InputNumber(e) {
+        $("#" + e.id).keyup(function (event) {
+            if (event.which >= 37 && event.which <= 40) return;
+            $(this).val(function (index, value) {
+                return value
+                // Keep only digits and decimal points:
+                .replace(/[^\d.]/g, "")
+                // Remove duplicated decimal point, if one exists:
+                .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                // Keep only two digits past the decimal point:
+                .replace(/\.(\d{2})\d+/, '.$1')
+                // Add thousands separators:
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            });
+        });
+    }
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+</script>

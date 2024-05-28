@@ -1,0 +1,694 @@
+﻿@model IDS.GLTable.ACFARAP
+
+@{
+    ViewBag.Title = "Edit AP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    var index = 0;
+    var indexSeqNo = 0;
+
+    /// Untuk generate Row dari Template
+    function getTemplate() {
+        index = index + 1;
+        indexSeqNo = indexSeqNo + 1;
+        var newRow = '@Html.Raw(ViewData["NewRowTemplate"])';
+        return newRow;
+    }
+
+    function getEditTemplate() {
+        //index = index + 1;
+        var editRow = '@Html.Raw(ViewData["EditRowTemplate"])';
+        return editRow;
+    }
+</script>
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+}
+
+
+<h2>Edit AP</h2>
+
+@using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormSave", "0");
+
+    <script type="text/javascript">
+        //$('form#formCreateEdit').removeData("validator");
+        //$('form#formCreateEdit').removeData("unobtrusiveValidation");
+        //$.validator.unobtrusive.parse($('form#formCreateEdit'));
+    </script>
+
+    <div class="row">
+        <div class="col-sm">
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="form-group-sm row mb-3">
+                            <h5 class="card-title" style="text-align:center; font-weight:bold">AP</h5>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.RP, "AP Code", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-4">
+                                    @Html.DropDownListFor(model => model.RP, (SelectList)ViewData["SelectListARAP"], new { @id = "cboRP", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.RP, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.SCode.Code, "Source Code", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-3">
+                                    @Html.DropDownListFor(model => model.SCode.Code, (SelectList)ViewData["SelectListSCode"], new { @id = "cboSCode", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.SCode.Code, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.Acc.Account, "Account", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-9">
+                                    @Html.DropDownListFor(model => model.Acc.Account, (SelectList)ViewData["SelectListAcc"], "", new { @id = "cboAcc", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.Acc.Account, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.Supplier.SupCode, "Supplier Code", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-9">
+                                    @Html.DropDownListFor(model => model.Supplier.SupCode, (SelectList)ViewData["SelectListSup"], "", new { @id = "cboSupH", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.Supplier.SupCode, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-0">
+                                @Html.LabelFor(model => model.CCy.CurrencyCode, "CCY", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-2">
+                                    @Html.DropDownListFor(model => model.CCy.CurrencyCode, (SelectList)ViewData["SelectListCCY"], "", new { @id = "cboCcy", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.CCy.CurrencyCode, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.Amount, "Amount", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-5">
+                                    @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "Amount", placeholder = "Amount" } })
+                                    @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.Branch.BranchCode, "Branch", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-4">
+                                    @Html.DropDownListFor(model => model.Branch.BranchCode, (SelectList)ViewData["SelectListBranch"], "", new { @id = "cboBranch", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.Branch.BranchCode, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.ReceivedDate, "Receive Date", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-3">
+                                    @Html.TextBoxFor(model => model.ReceivedDate, new { Value = Model.ReceivedDate.ToString(IDS.Tool.GlobalVariable.DEFAULT_DATE_FORMAT), @class = "form-control form-control-sm bg-white" })
+                                    @Html.ValidationMessageFor(model => model.ReceivedDate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-0">
+                                @Html.LabelFor(model => model.ExchangeRate, "Exchange Rate", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-2">
+                                    @Html.EditorFor(model => model.ExchangeRate, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "ExchangeRate", placeholder = "Exchange Rate", disabled = "disabled" } })
+                                    @Html.ValidationMessageFor(model => model.ExchangeRate, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.EquivAmt, "Equivalent", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-5">
+                                    @Html.EditorFor(model => model.EquivAmt, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "Equivalent", placeholder = "Equivalent", disabled = "disabled" } })
+                                    @Html.ValidationMessageFor(model => model.EquivAmt, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-0">
+                                @Html.LabelFor(model => model.DocNo, "Doc. Number", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-4">
+                                    @Html.EditorFor(model => model.DocNo, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "DocNo", placeholder = "Doc. Number" } })
+                                    @Html.ValidationMessageFor(model => model.DocNo, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.DocDate, "Doc. Date", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-3">
+                                    @Html.TextBoxFor(model => model.DocDate, new { Value = Model.DocDate.ToString(IDS.Tool.GlobalVariable.DEFAULT_DATE_FORMAT), @class = "form-control form-control-sm bg-white" })
+                                    @Html.ValidationMessageFor(model => model.DocDate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.PaymentTerm, "Payment Term", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-2">
+                                    @Html.EditorFor(model => model.PaymentTerm, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "PaymentTerm", placeholder = "Payment Term" } })
+                                    @Html.ValidationMessageFor(model => model.PaymentTerm, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.Outstanding, "Outstanding", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-5">
+                                    @Html.EditorFor(model => model.Outstanding, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "Outstanding", placeholder = "Outstanding", disabled = "disabled" } })
+                                    @Html.ValidationMessageFor(model => model.Outstanding, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.Invoice.InvoiceNumber, "Related Invoice", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-4">
+                                    @Html.DropDownListFor(model => model.Invoice.InvoiceNumber, (SelectList)ViewData["SelectListRelatedInv"], "", new { @id = "cboRelatedInv", @class = "form-control select2DDList" })
+                                    @Html.ValidationMessageFor(model => model.Invoice.InvoiceNumber, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.DueDate, "Due Date", new { @class = "col-form-label col-form-label-sm col-sm-2" })
+                                <div class="col-sm-3">
+                                    @Html.EditorFor(model => model.DueDate, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white", name = "DueDate", placeholder = "Due Date", disabled = "disabled" } })
+                                    @Html.ValidationMessageFor(model => model.DueDate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group-sm row mb-1">
+                                @Html.LabelFor(model => model.Remark, "Remark", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                                <div class="col-sm-9">
+                                    @Html.EditorFor(model => model.Remark, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "Remark", placeholder = "Remark" } })
+                                    @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px; font-weight:bold">Sub AP</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive table-responsive-sm">
+                <table class="table table-condensed" id="table">
+                    <thead>
+                        <tr>
+                            <td style="padding: 1px !important; max-width: 20px; display:none;">Index</td>
+                            <td style="padding: 1px !important; max-width: 20px;">Seq. No.</td>
+                            <td style="padding: 1px !important; max-width: 70px">Ccy</td>
+                            <td style="padding: 1px !important;">Acc No.</td>
+                            <td style="padding: 1px !important;">Description</td>
+                            <td style="padding: 1px !important;" class="text-right">Amount</td>
+                            <td style="padding: 1px !important;" class="text-right">Equiv. Amount</td>
+                            <td style="padding: 1px !important;"></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            <tr id="AddLine">
+                                <td colspan="7">
+                                @if (Convert.ToInt32(ViewData["FormAction"]) != 2)
+                                {
+                                    <a href="#" role="button" id="linkNewRow">Add New Row</a>
+                                }
+                                </td>
+                            </tr>
+                        
+
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">&nbsp;</td>
+                            <td><label class="text-right">Difference : </label> </td>
+                            <td><p id="txtDiff" class="text-right">0</p></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <script type="text/javascript">
+                    index = @Model.ListSUBACFARAP.Count;
+                    indexSeqNo = @Model.ListSUBACFARAP.Count;
+                </script>
+            </div>
+        </div>
+    </div>
+
+}
+<div class="modal-footer">
+    <div class="form-group mr-4">
+        <div class="input-group">
+            <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Operator ID</span>
+            @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })
+        </div>
+    </div>
+
+    <div class="form-group mr-auto col-sm-3 mr-4">
+        <div class="input-group">
+            <span class="input-group-text pb-0 pt-0" style="font-size:11px;" id="basic-addon2">Last Update</span>
+            @*@Html.TextBoxFor(model => model.LastUpdate, new { htmlAttributes = new { @class = "form-control form-control-sm", disabled = true } })*@
+            @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+        </div>
+    </div>
+
+
+    @*<button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>*@
+    @if (!Model.ProcessInv)
+    {
+        <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-primary" id="btnSave" disabled>Save</button>
+    }
+
+    <button type="button" class="btn btn-default" id="btnClose" onclick="history.back()" data-dismiss="modal">Close</button>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralScript.js"></script>
+
+    <script type="text/javascript">
+        $('form#formCreateEdit').removeData("validator");
+        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+
+        flatpickr("#ReceivedDate", {
+            shorthand: true,
+            dateFormat: "d/M/Y",
+            altFormat: "F Y",
+            static: true,
+        });
+
+        flatpickr("#DocDate", {
+            shorthand: true,
+            dateFormat: "d/M/Y",
+            altFormat: "F Y",
+            static: true,
+        });
+
+        flatpickr("#DueDate", {
+            shorthand: true,
+            dateFormat: "d/M/Y",
+            altFormat: "F Y",
+            static: true,
+        });
+
+        $(".select2DDList").select2();
+
+        $(document).ready(function () {
+            if ($('#FormAction').val() == 2) {
+                $('#DocNo,#ReceivedDate,#cboSupH,#cboBranch,#DocDate,#cboRelatedInv,#cboAcc,#cboCcy,#Amount,#PaymentTerm,#Remark').prop('disabled', true);
+
+                $('#Amount').val(AddCommaDecimal($('#Amount').val()));
+                $('#EquivAmt').val(AddCommaDecimal($('#EquivAmt').val()));
+                $('#Outstanding').val(AddCommaDecimal($('#Outstanding').val()));
+                CalcDueDate();
+                GenerateRowForEdit();
+            }            
+        });
+
+        $("#btnSave").click(function () {
+            listDetail = [];
+            listDetail.length = 0;
+            var valResult = Validation();
+            if (valResult) {
+                if ($('#FormAction').val() == '1') {
+                    $.ajax({
+                        type: "POST",
+                        dataType: 'JSON',
+                        url: '@Url.Action("EditAP", "ProcessAP", new { Area = "Sales" })',
+                        data: {
+                            "FormAction": $('#FormAction').val(),
+                            "acfarap": {
+                                "RP": $('#cboRP').val().slice(-1),
+                                "Acc.Account": $('#cboAcc').val(),
+                                "Supplier.SupCode": $('#cboSupH').val(),
+                                "Branch.BranchCode": $('#cboBranch').val(),
+                                "SCode.Code": $('#cboSCode').val(),
+                                "DocNo": $('#DocNo').val(),
+                                "DocDate": moment($('#DocDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                "DueDate": moment($('#DueDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                "ReceivedDate": moment($('#ReceivedDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                "Invoice.InvoiceNumber": $('#cboRelatedInv').val(),
+                                "PaymentTerm": $('#PaymentTerm').val(),
+                                "CCy.CurrencyCode": $('#cboCcy').val(),
+                                "Amount": RemoveAllComma($('#Amount').val()),
+                                "ExchangeRate": $('#ExchangeRate').val(),
+                                "EquivAmt": RemoveAllComma($('#EquivAmt').val()),
+                                "Outstanding": RemoveAllComma($('#Outstanding').val()),
+                                "Remark": $('#Remark').val(),
+                                "ListSUBACFARAP": listDetail
+                            }
+                        },
+                        success: function (result) {
+
+                            alert(result);
+                            $('#FormAction').val('2');
+                        },
+                        error: function (status, xhr, msg) {
+                            alert(msg.Message);
+                        }
+                    });
+                }
+                else if ($('#FormAction').val() == '2') {
+                    //alert('2');
+                    $.ajax({
+                        type: "POST",
+                        dataType: 'JSON',
+                        url: '@Url.Action("EditAP", "ProcessAP", new { Area = "GLTransaction" })',
+                        data: {
+                            "FormAction": $('#FormAction').val(),
+                            "acfarap": {
+                                "RP": $('#cboRP').val().slice(-1),
+                                "Acc.Account": $('#cboAcc').val(),
+                                "Supplier.SupCode": $('#cboSupH').val(),
+                                "Branch.BranchCode": $('#cboBranch').val(),
+                                "SCode.Code": $('#cboSCode').val(),
+                                "DocNo": $('#DocNo').val(),
+                                "DocDate": moment($('#DocDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                "DueDate": moment($('#DueDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                "ReceivedDate": moment($('#ReceivedDate').val(), "DD/MMM/YYYY").format("YYYY-MM-DD"),
+                                "Invoice.InvoiceNumber": $('#cboRelatedInv').val(),
+                                "PaymentTerm": $('#PaymentTerm').val(),
+                                "CCy.CurrencyCode": $('#cboCcy').val(),
+                                "Amount": RemoveAllComma($('#Amount').val()),
+                                "ExchangeRate": $('#ExchangeRate').val(),
+                                "EquivAmt": RemoveAllComma($('#EquivAmt').val()),
+                                "Outstanding": RemoveAllComma($('#Outstanding').val()),
+                                "Remark": $('#Remark').val(),
+                                "ListSUBACFARAP": listDetail
+                            }
+                        },
+                        success: function (result) {
+
+                            alert(result);
+                            $('#FormAction').val('2');
+                        },
+                        error: function (status, xhr, msg) {
+                            alert(msg.Message);
+                        }
+                    });
+                }
+            }
+        })
+
+        $('#linkNewRow').click(function () {
+            // Validasi apakah ada data yang kosong atau tidak valid
+            errorCount = 0;
+
+            if ($('table tbody tr:not(#AddLine)').length > 0) {
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    //$('input[name="COA.Account"]', this).autocomplete({
+                    //    select: function (event, ui) {
+                    //        console.log($('input[name="COA.Account"]', this).val(ui.item.value));
+                    //    }
+                    //});
+                    alert($('select[name="SubAcc.Account"]', this).val());
+                    if (
+                        ($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '') ||
+                        ($('select[name="CCySUBACFARAP.CurrencyCode"]', this).val() == null || $('select[name="CCySUBACFARAP.CurrencyCode"]').val() == '') ||
+                        ($('select[name="SubAcc.Account"]', this).val() == null || $('select[name="SubAcc.Account"]', this).val() == '') ||
+                        ($('input[name="Remark"]', this).val() == null || $('input[name="Remark"]', this).val() == '') ||
+                        ($('input[name="SubAmountDet"]', this).val() == null || $('input[name="SubAmountDet"]', this).val() == '' || isNaN(parseFloat($('input[name="SubAmountDet"]', this).val())) == true || $('input[name="SubAmountDet"]').val() < 0) ||
+                        ($('input[name="EquivAmtDet"]', this).val() == null || $('input[name="EquivAmtDet"]', this).val() == '' || isNaN(parseFloat($('input[name="EquivAmtDet"]', this).val())) == true || $('input[name="EquivAmtDet"]').val() < 0)) {
+                        $(this).addClass('error');
+                        errorCount++;
+                    }
+                });
+            }
+
+            if (errorCount > 0) {
+                alert("Please complete some data");
+                return;
+            }
+
+            var template = getTemplate();
+
+            $(this).closest('table tbody').find("tr:last").before(template);
+            $(".select2DDList").select2();
+        });
+
+        $("#btnAddNew").click(function () {
+            var answer = confirm("Are you sure to reset form ?");
+
+            if (answer) {
+                window.location.href = '@Url.Action("CreateAP", "ProcessARAP", new { Area = "Sales" })';
+            }
+        });
+
+        function CalculateDifference() {
+            var sumSubAmount = 0;
+            var diff = 0;
+
+            $('input[name="EquivAmtDet"]').each(function () {
+                sumSubAmount += parseFloat($(this).val().replace(/,/g, ''));
+            });
+
+            sumSubAmount = $('#EquivAmt').val().replace(/,/g, '') - sumSubAmount;
+            diff = parseFloat(sumSubAmount).toString()
+                      .replace(/[^\d.]/g, "")
+                      .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                      .replace(/\.(\d{2})\d+/, '.$1')
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+            if (sumSubAmount < 0) {
+                $('#txtDiff').text("-" + diff);
+            } else if (sumSubAmount == 'NaN') {
+                $('#txtDiff').text(0);
+            }
+            else {
+                $('#txtDiff').text(diff);
+            }
+
+        }
+
+        function Validation() {
+            var msg = '';
+            if ($("#DocNo").val() == null || typeof $("#DocNo").val() == 'undefined' || $("#DocNo").val() == '') {
+                msg += "Doc. Number No is required. \r\n";
+            }
+
+            if ($("#cboRP").val() == null || typeof $("#cboRP").val() == 'undefined' || $("#cboRP").val() == '') {
+                msg += "AP Code is required. \r\n";
+            }
+
+            if ($("#cboSupH").val() == null || typeof $("#cboSupH").val() == 'undefined' || $("#cboSupH").val() == '') {
+                msg += "Supplier Code is required. \r\n";
+            }
+
+            if ($("#cboBranch").val() == null || typeof $("#cboBranch").val() == 'undefined' || $("#cboBranch").val() == '') {
+                msg += "Branch is required. \r\n";
+            }
+
+            if ($("#cboAcc").val() == null || typeof $("#cboAcc").val() == 'undefined' || $("#cboAcc").val() == '') {
+                msg += "Account is required. \r\n";
+            }
+
+            if ($("#txtDiff").text() != 0) {
+                msg += "There is different between Equivalent Header and Equivalent Detail Total \r\n";
+            }
+            if ($("#FormAction").val() == 1) {
+            }
+
+            // Hitung jumlah row
+            var tableRowCount = $('table tbody').find('tr:not(#AddLine)').length;
+
+            if (tableRowCount == 0) {
+                msg += "Your has not been insert detail data \r\n";
+            }
+            else {
+                var errorCount = 0;
+
+                $('table tbody tr:not(#AddLine)').each(function (idx, item) {
+                    if (($('input[name="SubCounter"]', this).val() == null || $('input[name="SubCounter"]', this).val() == '') ||
+                        ($("#cboCCy-" + (idx + 1).toString() + "").val() == null || $("#cboCCy-" + (idx + 1).toString() + "").val() == '') ||
+                        ($("#cboAcc-" + (idx + 1).toString() + "").val() == null || $("#cboAcc-" + (idx + 1).toString() + "").val() == '') ||
+                        ($("#txtRemark-" + (idx + 1).toString() + "").val() == null || $("#txtRemark-" + (idx + 1).toString() + "").val() == '') ||
+                        ($("#txtAmt-" + (idx + 1).toString() + "").val() == null || $("#txtAmt-" + (idx + 1).toString() + "").val() == '' || isNaN(parseFloat($("#txtAmt-" + (idx + 1).toString() + "").val())) == true || $("#txtAmt-" + (idx + 1).toString() + "").val() < 0) ||
+                        ($("#txtEquivAmt-" + (idx + 1).toString() + "").val() == null || $("#txtEquivAmt-" + (idx + 1).toString() + "").val() == '' || isNaN(parseFloat($("#txtEquivAmt-" + (idx + 1).toString() + "").val())) == true || $("#txtEquivAmt-" + (idx + 1).toString() + "").val() < 0)) {
+                        $(this).addClass('error');
+                        msg += "Something error in SUBACFARAP row " + (idx + 1).toString();
+                        errorCount++;
+                    }
+                    else {
+                        listDetail.push({
+                            "RP":'P',
+                            "DocNo":$("#DocNo").val(),
+                            "Branch.BranchCode":$("#cboBranch").val(),
+                            "SeqNo": parseInt($('input[name="SubCounter"]', this).val()),
+                            "CCySUBACFARAP.CurrencyCode": $("#cboCCy-" + (idx + 1).toString() + "").val(),
+                            "Acc.Account": $("#cboAcc").val(),
+                            "SubAcc.Account": $("#cboAcc-" + (idx + 1).toString() + "").val(),
+                            "Description": $("#txtRemark-" + (idx + 1).toString() + "").val(),
+                            "SubAmount": parseFloat(RemoveAllComma($("#txtAmt-" + (idx + 1).toString() + "").val())),
+                            "EquivAmt": parseFloat(RemoveAllComma($("#txtEquivAmt-" + (idx + 1).toString() + "").val()))
+                        })
+                    }
+                });
+            }
+
+            if (msg.length > 0 || errorCount > 0) {
+                alert(msg);
+                return false;
+            }
+
+            return true;
+        }
+
+        function CCyChange(e) {
+            var rowIndex = GetIndex(e);
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: $("#cboCCy-" + rowIndex.toString() + "").val() },
+                success: function (respond) {
+                    $("#cboAcc-" + rowIndex.toString() + "").empty();
+                    $.each(respond, function (i, item) {
+                        $("#cboAcc-" + rowIndex.toString() + "").append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+
+            CalcEqvDetail(e);
+            CalculateDifference();
+        }
+
+        function CalcEqvDetail(e) {
+            var rowIndex = GetIndex(e);
+            if ($("#cboCCy-" + rowIndex.toString() + "").val() != 'IDR' && parseFloat($("#txtAmt-" + rowIndex.toString() + "").val().replace(/,/g, '')) > 0) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetMidRate", "ExchangeRate", new { Area = "GLTable" })',
+                    dataType: 'json',
+                    data: { ccy1: $("#cboCCy-" + rowIndex.toString() + "").val(), ccy2: 'IDR' },
+                    success: function (respond) {
+                        var Eqv = parseFloat($("#txtAmt-" + rowIndex.toString() + "").val().replace(/,/g, '')) * respond;
+                        $("#txtEquivAmt-" + rowIndex.toString() + "").val(Eqv.toString()
+                          .replace(/[^\d.]/g, "")
+                          .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                          .replace(/\.(\d{2})\d+/, '.$1')
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+
+                        CalculateDifference();
+                    }
+                });
+            }
+            else {
+                $("#txtEquivAmt-" + rowIndex.toString() + "").val($("#txtAmt-" + rowIndex.toString() + "").val().toString()
+                      .replace(/[^\d.]/g, "")
+                      .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                      .replace(/\.(\d{2})\d+/, '.$1')
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            }
+
+            $("#txtDiff").val($("#EquivAmt").val());
+        }
+
+
+
+        function AccChange(e) {
+
+        }
+
+        function AmtChange(e) {
+            CalcEqvDetail(e);
+            CalculateDifference();
+        }
+
+        function CalcDueDate() {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var date = new Date($('#DocDate').val());
+            date.setDate(date.getDate() + parseInt($('#PaymentTerm').val()));
+
+            $('#DueDate').val(("0" + date.getDate()).slice(-2) + "/" + months[date.getMonth()] + "/" + date.getFullYear());
+        }
+
+        function RemoveRow(e) {
+            var answer = confirm("Are you sure want to delete row ?");
+            var rowIndex = GetIndex(e);
+            $('input[name="SubCounter"]').each(function () {
+
+                if (parseInt($(this).val()) > parseInt($('#txtSubCounter-' + rowIndex).val()) || rowIndex == 1) {
+                    $(this).val(parseInt($(this).val()) - 1);
+
+                }
+
+            });
+            if (answer) {
+                $(e).closest('tr').remove();
+
+                indexSeqNo = indexSeqNo - 1;
+                CalculateDifference();
+            }
+        }
+
+        function GenerateRowForEdit() {
+            var edittemplate = getEditTemplate();
+
+            $("#table").find("#AddLine").before(edittemplate);
+            $(".select2DDList").select2();
+            //alert($($("#table").find("#AddLine").prev().find('select[name="AlloType"]')).attr('id'));
+            //alert($($("#table").find("#AddLine").prev().find('select[name="InvNo"]')).attr('id'));
+            //alloTypeIDTemp = $($("#table").find("#AddLine").prev().find('select[name="AlloType"]')).attr('id');
+            //invNoIDTemp = $($("#table").find("#AddLine").prev().find('select[name="InvNo"]')).attr('id');
+        }
+
+        function GetIndex(e) {
+            var lastIndex = e.id.lastIndexOf("-");
+            var rowIdx = e.id.substr(parseInt(lastIndex) + 1, parseInt(e.id.length) - parseInt(lastIndex) + 1);
+            return rowIdx;
+        }
+    </script>
+}
+
+
+

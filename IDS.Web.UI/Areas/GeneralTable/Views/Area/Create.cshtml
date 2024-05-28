@@ -1,0 +1,176 @@
+﻿@model IDS.GeneralTable.Area
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.AreaCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.AreaCode, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 5, name = "AreaCode", placeholder = "Area Code" } })
+                            @Html.ValidationMessageFor(model => model.AreaCode, "", new { @id = "valAreaCode", @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.AreaName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.AreaName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 30, name = "AreaName", placeholder = "Area Name" } })
+                            @Html.ValidationMessageFor(model => model.AreaName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CountryArea.CountryName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "CountryArea.CountryCode" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.CountryArea.CountryCode, (SelectList)ViewData["SelectListCountry"], "--- Select Country ---", new { @id = "cboCountry", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.CountryArea.CountryCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CityArea.CityName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.CityArea.CityCode, (SelectList)ViewData["SelectListCity"], "--- Select City ---", new { @id = "cboCity", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.CityArea.CityCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 500, name = "Description", placeholder = "Description" } })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Area Code : " + $("#AreaCode").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "Area", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "Area", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData();
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            $('#loadingModal').modal('hide');
+            if ($("#FormSave").val() == "1") {
+                //LoadData();
+                @*window.location.href = '@Url.Action("index", "Area", new { Area = "GeneralTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#AreaCode, #AreaName, #cbxCity,#cboCountry').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#AreaCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    $('#cboCity').empty();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $('#cboCountry').change(function () {
+            var country = $('#cboCountry').val();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCity", "City", new { Area = "GeneralTable" })',
+                dataType: 'json',
+                data: { countryCode: country },
+                success: function (respond) {
+                    $('#cboCity').empty();
+                    $.each(respond,function(i,item){
+                        $('#cboCity').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+    });
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

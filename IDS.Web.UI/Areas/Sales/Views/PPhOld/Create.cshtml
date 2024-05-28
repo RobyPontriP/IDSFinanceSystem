@@ -1,0 +1,770 @@
+﻿@model IDS.Sales.PPhHeader
+
+@{
+    ViewBag.Title = "Create Pajak Penghasilan";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    var index = 0;
+    var indexSeqAuto = 1;
+    var invNoIDTemp = '';
+    var alloTypeIDTemp = '';
+    var custTemp = '';
+    /// Untuk generate Row dari Template
+    function getTemplate() {
+        index = index + 1;
+        var newRow = '@Html.Raw(ViewData["NewRowTemplate"])';
+        return newRow;
+    }
+
+    function getEditTemplate() {
+        //index = index + 1;
+        var editRow = '@Html.Raw(ViewData["EditRowTemplate"])';
+        return editRow;
+    }
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/plugins/monthSelect/style.css" />
+    <style type="text/css">
+        .flatpickr-wrapper {
+            display: block !important;
+        }
+    </style>
+}
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+    @Html.Hidden("FormActionDetail", 0)
+    @Html.Hidden("FormSave", "0");
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Pajak Penghasilan - Header</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-3 mb-2">
+                    <div class="form-group row mb-2">
+                        @Html.LabelFor(model => model.Supplier.SupCode, "Supplier", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.Supplier.SupCode, ViewData["SupList"] as SelectList, new { @id = "cboSup", @class = "form-control form-control-sm select2DDList" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row mb-0">
+                        @Html.LabelFor(model => model.Year, "Year", new { @class = "col-form-label col-form-label-sm col-sm-3" })
+                        <div class="col-sm-3 mb-2 mr-4">
+                            @if (Convert.ToInt32(ViewData["FormAction"]) == 1)
+                            {
+                                @Html.TextBoxFor(model => model.Year, new { Value = DateTime.Now.Year, @class = "form-control form-control-sm bg-white", @id = "dtpYear" })
+                            }else
+	                        {
+	                            @Html.TextBoxFor(model => model.Year, new { @class = "form-control form-control-sm bg-white", @id = "dtpYear" })
+                            }
+                            
+                        </div>
+
+                        <div class="control-label col-sm-3 ml-5 col-form-label">
+                            <div class="form-check form-check-inline">
+                                @Html.CheckBoxFor(model => model.NPWP, new { @id = "chkNPWP", @class = "form-check-input",disabled = true })
+                                @Html.LabelFor(model => model.NPWP, "NPWP", new { @class = "form-check-label" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-0">
+                    </div>
+                </div>
+
+                <div class="col-sm-3 ml-5">
+                    <div class="form-group row mb-2">
+                        @Html.LabelFor(model => model.PPhType, "Tax Object Type", new { @class = "col-form-label col-form-label-sm col-sm-4" })
+                        <div class="col-sm-7">
+                            @Html.DropDownListFor(model => model.PPhType, ViewData["TaxList"] as SelectList, new { @id = "cboObjectTaxType", @class = "form-control form-control-sm select2DDList" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row mb-2">
+                        @Html.LabelFor(model => model.JenisPenghasilan, "Tax Type", new { @class = "col-form-label col-form-label-sm col-sm-4" })
+                        <div class="col-sm-7">
+                            @*@Html.DropDownListFor(model => model.JenisPenghasilan, new SelectList(new List<SelectListItem>(), "Value", "Text"), new { @id = "cboTaxType", @class = "form-control form-control-sm select2DDList" })*@
+                            @Html.DropDownListFor(model => model.JenisPenghasilan, ViewData["TaxTypeList"] as SelectList, new { @id = "cboTaxType", @class = "form-control form-control-sm select2DDList" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-5 ml-5">
+                    <div class="form-group row mb-2">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label-sm col-sm-1" })
+                        <div class="input-group col-sm-11">
+                            @Html.TextAreaFor(model => model.Type, new { @class = "form-control form-control-sm", @maxlength = 500, @rows = "4", @style = "resize:none", @id = "txtType" })
+                            @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modalTitle"> Add PPh Calculate</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <script type="text/javascript">
+                        //$('form#formCreateEdit').removeData("validator");
+                        //$('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        //$.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.PPhDetail.Month, htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "CountryCity.CountryCode" })
+                        <div class="col-md-4">
+                            @*@Html.TextBoxFor(model => model.PPhDetail.Month, new { Value = DateTime.Now.Month, @class = "form-control form-control-sm bg-white", @id = "dtpMonth" })*@
+                            @Html.DropDownListFor(model => model.PPhDetail.Month, ViewData["MonthList"] as SelectList, new { @id = "cboMonth", @class = "form-control select2DDList col-sm-10"})
+                            @Html.EditorFor(model => model.PPhDetail.SeqNo, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "SeqNo", placeholder = "SeqNo", @id = "SeqNoDetail", hidden=true } })
+                        </div>
+
+                        @Html.LabelFor(model => model.PPhDetail.TaxRate, "Rate", htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "TaxRate" })
+                        <div class="col-md-3">
+                            @Html.EditorFor(model => model.PPhDetail.TaxRate, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "TaxRate", placeholder = "Rate", @id = "RateDetail" } })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.PPhDetail.Amount, "Amount", htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "Amount" })
+                        <div class="col-md-9">
+                            @Html.EditorFor(model => model.PPhDetail.Amount, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "Amount", placeholder = "Amount",@id="AmountDetail" } })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.PPhDetail.Tarif, "Tarif", htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "Tarif" })
+                        <div class="col-md-9">
+                            @Html.EditorFor(model => model.PPhDetail.Tarif, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "Tarif", placeholder = "Tarif", @id = "TarifDetail" } })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.PPhDetail.TarifNonNPWP, "Tarif Tidak Memiliki NPWP", htmlAttributes: new { @class = "col-form-label-sm col-sm-2", name = "TarifNonNPWP" })
+                        <div class="col-md-9">
+                            @Html.EditorFor(model => model.PPhDetail.TarifNonNPWP, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "TarifNonNPWP", placeholder = "Tarif Tidak Memiliki NPWP", @id = "TarifNonNPWPDetail",disabled = true } })
+                        </div>
+                        @Html.EditorFor(model => model.PPhDetail.SeqNo, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "SeqNo", placeholder = "SeqNo", @id = "SeqNo" ,hidden = true} })
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" title="Input New City" id="btnAddNew">Add New</button>
+                    <button type="button" class="btn btn-primary" title="Save City" id="btnSave">Save</button>
+                    <button type="button" class="btn btn-default" title="Close This Form" id="btnClose" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-6">
+            <h4>PPh Calculate</h4>
+        </div>
+        <div class="col-sm-6 col-md-6 col-6 text-right">
+            <p>
+                @{
+                    if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input New Detail" onclick="LoadCreateNewForm()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="#" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Input New Detail" onclick="NoAccess()">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    }
+
+                    if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                    {
+                        <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Detail" onclick="LoadEditForm()">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="Edit Detail" onclick="NoAccess()" disabled="disabled">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+
+                    if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                    {
+                        <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Detail" class="btn btn-sm btn-danger" href="#">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a onclick="Delete()" data-toggle="tooltip" data-placement="top" title="Delete Detail" class="btn btn-sm btn-danger" href="#">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                }
+            </p>
+        </div>
+    </div>
+
+    <div class="table-responsive table-responsive-sm p-2 bg-white border">
+        <table id="tableData" class="table table-bordered table-hover w-100">
+            <thead>
+                <tr class="align-top">
+                    <th class="align-middle">No</th>
+                    <th class="align-middle">Month</th>
+                    <th class="align-middle">Month</th>
+                    <th class="align-middle">Rate</th>
+                    <th class="align-middle">Year</th>
+                    <th class="align-middle">Amount</th>
+                    <th class="align-middle">Dasar Pemotongan PPh</th>
+                    <th class="align-middle">Dasar Pemotongan PPh Kumulatif</th>
+                    <th class="align-middle">Tarif</th>
+                    <th class="align-middle">Tarif Tidak Memiliki NPWP</th>
+                    <th class="align-middle">PPh Pasal Terutang</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th colspan="10" style="text-align:right">Total:</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+
+
+    <div id="PartialSection">
+
+    </div>
+                    }
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/JQuery_UI/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralScript.js"></script>
+
+
+    <script type="text/javascript">
+        var table = null;
+        var rowIndex = null;
+
+        $(document).ready(function () {
+            $('#AmountDetail,#TarifDetail,#TarifNonNPWPDetail,#RateDetail').keyup(function (event) {
+                InputNumber(this);
+            });
+        });
+
+        $("#btnSave").click(function () {
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit PPh Calculate Month : " + $("#cboMonth").val() + " ?");
+            }
+
+            //if (!$("form#formCreateEdit").valid()) {
+            //    return false;
+            //}
+
+            var answer = confirm(confirmText);
+
+            if (answer) {
+
+
+                $("#AmountDetail").val(parseFloat(RemoveAllComma($("#AmountDetail").val())));
+                $("#TarifDetail").val(parseFloat(RemoveAllComma($("#TarifDetail").val())));
+                $("#TarifNonNPWPDetail").val(parseFloat(RemoveAllComma($("#TarifNonNPWPDetail").val())));
+                $("#RateDetail").val(parseFloat(RemoveAllComma($("#RateDetail").val())));
+                var npwp = false;
+                if ($('#chkNPWP').is(":checked")) {
+                    npwp = true;
+                } else {
+                    npwp = false;
+                }
+
+
+                //if ($("#FormActionDetail").val() == 0) {
+                    $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Create", "PPhOld", new { Area = "Sales" })',
+                    //processData: false,
+                        //data: $("#formCreateEdit").serialize(),
+                        data: {
+                        "FormAction": $('#FormAction').val(),
+                        "FormActionDetail": $('#FormActionDetail').val(),
+                        "pphH": {
+                            "Supplier.SupCode": $('#cboSup').val(),
+                            "Year": $('#dtpYear').val(),
+                            "PPhType": $('#cboObjectTaxType').val(),
+                            "JenisPenghasilan": $('#cboTaxType').val(),
+                            "NPWP": npwp,
+                            "Type": $('#txtType').val(),//cboMonth
+                            "PPhDetail": {
+                                "SeqNo": $('#SeqNoDetail').val(),
+                                "Month": $('#cboMonth').val(),
+                                "TaxRate": $('#RateDetail').val(),
+                                "Amount": $('#AmountDetail').val(),
+                                "Tarif": $('#TarifDetail').val(),
+                                "TarifNonNPWP": $('#TarifNonNPWPDetail').val(),
+                                "Description": $('#txtType').val(),
+                            }
+                        }
+                    },
+                    success: function (respond) {
+                        Refresh();
+                        alert(respond);
+                        $('#AmountDetail').val(AddCommaDecimal($('#AmountDetail').val()));
+                        if (parseInt($('#FormAction').val()) == 1) {
+                            $('#cboSup,#dtpYear,#cboObjectTaxType,#cboTaxType,#txtType').prop('disabled', true);
+                        }
+                        $('#FormAction').val(2);
+                    }
+                    });
+                //}
+            //    else {
+            //        $("#cboBranch").prop('disabled', false);
+            //        $("#cboCOA").prop('disabled', false);
+            //        $("#cboCurrency").prop('disabled', false);
+            //        $("#Period").removeAttr('disabled');
+            //        $.ajax({
+            //            type: "POST",
+            //            url: '@Url.Action("Edit", "MonthlyBalance", new { Area = "GLTable" })',
+            //            processData: false,
+            //            data: $("#formCreateEdit").serialize(),
+            //            success: function (respond) {
+            //                $("#BegBal").val(AddCommaDecimal($("#BegBal").val()));
+            //                LoadData($("#PeriodIndex").val(), $("#cboBranchIndex").val());
+            //                $("#FormSave").val("1");
+            //                alert(respond);
+            //            }
+            //        });
+            //        $("#cboBranch").prop('disabled', true);
+            //        $("#cboCOA").prop('disabled', true);
+            //        $("#cboCurrency").prop('disabled', true);
+            //        $("#Period").attr('disabled', 'disabled');
+            //    }
+            //    if (HOSStatus == 0) {
+            //        $("#cboBranch").prop('disabled', true);
+            //        $("#cboBranch").val(cboBranch);
+            //    }
+            //}
+            //else {
+            //    return false;
+            }
+        });
+
+        $(".select2DDList").select2();
+
+        if ($('#FormAction').val() == "1") {
+            CheckDataDetail();
+            GetTaxType();
+        } else {
+            $('#cboSup,#dtpYear,#cboObjectTaxType,#cboTaxType,#txtType').prop('disabled', true);
+        }
+
+        flatpickr("#dtpYear", {
+            shorthand: true,
+            dateFormat: "Y",
+            altFormat: "Y",
+            disableMobile: true,
+            static: true,
+            plugins: [new monthSelectPlugin({
+                shorthand: true, //defaults to false
+                dateFormat: "Y", //defaults to "F Y"
+                altFormat: "Y"
+            })],
+        });
+
+
+        GetNPWP();
+        Refresh();
+
+        $('#cboObjectTaxType').change(function () {
+            GetTaxType();
+        });
+
+        $('#cboSup').change(function () {
+            GetNPWP();
+            CheckDataDetail();
+        });
+
+        $('#dtpYear').change(function () {
+            CheckDataDetail();
+        });
+
+        $('#cboTaxType').change(function () {
+            if ($("#cboTaxType").val() != null && $("#cboTaxType").val() != '' && $("#cboTaxType").val() != 'undefined') {
+                $("#txtType").val($("#cboTaxType").select2('data')[0].text);
+            } else {
+                $("#txtType").val('');
+            }
+
+        });
+
+
+        function GetTaxType() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetJenisPenghasilan", "Tax", new { Area = "GeneralTable" })',
+                dataType: 'json',
+                data: { taxCode: $("#cboObjectTaxType").val() },
+                success: function (respond) {
+                    $("#cboTaxType").empty();
+                    $.each(respond, function (i, item) {
+                        $("#cboTaxType").append('<option value = "' + item.Value + '">' + item.Value + ' - ' + item.Text + '</option>');
+                    });
+                    if ($("#cboTaxType").val() != null && $("#cboTaxType").val() != '' && $("#cboTaxType").val() != 'undefined') {
+                        $("#txtType").val($("#cboTaxType").select2('data')[0].text);
+                    } else {
+                        $("#txtType").val('');
+                    }
+                }
+            });
+        }
+
+        function GetNPWP() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetSupplier", "Supplier", new { Area = "GeneralTable" })',
+                dataType: 'json',
+                data: { supCode: $("#cboSup").val() },
+                success: function (respond) {
+                    if (respond.NPWP) {
+                        $("#chkNPWP").prop("checked", true);
+                    } else {
+                        $("#chkNPWP").prop("checked", false);
+                    }
+                }
+            });
+        }
+
+        function CheckDataDetail() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("CheckDataDetail", "PPhOld", new { Area = "Sales" })',
+                dataType: 'json',
+                data: { sup: $("#cboSup").val(), year: $("#dtpYear").val() },
+                success: function (respond) {
+                    if (parseInt(respond.recordsTotal) > 0) {
+                        alert('Data already Exist Please choose another supplier or year or Tax Type');
+                    }
+                }
+            });
+        }
+
+        function LoadCreateNewForm() {
+            $("#cboMonth").prop('disabled', false);
+            $("#FormActionDetail").val(1);
+            //flatpickr("#dtpMonth", {
+            //    shorthand: true,
+            //    dateFormat: "M",
+            //    altFormat: "M",
+            //    disableMobile: true,
+            //    static: true,
+            //    plugins: [new monthSelectPlugin({
+            //        shorthand: true, //defaults to false
+            //        dateFormat: "M", //defaults to "F Y"
+            //        altFormat: "M"
+            //    })],
+            //});
+            if ($('#chkNPWP').is(":checked")) {
+                $("#TarifNonNPWPDetail").val(1);
+            } else {
+                $("#TarifNonNPWPDetail").val(1.2);
+            }
+
+            $("#RateDetail").val(0);
+            $("#AmountDetail").val(0);
+            $("#TarifDetail").val(0);
+
+            $("#CreateEditForm").modal('show');
+        }
+
+        function LoadEditForm() {
+            $("#FormActionDetail").val(2);
+            //flatpickr("#dtpMonth", {
+            //    shorthand: true,
+            //    dateFormat: "M",
+            //    altFormat: "M",
+            //    disableMobile: true,
+            //    static: true,
+            //    plugins: [new monthSelectPlugin({
+            //        shorthand: true, //defaults to false
+            //        dateFormat: "M", //defaults to "F Y"
+            //        altFormat: "M"
+            //    })],
+            //});
+
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var selMonth = null;
+            var seqNo = null;
+            $.each(selRow, function (index, rowId) {
+                selMonth = rowId["Month"];
+                seqNo = rowId["SeqNo"];
+                //$("#cboMonth").val(rowId["Month"]);
+                $("#RateDetail").val(AddCommaDecimal(rowId["TaxRate"]));
+                $("#AmountDetail").val(AddCommaDecimal(rowId["Amount"]));
+                $("#TarifDetail").val(AddCommaDecimal(rowId["Tarif"]));
+                $("#TarifNonNPWPDetail").val(AddCommaDecimal(rowId["TarifNonNPWP"]));
+            })
+
+            $("#cboMonth").val(selMonth).change();
+            $("#cboMonth").prop('disabled', true);
+
+            $("#SeqNoDetail").val(seqNo);
+            //if ($('#chkNPWP').is(":checked")) {
+            //    $("#TarifNonNPWPDetail").val(1);
+            //} else {
+            //    $("#TarifNonNPWPDetail").val(1.2);
+            //}
+
+            
+
+            $("#CreateEditForm").modal('show');
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = $("#tableData").DataTable().rows('.selected').data();
+            var dataSeqNo = '';
+            var dataMonth = '';
+            var dataCollectionMessage = '';
+
+            $.each(selRow, function (index, rowId) {
+                dataCollectionMessage += '[' + rowId["Supplier"]["SupCode"] + '] - ' + 'No : '+ rowId["SeqNo"] + " (Year : " + rowId["Year"] + " )" + " (Month : " + rowId["MonthName"] + " )" + "\n";
+            })
+
+            if (selRow.length > 0) {
+                var answer = confirm("You are about to delete data:\n" + dataCollectionMessage + "\nAre you sure want to delete the data ?");
+            } else {
+                alert('Please select the data you want to delete');
+            }
+
+            if (answer) {
+                $.each(selRow, function (index, rowId) {
+                    //dataSup += rowId["Supplier"]["SupCode"] + ',';
+                    dataMonth += rowId["Month"] + ',';
+                    //dataDesc += $("#txtType").val() + ',';
+                    dataSeqNo += rowId["SeqNo"] + ',';
+                })
+
+                if (dataSeqNo.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "PPhOld", new { Area = "Sales" })',
+                        data: { "SeqNosCodeList": dataSeqNo, "MonthCodeList": dataMonth, "sup": $("#cboSup").val(), "year": $("#dtpYear").val(), "type": $("#txtType").val() },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    Refresh()();
+                                    alert(respond);
+                                    @*window.location.href = '@Url.Action("index", "Department", new { Area = "GeneralTable" })'*@
+                                    //LoadData($("#cboBranchIndex").val());
+                                    break;
+                                default:
+                                    Refresh();
+                                    alert(respond);
+                                    @*window.location.href = '@Url.Action("index", "Department", new { Area = "GeneralTable"})'*@
+                                    //LoadData($("#cboBranchIndex").val());
+                                    break;
+                            }
+
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+        }
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            @*if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "City", new { Area = "GeneralTable" })';
+            }*@
+        });
+
+        function Refresh() {
+            table = LoadDataDetail();
+        }
+
+        function LoadDataDetail() {
+            //modalProcess();
+            //$('#loadingModal').modal('show');
+            table = LoadDT(httpGet('POST', '@Url.Action("GetDataEditDetail", "PPhOld", new { Area = "Sales" })', JSON.stringify({ 'sup': $('#cboSup').val(), 'year': $('#dtpYear').val() })));
+            //$('#loadingModal').modal('hide');
+        }
+
+        function LoadDT(dataJS) {
+            return $('#tableData').DataTable
+        ({
+            //destroy: true,
+            "bDestroy": true,
+            "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [0]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "visible":false,
+                    "targets": [1]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "120px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [4]
+                },
+                {
+                    "width": "40px",
+                    "orderable": true,
+                    "targets": [5]
+                },
+                {
+                    "width": "20px",
+                    "orderable": true,
+                    "targets": [6]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [7]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [8]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+            ],
+            "select": {
+                "style": 'os'
+            },
+            "language":
+            {
+                //"search": "",
+                //"searchPlaceholder": "Search...",
+                //"emptyTable": "No record found.",
+                "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+            },
+            "processing": "true",
+            "order": [[0, "asc"]],
+            //"serverSide": "false",
+            "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+            "pageLength": 10,
+            data: JSON.parse(dataJS),
+            @*"ajax":
+            {
+                "url": '@Url.Action("GetDataEditDetail", "PPhOld", new { Area = "Sales" })',
+                "data": { 'sup': $('#cboSup').val(), 'year': $('#dtpYear').val() },
+                "type": "POST",
+                "dataType": "JSON"
+            },*@
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api();
+
+                // Remove the formatting to get integer data for summation
+                var intVal = function (i) {
+                    return typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
+                };
+
+                // Total over all pages
+                total = api
+                    .column(10)
+                    .data()
+                    .reduce(function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0);
+
+                // Total over this page
+                pageTotal = api
+                    .column(10, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0);
+
+                // Update footer
+                $(api.column(10).footer()).html(AddCommaDecimal(pageTotal)+ ' ( ' + AddCommaDecimal(total) + ' Total)');
+            },
+            "columns": [
+                { "data": "SeqNo", "name": "SeqNo" },
+                { "data": "Month", "name": "Month" },
+                { "data": "MonthName", "name": "MonthName" },
+                { "data": "TaxRate", "name": "TaxRate", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Year", "name": "Year" },
+                { "data": "Amount", "name": "Amount", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "DasarPemotongan", "name": "DasarPemotongan", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "DasarPemotonganKumulatif", "name": "DasarPemotonganKumulatif", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Tarif", "name": "Tarif", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "TarifNonNPWP", "name": "TarifNonNPWP", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "PPhTerutang", "name": "PPhTerutang", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+            ]
+        });
+        }
+    </script>
+}

@@ -1,0 +1,169 @@
+﻿@model IDS.GeneralTable.Industry
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.IndusCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.IndusCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 4, placeholder = "Industry Code" } })
+                            @Html.ValidationMessageFor(model => model.IndusCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.IndusName, "Industry Name", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.IndusName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 70, placeholder = "Industry Name" } })
+                            @Html.ValidationMessageFor(model => model.IndusName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.IndusGrpCode, "Indus. Group Code", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(model => model.IndusGrpCode, (SelectList)ViewData["SelectListIndusGrpCode"], " ", new { @id = "cboIndus", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.IndusGrpCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.IndusDesc, "Industry Description", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.TextAreaFor(model => model.IndusDesc, new { @class = "form-control form-control-sm", @maxlength = 500, @rows = "3", @style = "resize:none" })
+                            @Html.ValidationMessageFor(model => model.IndusDesc, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.BICode, "BI Code", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.BICode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 10, placeholder = "BI Code" } })
+                            @Html.ValidationMessageFor(model => model.BICode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.OJKCode, "OJK Code", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.OJKCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 10, placeholder = "OJK Code" } })
+                            @Html.ValidationMessageFor(model => model.OJKCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.SLIKCode, "SLIK Code", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.SLIKCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 10, placeholder = "SLIK Code" } })
+                            @Html.ValidationMessageFor(model => model.SLIKCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSave").click(function () {
+            if(!$("form#formCreateEdit").valid())
+            {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Industry Code : " + $("#IndusCode").val() + " ?");
+            }
+
+            var answer = confirm(confirmText);
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "Industry", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "Industry", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+            }
+
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "Industry", new { Area = "GeneralTable" })';
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#IndusCode, #IndusName').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#IndusCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        })
+    });
+
+</script>

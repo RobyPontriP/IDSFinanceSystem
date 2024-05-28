@@ -1,0 +1,256 @@
+﻿@model IDS.GLTable.FinancialRatio
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" id="CreateEditForm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row label">
+                        @Html.LabelFor(model => model.RatioCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.RatioCode, new { htmlAttributes = new { @class = "form-control form-control-sm", maxlength = 10 } })
+                            @Html.ValidationMessageFor(model => model.RatioCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.RatioName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.RatioName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50 } })
+                            @Html.ValidationMessageFor(model => model.RatioName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row pb-0">
+                        @Html.LabelFor(model => model.InPercent, "Display Result in Percentage", htmlAttributes: new { @class = "control-label col-sm-4" })
+                        <div class="col-sm-8">
+                            <div class="checkbox">
+                                @Html.EditorFor(model => model.InPercent, new { @id = "chkInPercent" })
+                                @Html.ValidationMessageFor(model => model.InPercent, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-12 text-center">
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnPlus" value="+" data-toggle="tooltip" data-placement="top" title="Tooltip +">+</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnMin" value="-" data-toggle="tooltip" data-placement="top" title="Tooltip -">-</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnMulti" value="*" data-toggle="tooltip" data-placement="top" title="Tooltip *">*</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnDiv" value="/" data-toggle="tooltip" data-placement="top" title="Tooltip /">/</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnLRound" value="(" data-toggle="tooltip" data-placement="top" title="Tooltip (">(</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnRRound" value=")" data-toggle="tooltip" data-placement="top" title="Tooltip )">)</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-1" style="padding:0;" id="btnHstg" value="#/#" data-toggle="tooltip" data-placement="top" title="Tooltip #/#">#/#</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.Label("Account", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                        <div class="col-sm-6">
+                            @Html.DropDownList("cboCOA", (SelectList)ViewData["SelectListAcc"], " ", new { @id = "cboCOA", @class = "form-control select2DDList col-sm-12" })
+                        </div>
+
+                        <div class="col-sm-4">
+                            <button type="button" class="btn btn-outline-secondary form-control form-control-sm col-sm-12" id="btnInsertCOA">Insert to Formula</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Formula, htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                        <div class="col-sm-10">
+                            @Html.TextAreaFor(model => model.Formula, new { @class = "form-control form-control-sm", @maxlength = 255, @rows = "4", @style = "resize:none" })
+                            @Html.ValidationMessageFor(model => model.Formula, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".select2DDList").select2();
+
+        $("#btnSave").click(function () {
+            if(!$("form#formCreateEdit").valid())
+            {
+                return false;
+            }
+
+            if ($("#FormAction").val() == 1) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Create", "Ratio", new { Area = "GLTable" })',
+                    processData: false,
+                    data: $("#formCreateEdit").serialize(),
+                    success: function (respond) {
+                        LoadData();
+                        $("#FormSave").val("1");
+                        alert(respond);
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Edit", "Ratio", new { Area = "GLTable" })',
+                    processData: false,
+                    data: $("#formCreateEdit").serialize(),
+                    success: function (respond) {
+                        LoadData();
+                        $("#FormSave").val("1");
+                        alert(respond);
+                    }
+                });
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                @*window.location.href = '@Url.Action("index", "Ratio", new { Area = "GLTable" })';*@
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#RatioCode, #RatioName, #SLIKCode').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#RatioCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+        $("#btnPlus").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnPlus").val());
+        }),
+
+        $("#btnMin").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnMin").val());
+        }),
+
+        $("#btnMulti").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnMulti").val());
+        }),
+
+        $("#btnDiv").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnDiv").val());
+        }),
+
+        $("#btnLRound").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnLRound").val());
+        }),
+
+        $("#btnRRound").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnRRound").val());
+        }),
+
+        $("#btnHstg").click(function () {
+            var idarea = 'Formula';
+            insertAtCaret(idarea, $("#btnHstg").val());
+        }),
+
+        $("#btnInsertCOA").click(function () {
+            var idarea = 'Formula';
+            if ($("#cboCOA").val() != '') {
+                var coaVal = '{' + $("#cboCOA").val() + '}';
+                insertAtCaret(idarea, coaVal);
+            } else {
+                alert('Please Choose Account');
+            }
+        })
+    });
+    function insertAtCaret(areaId, text) {
+        var txtarea = document.getElementById(areaId);
+        if (!txtarea) {
+            return;
+        }
+
+        var scrollPos = txtarea.scrollTop;
+        var strPos = 0;
+        var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ?
+          "ff" : (document.selection ? "ie" : false));
+        if (br == "ie") {
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart('character', -txtarea.value.length);
+            strPos = range.text.length;
+        } else if (br == "ff") {
+            strPos = txtarea.selectionStart;
+        }
+
+        var front = (txtarea.value).substring(0, strPos);
+        var back = (txtarea.value).substring(strPos, txtarea.value.length);
+        txtarea.value = front + text + back;
+        strPos = strPos + text.length;
+        if (br == "ie") {
+            txtarea.focus();
+            var ieRange = document.selection.createRange();
+            ieRange.moveStart('character', -txtarea.value.length);
+            ieRange.moveStart('character', strPos);
+            ieRange.moveEnd('character', 0);
+            ieRange.select();
+        } else if (br == "ff") {
+            txtarea.selectionStart = strPos;
+            txtarea.selectionEnd = strPos;
+            txtarea.focus();
+        }
+
+        txtarea.scrollTop = scrollPos;
+    }
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+</script>

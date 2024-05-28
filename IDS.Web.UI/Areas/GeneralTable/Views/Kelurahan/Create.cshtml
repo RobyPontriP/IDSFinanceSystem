@@ -1,0 +1,208 @@
+﻿@model IDS.GeneralTable.Kelurahan
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.KelurahanCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.KelurahanCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 10, name = "KelurahanCode", placeholder = "kelurahan Code" } })
+                            @Html.ValidationMessageFor(model => model.KelurahanCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.KelurahanName, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.KelurahanName, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 50, name = "KelurahanName", placeholder = "Kelurahan Name" } })
+                            @Html.ValidationMessageFor(model => model.KelurahanName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.ZipCode, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.ZipCode, new { htmlAttributes = new { @class = "form-control form-control-sm", @maxlength = 10, name = "ZipCode", placeholder = "Zip Code" } })
+                            @Html.ValidationMessageFor(model => model.ZipCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CountryKelurahan.CountryName,"Country", htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "CountryCity.CountryCode" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.CountryKelurahan.CountryCode, (SelectList)ViewData["SelectListCountry"], "--- Select Country ---", new { @id = "cboCountry", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.CountryKelurahan.CountryCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CityKelurahan.CityName,"City", htmlAttributes: new { @class = "col-form-label-sm col-sm-3", name = "CountryCity.CountryCode" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.CityKelurahan.CityCode, (SelectList)ViewData["SelectListCity"], "--- Select City ---", new { @id = "cboCity", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.CityKelurahan.CityCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.KecamatanKelurahan.KecamatanName,"Kecamatan", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.KecamatanKelurahan.KecamatanCode, (SelectList)ViewData["SelectListKecamatan"], "--- Select Kecamatan ---", new { @id = "cboKecamatan", @class = "form-control form-control-sm" })
+                            @Html.ValidationMessageFor(model => model.KecamatanKelurahan.KecamatanCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" class="btn btn-default" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSave").click(function () {
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Kelurahan Code : " + $("#KelurahanCode").val() + " ?");
+            }
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                if ($("#FormAction").val() == 1) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "Kelurahan", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                }
+                else {
+                    $("#cboCountry").prop('disabled', false);
+                    $("#cboCity").prop('disabled', false);
+                    $("#cboKecamatan").prop('disabled', false);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "Kelurahan", new { Area = "GeneralTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#FormSave").val("1");
+                            $("#cboCountry").prop('disabled', true);
+                            $("#cboCity").prop('disabled', true);
+                            $("#cboKecamatan").prop('disabled', true);
+                            alert(respond);
+                        }
+                    });
+                }
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                window.location.href = '@Url.Action("index", "Kelurahan", new { Area = "GeneralTable" })';
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#KelurahanCode, #KelurahanName, #ZipCode,#cboCountry, #cboCity, #cboKecamatan').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    $('#KelurahanCode').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    $("#cboCountry").prop('disabled', false);
+                    $("#cboCity").prop('disabled', false);
+                    $("#cboKecamatan").prop('disabled', false);
+                    $('#cboCity').empty();
+                    $('#cboKecamatan').empty();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        });
+
+        $('#cboCountry').change(function () {
+            var country = $('#cboCountry').val();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCity", "City", new { Area = "GeneralTable" })',
+                dataType: 'json',
+                data: { countryCode: country },
+                success: function (respond) {
+                    $('#cboCity').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboCity').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+
+        $('#cboCity').change(function () {
+            var city = $('#cboCity').val();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetKecamatanFromCity", "Kecamatan", new { Area = "GeneralTable" })',
+                dataType: 'json',
+                data: { cityCode: city },
+                success: function (respond) {
+                    $('#cboKecamatan').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboKecamatan').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        });
+    });
+
+
+
+
+
+</script>

@@ -1,0 +1,291 @@
+﻿@model IEnumerable<IDS.GL.GLTable.ExchangeRate>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Chart of Account List";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="~/Content/DataTables/Select-1.3.3/css/select.bootstrap5.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/flatpickr/flatpickr.min.css" />
+    @*<link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/jquery.dataTables.css">*@
+
+}
+
+<div class="row">
+    <div class="col-sm-6 col-md-6 col-6">
+        <h4>@ViewData["Title"]</h4>
+    </div>
+    <div class="col-sm-6 col-md-6 col-6 text-right">
+        <p>
+            @{
+                if (Convert.ToInt32(ViewData["Page.Insert"]) == 1)
+                {
+                    <a href="#" class="btn btn-sm btn-primary" onclick="LoadCreateNewForm()">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="#" class="btn btn-sm btn-primary" onclick="NoAccess()">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                }
+
+                if (Convert.ToInt32(ViewData["Page.Edit"]) == 1)
+                {
+                    <a class="btn btn-sm btn-info" onclick="LoadEditForm()">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-info" onclick="NoAccess()" disabled="disabled">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                }
+
+                if (Convert.ToInt32(ViewData["Page.Delete"]) == 1)
+                {
+                    <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                }
+                else
+                {
+                    <a onclick="Delete()" class="btn btn-sm btn-danger" href="#">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                }
+            }
+        </p>
+    </div>
+
+</div>
+
+
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="table table-bordered table-hover w-100">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Account</th>
+                <th>Currency</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<div id="PartialSection">
+
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/TreeGrid/TreeGrid.js"></script>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var table = $('#tableData').DataTable
+            ({
+                "columnDefs": [
+                    {
+                        "defaultContent": "",
+                        "targets": "_all"
+                    }],
+                //"select": {
+                //    "style": 'os'
+                //},
+                "language":
+                {
+                    "search": "",
+                    "searchPlaceholder": "Search...",
+                    "emptyTable": "No record found.",
+                    "processing": "<div class='overlay custom-loader-background'><i class='fa fa-cog fa-spin custom-loader-color'></i></div>"
+                },
+                "processing": "true",
+                "order": [[1, "asc"]],
+                "serverSide": "true",
+                "lengthMenu": [[1, 10, 20, 50, 100, 1000, -1], [1, 10, 20, 50, 100, 1000, "All"]],
+                "pageLength": 10,
+                "ajax":
+                {
+                    "url": '@Url.Action("GetData", "ChartOfAccount", new { Area = "GLTable" })',
+                    "type": "POST",
+                    "dataType": "JSON"
+                },
+                "columns": [
+                    {
+                        title: '',
+                        target: 0,
+                        className: 'treegrid-control',
+                        data: function (item) {
+                            if (item.children != null && item.children.length > 0) {
+                                return '<span> + </span>';
+                            }
+                            return '';
+                        }
+                    },
+                    { "data": "Account", "name": "Account" },
+                    { "data": "CCy.CurrencyCode", "name": "CCy.CurrencyCode" },
+                    { "data": "AccountName", "name": "AccountName" },
+                ]
+                //,
+                //'treeGrid': {
+                //    'left': 10,
+                //    'expandIcon': '&lt;span&gt;+&lt;/span&gt;',
+                //    'collapseIcon': '&lt;span&gt;-&lt;/span&gt;'
+                //}
+            });
+
+            var tree = new $.fn.dataTable.TreeGrid(table, {
+                left: 15,
+                expandAll: false,
+                expandIcon: '<span>+</span>',
+                collapseIcon: '<span>-</span>'
+            });
+        })
+        
+
+
+        function LoadCreateNewForm() {
+            var dateNow = new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Create", "ChartOfAccount", new { Area = "GLTable" })',
+                contentType: 'application/html; charset=utf-8',
+                dataType: 'html',
+                success: function (result) {
+                    $('#PartialSection').empty();
+                    $("#PartialSection").html(result);
+                    //$("form#formCreateEdit")[0].reset();
+                    $("#modalTitle").html("Create Data");
+                    $("#CreateEditForm").modal('show');
+                    //$("#cboCurrency1").prop('disabled', false);
+                    //$("#cboCurrency2").prop('disabled', false);
+                    $("#ExchangeDate").val(dateNow);
+                },
+                error: function (status) {
+                    alert('');
+                }
+            });
+        }
+
+        function LoadEditForm() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+            var data = null;
+            var dataCurrency1 = null;
+            var dataCurrency2 = null;
+
+            if (selRow.length > 0) {
+                //data = selRow[0]["ExchangeDate"];
+                data = getyyyyMMdd(new Date(selRow[0]["ExchangeDate"].match(/\d+/).map(Number)[0]));
+                dataCurrency1 = selRow[0]["Currency1"]["CurrencyCode"];
+                dataCurrency2 = selRow[0]["Currency2"]["CurrencyCode"];
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Edit", "ExchangeRate", new { Area = "GLTable" })',
+                    data: {
+                        'exchDate': data,
+                        'currency1':dataCurrency1,
+                        'currency2': dataCurrency2
+                    },
+                    dataType: 'html',
+                    success: function (result) {
+                        $('#PartialSection').empty();
+                        $("#PartialSection").html(result);
+                        $("#modalTitle").html("Edit Data");
+                        $("#ExchangeDate").attr('disabled', 'disabled');
+                        $("#cboCurrency1").prop('disabled', true);
+                        $("#cboCurrency2").prop('disabled', true);
+                        $("#CreateEditForm").modal('show');
+                        $("#ExchangeDate").val(data);
+                    },
+                    error: function (status) {
+                        alert('');
+                    }
+                });
+            }
+            else {
+                alert("Please select data to be edit");
+            }
+        }
+
+        function Delete() {
+            var form = this;
+            var selRow = table.rows('.selected').data();
+
+            if (selRow == null || selRow == 'undefined' || selRow.length == 0) {
+                alert("Please select the data you want to delete");
+                return false;
+            }
+
+            var dataCollection = '';
+            var data = '';
+            var dataExchangeDate = null;
+            var dataCurrency1 = '';
+            var dataCurrency2 = '';
+            var date = new Date();
+
+            $.each(selRow, function (index, row) {
+                dataExchangeDate = getyyyyMMdd(new Date(row["ExchangeDate"].match(/\d+/).map(Number)[0]));
+                data += dataExchangeDate + ',';
+                dataCurrency1 += row["Currency1"]["CurrencyCode"] + ',';
+                dataCurrency2 += row["Currency2"]["CurrencyCode"] + ',';
+                dataCollection += '[' + dataExchangeDate + '] - ' + row["Currency1"]["CurrencyCode"] + " - " + row["Currency2"]["CurrencyCode"] + "\n";
+            })
+            var answer = confirm("You are about to delete data:\n" + dataCollection + "\nAre you sure want to delete the data ?");
+
+            if (answer) {
+
+
+                if (dataCollection.length > 0) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Delete", "ExchangeRate", new { Area = "GLTable" })',
+                        data: { "exchDateList": data,
+                                "currency1CodeList": dataCurrency1,
+                                "currency2CodeList": dataCurrency2
+                        },
+                        dataType: 'JSON',
+                        success: function (respond) {
+                            switch (respond) {
+                                case "NoAccess":
+                                    window.location.href = '@Server.MapPath("~/Views/Shared/View403.cshtml")'
+                                    break;
+                                case "Success":
+                                    alert(respond);
+                                    window.location.href = '@Url.Action("index", "ExchangeRate", new { Area = "GLTable" })'
+                                    break;
+                                default:
+                                    alert(respond);
+                                    window.location.href = '@Url.Action("index", "ExchangeRate", new { Area = "GLTable" })'
+                                    break;
+                            }
+
+                        },
+                        error: function (respond) {
+                            alert(respond);
+                        }
+                    })
+                }
+            }
+            else {
+                return false;
+            }
+
+        }
+
+
+    </script>
+}

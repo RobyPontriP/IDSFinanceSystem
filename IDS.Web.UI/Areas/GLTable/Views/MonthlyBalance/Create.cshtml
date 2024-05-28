@@ -1,0 +1,336 @@
+﻿@model IDS.GLTable.MonthlyBalance
+
+@section Styles {
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    @*<script type="text/javascript" src="~/Content/DataTables/Select-1.3.3/js/select.bootstrap5.js"></script>*@
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+}
+
+<style type="text/css">
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+
+<div class="modal fade" id="CreateEditForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm(null, null, FormMethod.Post, new { @id = "formCreateEdit" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.Hidden("FormAction", Convert.ToInt32(ViewData["FormAction"]))
+                    @Html.Hidden("FormSave", "0");
+                    @Html.Hidden("DefBranch", ViewData["DefaultBranch"].ToString());
+                    @Html.Hidden("HOStatus", Convert.ToInt32(ViewData["HOStatus"]));
+
+                    <script type="text/javascript">
+                        $('form#formCreateEdit').removeData("validator");
+                        $('form#formCreateEdit').removeData("unobtrusiveValidation");
+                        $.validator.unobtrusive.parse($('form#formCreateEdit'));
+                    </script>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.BranchMonthlyBalance.BranchName, "Branch", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.BranchMonthlyBalance.BranchCode, (SelectList)ViewData["SelectListBranch"], "", new { @id = "cboBranch", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.BranchMonthlyBalance.BranchCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.Period, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.Period, new { htmlAttributes = new { @class = "form-control form-control-sm bg-white col-sm-6", @maxlength = 8, name = "Period", placeholder = "Period" } })
+                            @Html.ValidationMessageFor(model => model.Period, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.CurrencyMonthlyBalance.CurrencyCode, "Currency", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.CurrencyMonthlyBalance.CurrencyCode, (SelectList)ViewData["SelectListCurrency"], "", new { @id = "cboCurrency", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.CurrencyMonthlyBalance.CurrencyCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.COAMonthlyBalance.AccountName, "Account No.", htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(model => model.COAMonthlyBalance.Account, (SelectList)ViewData["SelectListCOA"], "", new { @id = "cboCOA", @class = "form-control select2DDList" })
+                            @Html.ValidationMessageFor(model => model.COAMonthlyBalance.Account, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        @Html.LabelFor(model => model.BegBal, htmlAttributes: new { @class = "col-form-label-sm col-sm-3" })
+                        <div class="col-sm-9">
+                            @Html.EditorFor(model => model.BegBal, new { htmlAttributes = new { @class = "form-control form-control-sm text-right", name = "BegBal", placeholder = "BegBal" } })
+                            @Html.ValidationMessageFor(model => model.BegBal, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    if (Convert.ToInt32(ViewData["FormAction"]) == 2)
+                    {
+                        <div class="form-group row text-sm-left">
+
+                            @Html.LabelFor(model => model.OperatorID, "Operator ID", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-3">
+                                @Html.EditorFor(model => model.OperatorID, new { htmlAttributes = new { @class = "form-control form-control-sm", name = "OperatorID", placeholder = "Operator ID", disabled = true } })
+                                @Html.ValidationMessageFor(model => model.OperatorID, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.LastUpdate, "Last Update", htmlAttributes: new { @class = "col-form-label-sm col-sm-2" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(model => model.LastUpdate, new { @Value = Model.LastUpdate.ToString("dd/MMM/yyyy HH:mm:ss"), @class = "form-control form-control-sm", name = "LastUpdate", placeholder = "Last Update", disabled = true })
+                                @Html.ValidationMessageFor(model => model.LastUpdate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" title="Input New Monthly Balance" class="btn btn-secondary" id="btnAddNew">Add New</button>
+                <button type="button" title="Save Data Monthly Balance" class="btn btn-primary" id="btnSave">Save</button>
+                <button type="button" title="Close This Form" class="btn btn-danger" id="btnClose" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/flatpickr.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/id.min.js"></script>
+    <script type="text/javascript" src="~/Content/flatpickr/plugins/monthSelect/Index.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralScript.js"></script>
+}
+
+<script type="text/javascript">
+    var HOSStatus = $("#HOStatus").val();
+    var cboBranch = $("#cboBranch").val();
+    $(document).ready(function () {
+
+        if ($("#FormAction").val() == 2) {
+            $("#BegBal").val(AddCommaDecimal($("#BegBal").val()));
+        }
+
+        flatpickr("#Period", {
+            shorthand: true,
+            dateFormat: "M-Y",
+            disableMobile: "true",
+            static: true,
+            plugins: [new monthSelectPlugin({
+                shorthand: true, //defaults to false
+                dateFormat: "M Y", //defaults to "F Y"
+            })],
+        });
+
+        //if (parseInt($("BegBal").val()) > 0) {
+        //    $("#BegBal").prop('disabled', true);
+        //}
+
+        $("#btnSave").click(function () {
+            var confirmText = "";
+            if ($("#FormAction").val() == 1) {
+                confirmText = ("Are you sure want to save data ?");
+            } else {
+                confirmText = ("Are you sure want to edit Monthly Balance Period : " + $("#Period").val() + " ?");
+            }
+
+            if (!$("form#formCreateEdit").valid()) {
+                return false;
+            }
+
+            var answer = confirm(confirmText);
+
+            if (answer) {
+                
+
+                $("#BegBal").val(parseFloat(RemoveAllComma($("#BegBal").val())));
+
+                if ($("#FormAction").val() == 1) {
+                    $("#cboBranch").prop('disabled', false);
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Create", "MonthlyBalance", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            LoadData($("#PeriodIndex").val(), $("#cboBranchIndex").val());
+                            $("#BegBal").val(AddCommaDecimal($("#BegBal").val()));
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        },
+                        error: function (aa, bb, cc) {
+                            $("#BegBal").val(AddCommaDecimal($("#BegBal").val()));
+                            alert(aa);
+                            alert(bb);
+                        }
+                    });
+                }
+                else {
+                    $("#cboBranch").prop('disabled', false);
+                    $("#cboCOA").prop('disabled', false);
+                    $("#cboCurrency").prop('disabled', false);
+                    $("#Period").removeAttr('disabled');
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Edit", "MonthlyBalance", new { Area = "GLTable" })',
+                        processData: false,
+                        data: $("#formCreateEdit").serialize(),
+                        success: function (respond) {
+                            $("#BegBal").val(AddCommaDecimal($("#BegBal").val()));
+                            LoadData($("#PeriodIndex").val(), $("#cboBranchIndex").val());
+                            $("#FormSave").val("1");
+                            alert(respond);
+                        }
+                    });
+                    $("#cboBranch").prop('disabled', true);
+                    $("#cboCOA").prop('disabled', true);
+                    $("#cboCurrency").prop('disabled', true);
+                    $("#Period").attr('disabled', 'disabled');
+                }
+                if (HOSStatus == 0) {
+                    $("#cboBranch").prop('disabled', true);
+                    $("#cboBranch").val(cboBranch);
+                }
+            }
+            else {
+                return false;
+            }
+        }),
+
+        $("#btnClose, .close").click(function () {
+            var cboBranchCode = $("#cboBranch").val();
+            var periodValue = $("#Period").val();
+            if (cboBranchCode == "") {
+                cboBranchCode = $("#DefBranch").val();
+            }
+            $('#loadingModal').modal('hide');
+            $("#CreateEditForm").modal('hide');
+            if ($("#FormSave").val() == "1") {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("index", "MonthlyBalance", new { Area = "GLTable" })',
+                    data: { "period": periodValue, 'branchCode': cboBranchCode },
+                    success: function () {
+                        if (cboBranchCode != "") {
+                            $("#cboBranchIndex").val(cboBranchCode);
+                        }
+
+                        if (periodValue != "") {
+                            $("#PeriodIndex").val(periodValue);
+                        }
+
+                        //LoadData(periodValue,cboBranchCode);
+                    },
+                    error: function (status) {
+                        alert(status);
+                    }
+                });
+            }
+        }),
+
+        $("#btnAddNew").click(function () {
+            if (!$('#Period, #cboCurrency, #cboBranch,#BegBal').val() == "") {
+                var answer = confirm("Are you sure want to clear this form ?");
+
+                if (answer) {
+                    $("form#formCreateEdit").trigger("reset");
+                    $(':input', '#formCreateEdit').not(':button, :submit, :reset, :hidden').val('');
+                    //$('#Period').prop('readonly', false);
+                    $("#FormAction").val("1");
+                    $("#FormSave").val("1");
+                    if (HOSStatus == 0) {
+                        $("#cboBranch").prop('disabled', true);
+                        $("#cboBranch").val(cboBranch);
+                    } else {
+                        $("#cboBranch").prop('disabled', false);
+                    }
+                    $("#cboCOA").prop('disabled', false);
+                    $("#cboCurrency").prop('disabled', false);
+                    $("#Period").removeAttr('disabled');
+                    $("#BegBal").prop('disabled', false);
+                    $("#BegBal").val(0);
+                    $(".select2DDList").select2();
+                }
+                else {
+                    e.preventDefault();
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        }),
+
+
+        $("#cboCurrency").change(function () {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GetCOAFromCCY", "ChartOfAccount", new { Area = "GLTable" })',
+                dataType: 'json',
+                data: { currencyCode: $(this).val() },
+                success: function (respond) {
+                    $('#cboCOA').empty();
+                    $.each(respond, function (i, item) {
+                        $('#cboCOA').append('<option value = "' + item.Value + '">' + item.Text + '</option>');
+                    });
+                }
+            });
+        }),
+
+        //$('#BegBal').keypress(function (event) {
+        //    return isNumber(event, this)
+        //});
+
+        $('#BegBal').keyup(function (event) {
+            InputNumber(this);
+        });
+
+        function isNumber(evt, element) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (
+                (charCode != 46 || $(element).val().indexOf('.') != -1) &&      // “.” CHECK DOT, AND ONLY ONE.
+                (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+        $(".select2DDList").select2();
+    });
+
+    function InputNumber(e) {
+        $("#" + e.id).keyup(function (event) {
+            if (event.which >= 37 && event.which <= 40) return;
+            $(this).val(function (index, value) {
+                return value
+                // Keep only digits and decimal points:
+                .replace(/[^\d.-]/g, "")
+                // Remove duplicated decimal point, if one exists:
+                .replace(/^(\d*\.)(.*)\.(.*)$/, '$1$2$3')
+                // Keep only two digits past the decimal point:
+                .replace(/\.(\d{2})\d+/, '.$1')
+                // Add thousands separators:
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            });
+        });
+    }
+
+    $('#CreateEditForm').on('hidden.bs.modal', function (e) {
+        $('#loadingModal').modal('hide');
+    })
+
+</script>

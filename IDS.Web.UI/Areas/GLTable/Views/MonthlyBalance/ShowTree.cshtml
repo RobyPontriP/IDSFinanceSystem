@@ -1,0 +1,150 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    /// Untuk generate Row dari Template
+    function getTemplate() {
+        var newRow = '@Html.Raw(ViewData["TreeGridTemplate"])';
+        return newRow;
+    }
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/DataTables/datatables.css" />
+    <link rel="stylesheet" href="~/Content/DataTables/DataTables-1.10.25/css/dataTables.bootstrap5.min.css" />
+    <link href="~/Content/jquery.treegrid.css" rel="stylesheet" />
+}
+
+@*<table class="tree table table-bordered table-hover w-100">
+    <tbody>
+        <tr class="treegrid-1 expanded"><td>Root node</td><td>Additional info</td></tr>
+        <tr class="treegrid-2 treegrid-parent-1"><td>Node 1-1</td><td>Additional info</td></tr>
+        <tr class="treegrid-3 treegrid-parent-1"><td>Node 1-2</td><td>Additional info</td></tr>
+        <tr class="treegrid-4 treegrid-parent-3"><td>Node 1-2-1</td><td>Additional info</td></tr>
+        <tr class="treegrid-5 treegrid-parent-3"><td>Node 1-2-2</td><td>Additional info</td></tr>
+        <tr class="treegrid-6"><td>Root node</td><td>Additional info</td></tr>
+        <tr class="treegrid-7 treegrid-parent-6"><td>Node 2-1</td><td>Additional info</td></tr>
+    </tbody>
+</table>*@
+
+<div id="PartialSection">
+
+</div>
+
+<div class="table-responsive table-responsive-sm p-2 bg-white border">
+    <table id="tableData" class="tree table table-bordered table-hover w-100">
+        <thead>
+            <tr class="treegrid-1 expanded">
+                <th></th>
+                <th class="align-middle">Currency</th>
+                <th class="align-middle">Account No</th>
+                <th class="align-middle">Account Name</th>
+                <th class="align-middle">Budget</th>
+                <th class="align-middle">Beginning</th>
+                <th class="align-middle">Debit</th>
+                <th class="align-middle">Credit</th>
+                <th class="align-middle">Ending</th>
+                <th class="align-middle">Operator ID</th>
+                <th class="align-middle">Last Update</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/GeneralDataTable.js"></script>
+    <script src="~/Scripts/jquery.treegrid.js"></script>
+    <script src="~/Scripts/jquery.treegrid.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/datatables.min.js"></script>
+    <script type="text/javascript" src="~/Content/DataTables/DataTables-1.10.25/js/dataTables.bootstrap5.min.js"></script>
+
+    <script type="text/javascript">
+
+        $('.tree').treegrid({
+            source: httpGet('POST', '@Url.Action("GetData", "MonthlyBalance", new { Area = "GLTable" })', JSON.stringify({ "period": '2022/05/05', 'branchCode': 'DTN' }))
+        });
+
+        $(document).ready(function () {
+            //LoadData();
+            $("#PartialSection").html(getTemplate());
+            $('.tree').treegrid();
+        });
+
+        function LoadData() {
+            table = LoadDT(httpGet('POST', '@Url.Action("GetData", "MonthlyBalance", new { Area = "GLTable" })', JSON.stringify({ "period": '2022/05/05', 'branchCode': 'DTN' })));
+        }
+
+        function LoadDT(dataJS) {
+            return $('#tableData').DataTable({
+                "bDestroy": true,
+                data: JSON.parse(dataJS),
+                "columns": [
+                { "data": null },
+                { "data": "COAMonthlyBalance.CCy.CurrencyCode", "name": "COAMonthlyBalance.CCy.CurrencyCode" },
+                { "data": "COAMonthlyBalance.Account", "name": "COAMonthlyBalance.Account" },
+                { "data": "COAMonthlyBalance.AccountName", "name": "COAMonthlyBalance.AccountName" },
+                { "data": "Budget", "name": "Budget", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "BegBal", "name": "BegBal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Debit", "name": "Debit", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "Credit", "name": "Credit", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "EndBal", "name": "EndBal", "render": $.fn.dataTable.render.number(',', '.', 2, '') },
+                { "data": "OperatorID", "name": "OperatorID" },
+                {
+                    "data": "LastUpdate", "name": "LastUpdate",
+                    "render": function (data, type, row, meta) {
+                        return moment(row.LastUpdate).format('DD/MMM/YYYY HH:mm:ss');
+                    }
+                }
+                ],
+                "order": [[1, "asc"]],
+                "lengthMenu": [[1, 10, 25, 50, -1], [1, 10, 25, 50, "All"]],
+                "pageLength": 10,
+                "columnDefs": [
+                {
+                    "targets": 'no-sort',
+                    "orderable": false,
+                },
+                {
+                    "width": "10",
+                    "orderable": true,
+                    "targets": [0]
+                },
+                {
+                    "width": "10",
+                    "orderable": true,
+                    "targets": [1]
+                },
+                {
+                    "width": "10px",
+                    "orderable": true,
+                    "targets": [2]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [3]
+                },
+                {
+                    "width": "100px",
+                    "orderable": true,
+                    "targets": [9]
+                },
+                {
+                    "width": "130px",
+                    "orderable": true,
+                    "targets": [10]
+                }
+                ],
+                "select": {
+                    "style": 'os'
+                },
+                "createdRow": function (row, data, dataIndex) {
+                    $(row).addClass('hidden');
+                },
+            });
+        }
+
+    </script>
+}
